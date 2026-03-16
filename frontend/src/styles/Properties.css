@@ -1,0 +1,76 @@
+.properties-page {
+  padding: 40px 0;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 70px);
+}
+
+.properties-header {
+  margin-bottom: 30px;
+}
+
+.properties-header h1 {
+  color: #1f2937;
+  font-size: 32px;
+}
+
+.properties-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .properties-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.pagination {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 5px;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.pagination button.active {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 10px;
+}
+
+.no-results p {
+  color: #6b7280;
+  font-size: 18px;
+}
