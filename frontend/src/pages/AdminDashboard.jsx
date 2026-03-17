@@ -271,7 +271,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .dashboard-container {
           display: flex;
           min-height: calc(100vh - 70px);

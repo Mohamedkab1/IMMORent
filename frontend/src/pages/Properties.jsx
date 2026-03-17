@@ -471,7 +471,7 @@ const Properties = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style >{`
         .properties-page {
           min-height: calc(100vh - 70px);
           background: #f8fafc;

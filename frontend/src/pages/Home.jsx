@@ -181,8 +181,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Styles CSS intégrés */}
-      <style jsx>{`
+      {/* Styles CSS - sans l'attribut jsx */}
+      <style>{`
         .hero-section {
           background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
           color: white;

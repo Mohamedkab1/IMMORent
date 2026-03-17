@@ -383,7 +383,7 @@ const AgentDashboard = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .agent-dashboard {
           display: flex;
           min-height: calc(100vh - 70px);

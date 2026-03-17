@@ -394,7 +394,7 @@ const ClientDashboard = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style >{`
         .client-dashboard {
           display: flex;
           min-height: calc(100vh - 70px);
