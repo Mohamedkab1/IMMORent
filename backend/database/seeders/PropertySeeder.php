@@ -10,11 +10,19 @@ class PropertySeeder extends Seeder
 {
     public function run(): void
     {
+        // Récupérer les utilisateurs
         $agent = User::where('email', 'jean.dupont@agence.com')->first();
         $owner = User::where('email', 'pierre.durand@email.com')->first();
+        
+        // Récupérer les catégories
         $apartmentCat = Category::where('slug', 'apartment')->first();
         $houseCat = Category::where('slug', 'house')->first();
         $studioCat = Category::where('slug', 'studio')->first();
+
+        if (!$agent || !$owner || !$apartmentCat) {
+            $this->command->warn('Données de référence manquantes, veuillez d\'abord exécuter UserSeeder et CategorySeeder');
+            return;
+        }
 
         $properties = [
             [
@@ -31,7 +39,7 @@ class PropertySeeder extends Seeder
                 'type' => 'apartment',
                 'category_id' => $apartmentCat->id,
                 'features' => json_encode(['Ascenseur', 'Cave', 'Balcon', 'Parking']),
-                'images' => json_encode(['properties/apartment1.jpg']),
+                'images' => json_encode([]), // Pas d'images pour éviter les erreurs
             ],
             [
                 'title' => 'Maison familiale avec jardin',
@@ -47,7 +55,7 @@ class PropertySeeder extends Seeder
                 'type' => 'house',
                 'category_id' => $houseCat->id,
                 'features' => json_encode(['Jardin', 'Garage', 'Cave', 'Terrasse']),
-                'images' => json_encode(['properties/house1.jpg']),
+                'images' => json_encode([]),
             ],
             [
                 'title' => 'Studio proche université',
@@ -63,19 +71,21 @@ class PropertySeeder extends Seeder
                 'type' => 'studio',
                 'category_id' => $studioCat->id,
                 'features' => json_encode(['Meublé', 'Internet', 'Proche commerces']),
-                'images' => json_encode(['properties/studio1.jpg']),
+                'images' => json_encode([]),
             ],
         ];
 
-        foreach ($properties as $property) {
+        foreach ($properties as $propertyData) {
             Property::updateOrCreate(
-                ['title' => $property['title']],
-                array_merge($property, [
+                ['title' => $propertyData['title']],
+                array_merge($propertyData, [
                     'user_id' => $agent->id,
                     'owner_id' => $owner->id,
                     'status' => 'available',
                 ])
             );
         }
+
+        $this->command->info('Propriétés créées avec succès !');
     }
 }

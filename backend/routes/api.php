@@ -28,6 +28,8 @@ Route::middleware(['auth:sanctum', 'check.status'])->group(function () {
     
     // Properties (gestion)
     Route::middleware(['agent'])->group(function () {
+        Route::get('/properties', [PropertyController::class, 'index']);
+        Route::get('/properties/{id}', [PropertyController::class, 'show']);
         Route::post('/properties', [PropertyController::class, 'store']);
         Route::put('/properties/{id}', [PropertyController::class, 'update']);
         Route::delete('/properties/{id}', [PropertyController::class, 'destroy']);

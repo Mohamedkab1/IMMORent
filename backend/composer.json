@@ -10,7 +10,7 @@
         "laravel/cashier": "^16.4",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.3",
-        "laravel/tinker": "^2.10.1",
+        "laravel/tinker": "^2.11",
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
