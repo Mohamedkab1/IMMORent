@@ -71,19 +71,19 @@ class User extends Authenticatable
     }
 
     // Helpers
-    public function isAdmin(): bool
+    public function isAdmin()
     {
-        return $this->role && $this->role->slug === Role::ADMIN;
+        return $this->role && $this->role->slug === 'admin';
     }
 
-    public function isAgent(): bool
+    public function isAgent()
     {
-        return $this->role && $this->role->slug === Role::AGENT;
+        return $this->role && $this->role->slug === 'agent';
     }
 
-    public function isClient(): bool
+    public function isClient()
     {
-        return $this->role && $this->role->slug === Role::CLIENT;
+        return $this->role && $this->role->slug === 'client';
     }
 
     public function getProfilePhotoUrlAttribute(): string

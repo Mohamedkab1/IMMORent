@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -15,7 +15,19 @@ import {
   HeartIcon,
   ShareIcon,
   CheckCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  BuildingOfficeIcon,
+  WifiIcon,
+  TvIcon,
+  FireIcon,
+  ComputerDesktopIcon,
+  KeyIcon,
+  BoltIcon,
+  CloudIcon,
+  SunIcon,
+  Cog6ToothIcon,
+  CpuChipIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
@@ -94,6 +106,11 @@ const PropertyDetail = () => {
   };
 
   const sendContactMessage = () => {
+    if (!contactMessage.trim()) {
+      toast.warning('Veuillez écrire un message');
+      return;
+    }
+    // Ici vous pouvez implémenter l'envoi du message via une API
     toast.success('Message envoyé avec succès');
     setShowContactForm(false);
     setContactMessage('');
@@ -115,7 +132,61 @@ const PropertyDetail = () => {
       navigate('/login');
       return;
     }
+    
+    if (user?.role?.slug !== 'client') {
+      toast.error('Seuls les clients peuvent faire des demandes de location');
+      return;
+    }
+    
     navigate(`/requests/new?property=${id}`);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Lien copié dans le presse-papiers');
+  };
+
+  // Fonction pour obtenir l'icône correspondant à un équipement
+  const getFeatureIcon = (feature) => {
+    const featureLower = feature.toLowerCase();
+    
+    if (featureLower.includes('wifi') || featureLower.includes('internet')) 
+      return <WifiIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('tv') || featureLower.includes('télévision')) 
+      return <TvIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('chauffage') || featureLower.includes('climatisation')) 
+      return <FireIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('ascenseur')) 
+      return <BuildingOfficeIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('parking') || featureLower.includes('garage')) 
+      return <Cog6ToothIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('cave')) 
+      return <KeyIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('balcon') || featureLower.includes('terrasse')) 
+      return <SunIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('meublé')) 
+      return <SparklesIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('électroménager')) 
+      return <CpuChipIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('climatisation')) 
+      return <CloudIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('électricité')) 
+      return <BoltIcon className="h-4 w-4" />;
+    
+    if (featureLower.includes('ordinateur')) 
+      return <ComputerDesktopIcon className="h-4 w-4" />;
+    
+    return <CheckCircleIcon className="h-4 w-4" />;
   };
 
   // État de chargement
@@ -266,14 +337,14 @@ const PropertyDetail = () => {
             Retour
           </button>
           <div className="nav-actions">
-            <button onClick={toggleFavorite} className="nav-action-button">
+            <button onClick={toggleFavorite} className="nav-action-button" title="Ajouter aux favoris">
               {isFavorite ? (
                 <HeartIconSolid className="h-6 w-6 text-red-500" />
               ) : (
                 <HeartIcon className="h-6 w-6" />
               )}
             </button>
-            <button className="nav-action-button">
+            <button onClick={handleShare} className="nav-action-button" title="Partager">
               <ShareIcon className="h-6 w-6" />
             </button>
           </div>
@@ -293,6 +364,12 @@ const PropertyDetail = () => {
             />
             {property.status === 'available' && (
               <span className="status-badge available">Disponible</span>
+            )}
+            {property.status === 'rented' && (
+              <span className="status-badge rented">Loué</span>
+            )}
+            {property.status === 'reserved' && (
+              <span className="status-badge reserved">Réservé</span>
             )}
           </div>
           
@@ -325,6 +402,10 @@ const PropertyDetail = () => {
               <div className="location">
                 <MapPinIcon className="h-5 w-5" />
                 <span>{property.city || 'Localisation non spécifiée'}</span>
+                <span className="postal-code">{property.postal_code}</span>
+              </div>
+              <div className="property-type-badge">
+                {property.type_label || property.type}
               </div>
             </div>
             <div className="price-tag">
@@ -341,7 +422,7 @@ const PropertyDetail = () => {
               <span className="feature-value">{property.surface || 0} m²</span>
             </div>
             <div className="feature-item">
-              <CalendarIcon className="feature-icon" />
+              <BuildingOfficeIcon className="feature-icon" />
               <span className="feature-label">Pièces</span>
               <span className="feature-value">{property.rooms || 0}</span>
             </div>
@@ -370,7 +451,7 @@ const PropertyDetail = () => {
               <div className="features-list">
                 {features.map((feature, index) => (
                   <div key={index} className="feature-tag">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
+                    {getFeatureIcon(feature)}
                     <span>{feature}</span>
                   </div>
                 ))}
@@ -409,6 +490,11 @@ const PropertyDetail = () => {
                 {property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
                   <button onClick={handleRequestRental} className="btn-request">
                     Faire une demande de location
+                  </button>
+                )}
+                {!isAuthenticated && property.status === 'available' && (
+                  <button onClick={() => navigate('/login')} className="btn-login-prompt">
+                    Connectez-vous pour faire une demande
                   </button>
                 )}
               </div>
@@ -484,6 +570,7 @@ const PropertyDetail = () => {
           color: #6b7280;
           cursor: pointer;
           transition: color 0.3s;
+          padding: 5px;
         }
 
         .nav-action-button:hover {
@@ -526,6 +613,16 @@ const PropertyDetail = () => {
 
         .status-badge.available {
           background: #10b981;
+          color: white;
+        }
+
+        .status-badge.rented {
+          background: #6b7280;
+          color: white;
+        }
+
+        .status-badge.reserved {
+          background: #f59e0b;
           color: white;
         }
 
@@ -584,6 +681,20 @@ const PropertyDetail = () => {
           align-items: center;
           gap: 5px;
           color: #6b7280;
+          margin-bottom: 10px;
+        }
+
+        .postal-code {
+          color: #9ca3af;
+        }
+
+        .property-type-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          background: #e5e7eb;
+          border-radius: 20px;
+          font-size: 14px;
+          color: #4b5563;
         }
 
         .price-tag {
@@ -626,14 +737,14 @@ const PropertyDetail = () => {
         .feature-label {
           display: block;
           color: #6b7280;
-          font-size: 14px;
+          font-size: 12px;
           margin-bottom: 5px;
         }
 
         .feature-value {
           display: block;
           color: #1f2937;
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 600;
         }
 
@@ -724,13 +835,16 @@ const PropertyDetail = () => {
         }
 
         .btn-contact,
-        .btn-request {
+        .btn-request,
+        .btn-login-prompt {
           padding: 12px 30px;
           border: none;
           border-radius: 5px;
           font-weight: 600;
           cursor: pointer;
           transition: background-color 0.3s;
+          text-decoration: none;
+          text-align: center;
         }
 
         .btn-contact {
@@ -749,6 +863,15 @@ const PropertyDetail = () => {
 
         .btn-request:hover {
           background: #059669;
+        }
+
+        .btn-login-prompt {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        .btn-login-prompt:hover {
+          background: #e5e7eb;
         }
 
         .contact-form {
@@ -789,9 +912,17 @@ const PropertyDetail = () => {
           color: white;
         }
 
+        .btn-send:hover {
+          background: #1d4ed8;
+        }
+
         .btn-cancel {
           background: #f3f4f6;
           color: #374151;
+        }
+
+        .btn-cancel:hover {
+          background: #e5e7eb;
         }
 
         @media (max-width: 768px) {

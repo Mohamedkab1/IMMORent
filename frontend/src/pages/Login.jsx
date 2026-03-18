@@ -28,20 +28,38 @@ const Login = () => {
     setLoading(true);
     
     try {
+      console.log('Tentative de connexion avec:', formData.email);
       const response = await login(formData.email, formData.password);
-      toast.success(response.message || 'Connexion réussie');
+      console.log('Réponse login:', response);
       
-      // Redirection selon le rôle
-      const user = response.data.user;
-      if (user.role?.slug === 'admin') {
-        navigate('/dashboard/admin');
-      } else if (user.role?.slug === 'agent') {
-        navigate('/dashboard/agent');
+      if (response.success) {
+        toast.success(response.message || 'Connexion réussie');
+        
+        // Redirection selon le rôle
+        const user = response.data.user;
+        if (user.role?.slug === 'admin') {
+          navigate('/dashboard/admin');
+        } else if (user.role?.slug === 'agent') {
+          navigate('/dashboard/agent');
+        } else {
+          navigate('/dashboard/client');
+        }
       } else {
-        navigate('/dashboard/client');
+        toast.error(response.message || 'Erreur de connexion');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Email ou mot de passe incorrect');
+      console.error('Erreur détaillée:', error);
+      console.error('Response data:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        toast.error('Email ou mot de passe incorrect');
+      } else if (error.response?.status === 422) {
+        const errors = error.response.data.errors;
+        const firstError = Object.values(errors)[0]?.[0];
+        toast.error(firstError || 'Données invalides');
+      } else {
+        toast.error(error.response?.data?.message || 'Erreur de connexion au serveur');
+      }
     } finally {
       setLoading(false);
     }
