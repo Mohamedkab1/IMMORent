@@ -23,6 +23,7 @@ import About from './pages/About';
 import NotFound from './pages/NotFound';
 
 // Pages protégées
+import AddProperty from './pages/AddProperty';
 import NewRequest from './pages/NewRequest';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -49,7 +50,14 @@ function App() {
               <Route path="/cgv" element={<CGV />} />
               <Route path="/confidentialite" element={<Privacy />} />
               <Route path="/about" element={<About />} />
-              
+
+              {/* Route pour ajouter une propriété (protégée - agent et admin uniquement) */}
+              <Route path="/properties/new" element={
+                <PrivateRoute requiredRole="agent">
+                  <AddProperty />
+                </PrivateRoute>
+              } />
+
               {/* Route pour les demandes de location (protégée - client uniquement) */}
               <Route path="/requests/new" element={
                 <PrivateRoute requiredRole="client">

@@ -8,21 +8,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
     /**
-     * Inscription d'un nouvel utilisateur
+     * Inscription
      */
     public function register(Request $request)
     {
         try {
-            // Validation des données
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'password' => ['required', 'confirmed', Password::min(8)],
+                'password' => 'required|string|min:8|confirmed',
                 'phone' => 'nullable|string|max:20',
                 'address' => 'nullable|string|max:255',
             ]);
@@ -35,11 +33,8 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            // Récupérer le rôle client
             $clientRole = Role::where('slug', 'client')->first();
-            
             if (!$clientRole) {
-                // Créer le rôle s'il n'existe pas
                 $clientRole = Role::create([
                     'name' => 'Client',
                     'slug' => 'client',
@@ -47,7 +42,6 @@ class AuthController extends Controller
                 ]);
             }
 
-            // Créer l'utilisateur
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -58,7 +52,6 @@ class AuthController extends Controller
                 'is_active' => true,
             ]);
 
-            // Créer le token Sanctum
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -91,14 +84,14 @@ class AuthController extends Controller
     }
 
     /**
-     * Connexion utilisateur
+     * Connexion
      */
     public function login(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
-                'password' => 'required',
+                'password' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -109,17 +102,15 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            // Vérifier les identifiants
-            if (!Auth::attempt($request->only('email', 'password'))) {
+            $user = User::with('role')->where('email', $request->email)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Email ou mot de passe incorrect'
                 ], 401);
             }
 
-            $user = User::with('role')->find(Auth::id());
-
-            // Vérifier si le compte est actif
             if (!$user->is_active) {
                 return response()->json([
                     'success' => false,
@@ -146,7 +137,7 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'address' => $user->address,
-                        'profile_photo_url' => $user->profile_photo_url,
+                        'is_active' => $user->is_active,
                         'role' => [
                             'id' => $user->role->id,
                             'name' => $user->role->name,
@@ -182,8 +173,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la déconnexion',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors de la déconnexion'
             ], 500);
         }
     }
@@ -205,9 +195,7 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'address' => $user->address,
-                        'profile_photo_url' => $user->profile_photo_url,
                         'is_active' => $user->is_active,
-                        'last_login_at' => $user->last_login_at,
                         'role' => [
                             'id' => $user->role->id,
                             'name' => $user->role->name,
@@ -220,8 +208,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement du profil',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors du chargement du profil'
             ], 500);
         }
     }

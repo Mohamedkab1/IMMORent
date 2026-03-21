@@ -1,51 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPinIcon, HomeIcon, CurrencyEuroIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, HomeIcon, CurrencyEuroIcon } from '@heroicons/react/24/outline';
 
 const PropertyCard = ({ property }) => {
-  const defaultImage = 'https://via.placeholder.com/400x300?text=Immobilier';
+  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&auto=format&fit=crop';
   
+  // S'assurer que l'ID est un nombre
+  const propertyId = property?.id;
+  
+  if (!propertyId) {
+    console.error('PropertyCard: propriété sans ID', property);
+    return null;
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="relative h-48">
+    <div className="property-card">
+      <div className="property-image">
         <img
           src={property.images?.[0] ? `http://localhost:8000/storage/${property.images[0]}` : defaultImage}
           alt={property.title}
-          className="w-full h-full object-cover"
         />
-        <div className="absolute top-2 right-2 bg-primary-600 text-white px-2 py-1 rounded-md text-sm">
-          {property.type_label}
-        </div>
+        <span className="property-type">{property.type_label || property.type}</span>
       </div>
       
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
-          {property.title}
-        </h3>
+      <div className="property-content">
+        <h3 className="property-title">{property.title}</h3>
         
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-gray-600 text-sm">
-            <MapPinIcon className="h-4 w-4 mr-2 text-gray-400" />
-            <span className="line-clamp-1">{property.city}</span>
-          </div>
-          
-          <div className="flex items-center text-gray-600 text-sm">
-            <HomeIcon className="h-4 w-4 mr-2 text-gray-400" />
-            <span>{property.surface} m² • {property.rooms} pièces</span>
-          </div>
-          
-          <div className="flex items-center text-gray-900 font-semibold">
-            <CurrencyEuroIcon className="h-4 w-4 mr-2 text-gray-400" />
-            <span>{property.price.toLocaleString('fr-FR')} € / mois</span>
-          </div>
+        <div className="property-location">
+          <MapPinIcon className="h-4 w-4" />
+          <span>{property.city}</span>
         </div>
         
-        <Link
-          to={`/properties/${property.id}`}
-          className="inline-flex items-center justify-center w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200"
+        <div className="property-features">
+          <span className="feature">
+            <HomeIcon className="h-4 w-4" />
+            {property.surface} m²
+          </span>
+          <span className="feature">
+            <HomeIcon className="h-4 w-4" />
+            {property.rooms} pièces
+          </span>
+        </div>
+        
+        <div className="property-price">
+          <strong>{property.price?.toLocaleString('fr-FR')}€</strong>
+          <span>/mois</span>
+        </div>
+        
+        <Link 
+          to={`/properties/${propertyId}`}  // Utilisation de l'ID numérique
+          className="btn-view-property"
         >
           Voir détails
-          <ArrowTopRightOnSquareIcon className="h-4 w-4 ml-2" />
         </Link>
       </div>
     </div>

@@ -45,9 +45,14 @@ const PropertyDetail = () => {
   const [contactMessage, setContactMessage] = useState('');
 
   useEffect(() => {
-    if (id) {
-      fetchProperty();
+    // Vérifier que l'ID est valide (nombre)
+    if (!id || id === 'new' || id === 'undefined') {
+      setError('ID de bien invalide');
+      setLoading(false);
+      return;
     }
+    
+    fetchProperty();
   }, [id]);
 
   // Fonction pour parser les features (qui peuvent être string JSON ou tableau)
@@ -70,7 +75,16 @@ const PropertyDetail = () => {
     setError(null);
     try {
       console.log('Chargement du bien ID:', id);
-      const response = await propertyService.getById(id);
+      
+      // S'assurer que l'ID est un nombre
+      const propertyId = parseInt(id);
+      if (isNaN(propertyId)) {
+        setError('ID de bien invalide');
+        setLoading(false);
+        return;
+      }
+      
+      const response = await propertyService.getById(propertyId);
       console.log('Réponse reçue:', response);
       
       if (response.success && response.data) {
@@ -94,6 +108,28 @@ const PropertyDetail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+    const handleRequestRental = () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter pour faire une demande');
+      navigate('/login');
+      return;
+    }
+    
+    if (user?.role?.slug !== 'client') {
+      toast.error('Seuls les clients peuvent faire des demandes de location');
+      return;
+    }
+    
+    // S'assurer que l'ID est un nombre
+    const propertyId = parseInt(id);
+    if (isNaN(propertyId)) {
+      toast.error('ID de bien invalide');
+      return;
+    }
+    
+    navigate(`/requests/new?property=${propertyId}`);
   };
 
   const handleContact = () => {
@@ -126,20 +162,6 @@ const PropertyDetail = () => {
     toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
   };
 
-  const handleRequestRental = () => {
-    if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter pour faire une demande');
-      navigate('/login');
-      return;
-    }
-    
-    if (user?.role?.slug !== 'client') {
-      toast.error('Seuls les clients peuvent faire des demandes de location');
-      return;
-    }
-    
-    navigate(`/requests/new?property=${id}`);
-  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -226,7 +248,7 @@ const PropertyDetail = () => {
   }
 
   // État d'erreur
-  if (error) {
+  if (error === 'ID de bien invalide') {
     return (
       <div className="error-container">
         <div className="error-card">
@@ -236,9 +258,6 @@ const PropertyDetail = () => {
           <div className="error-actions">
             <button onClick={() => navigate('/properties')} className="btn-primary">
               Voir tous les biens
-            </button>
-            <button onClick={fetchProperty} className="btn-secondary">
-              Réessayer
             </button>
           </div>
         </div>
