@@ -31,12 +31,12 @@ export const requestService = {
     }
   },
 
-  async update(id, data) {
+  async process(id, data) {
     try {
-      const response = await api.put(`/requests/${id}`, data);
+      const response = await api.put(`/requests/${id}/process`, data);
       return response.data;
     } catch (error) {
-      console.error('Erreur requestService.update:', error);
+      console.error('Erreur requestService.process:', error);
       throw error;
     }
   },
@@ -47,16 +47,6 @@ export const requestService = {
       return response.data;
     } catch (error) {
       console.error('Erreur requestService.cancel:', error);
-      throw error;
-    }
-  },
-
-  async process(id, data) {
-    try {
-      const response = await api.put(`/requests/${id}/process`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Erreur requestService.process:', error);
       throw error;
     }
   },

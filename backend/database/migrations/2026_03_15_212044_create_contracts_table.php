@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('property_id')->constrained();
             $table->foreignId('tenant_id')->constrained('users');
             $table->foreignId('owner_id')->constrained('users');
-            $table->foreignId('agent_id')->constrained('users');
+            $table->foreignId('agent_id')->constrained('users'); // <-- Vérifier cette ligne
             $table->date('start_date');
             $table->date('end_date');
             $table->decimal('monthly_rent', 10, 2);

@@ -3,7 +3,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RentalRequest extends Model
 {
@@ -29,7 +28,6 @@ class RentalRequest extends Model
         });
     }
 
-    // Relations
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -45,23 +43,11 @@ class RentalRequest extends Model
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    public function contract(): HasOne
-    {
-        return $this->hasOne(Contract::class);
-    }
-
-    // Scopes
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeForUser($query, int $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
-
-    // Accessors
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
@@ -76,7 +62,7 @@ class RentalRequest extends Model
     public function getStatusColorAttribute(): string
     {
         return match($this->status) {
-            'pending' => 'yellow',
+            'pending' => 'orange',
             'approved' => 'green',
             'rejected' => 'red',
             'cancelled' => 'gray',

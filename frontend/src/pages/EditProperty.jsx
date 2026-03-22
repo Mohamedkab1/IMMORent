@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { propertyService } from '../services/properties';
 import { toast } from 'react-toastify';
@@ -13,14 +13,19 @@ import {
   CurrencyEuroIcon,
   BuildingOfficeIcon,
   DocumentTextIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
-const AddProperty = () => {
+const EditProperty = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, isAgent, isAdmin } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [property, setProperty] = useState(null);
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [featuresList, setFeaturesList] = useState([]);
   const [newFeature, setNewFeature] = useState('');
@@ -38,28 +43,8 @@ const AddProperty = () => {
     bathrooms: '',
     type: 'apartment',
     category_id: '1',
+    status: 'available'
   });
-
-  // Vérification des droits au chargement
-  useEffect(() => {
-    console.log('=== ADD PROPERTY DEBUG ===');
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('User:', user);
-    console.log('isAgent:', isAgent);
-    console.log('isAdmin:', isAdmin);
-    
-    if (!isAuthenticated) {
-      toast.error('Veuillez vous connecter');
-      navigate('/login');
-      return;
-    }
-    
-    if (!isAgent && !isAdmin) {
-      toast.error('Vous n\'avez pas les droits pour ajouter un bien. Seuls les agents et administrateurs peuvent le faire.');
-      navigate('/dashboard');
-      return;
-    }
-  }, [isAuthenticated, isAgent, isAdmin, user, navigate]);
 
   const propertyTypes = [
     { value: 'apartment', label: 'Appartement' },
@@ -68,6 +53,89 @@ const AddProperty = () => {
     { value: 'commercial', label: 'Local commercial' },
     { value: 'land', label: 'Terrain' }
   ];
+
+  const statusOptions = [
+    { value: 'available', label: 'Disponible' },
+    { value: 'rented', label: 'Loué' },
+    { value: 'reserved', label: 'Réservé' },
+    { value: 'unavailable', label: 'Indisponible' }
+  ];
+
+  // Vérification des droits
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error('Veuillez vous connecter');
+      navigate('/login');
+      return;
+    }
+    
+    if (!isAgent && !isAdmin) {
+      toast.error('Vous n\'avez pas les droits pour modifier un bien');
+      navigate('/dashboard');
+      return;
+    }
+  }, [isAuthenticated, isAgent, isAdmin, navigate]);
+
+  // Charger les données du bien
+  useEffect(() => {
+    if (id) {
+      fetchProperty();
+    }
+  }, [id]);
+
+  const fetchProperty = async () => {
+    try {
+      const response = await propertyService.getById(id);
+      if (response.success && response.data) {
+        const propertyData = response.data;
+        setProperty(propertyData);
+        
+        // Remplir le formulaire
+        setFormData({
+          title: propertyData.title || '',
+          description: propertyData.description || '',
+          price: propertyData.price || '',
+          address: propertyData.address || '',
+          city: propertyData.city || '',
+          postal_code: propertyData.postal_code || '',
+          surface: propertyData.surface || '',
+          rooms: propertyData.rooms || '',
+          bedrooms: propertyData.bedrooms || '',
+          bathrooms: propertyData.bathrooms || '',
+          type: propertyData.type || 'apartment',
+          category_id: propertyData.category_id || '1',
+          status: propertyData.status || 'available'
+        });
+        
+        // Gérer les images existantes
+        if (propertyData.images && propertyData.images.length > 0) {
+          setExistingImages(propertyData.images);
+        }
+        
+        // Gérer les équipements
+        if (propertyData.features) {
+          let features = propertyData.features;
+          if (typeof features === 'string') {
+            try {
+              features = JSON.parse(features);
+            } catch (e) {
+              features = [];
+            }
+          }
+          setFeaturesList(Array.isArray(features) ? features : []);
+        }
+      } else {
+        toast.error('Bien non trouvé');
+        navigate('/dashboard/agent');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors du chargement du bien');
+      navigate('/dashboard/agent');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -93,7 +161,11 @@ const AddProperty = () => {
     });
   };
 
-  const removeImage = (index) => {
+  const removeExistingImage = (index) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index) => {
     setImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
@@ -131,8 +203,6 @@ const AddProperty = () => {
     if (!formData.postal_code.trim()) errors.push('Le code postal est requis');
     if (!formData.surface || formData.surface <= 0) errors.push('La surface doit être supérieure à 0');
     if (!formData.rooms || formData.rooms <= 0) errors.push('Le nombre de pièces doit être supérieur à 0');
-    if (!formData.type) errors.push('Le type de bien est requis');
-    if (!formData.category_id) errors.push('La catégorie est requise');
     
     if (errors.length > 0) {
       errors.forEach(error => toast.error(error));
@@ -145,139 +215,82 @@ const AddProperty = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Vérification des droits avant soumission
-    if (!isAgent && !isAdmin) {
-      toast.error('Vous n\'avez pas les droits pour ajouter un bien');
-      navigate('/dashboard');
-      return;
-    }
-
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
     try {
-      // Création du FormData
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('postal_code', formData.postal_code);
-      formDataToSend.append('surface', formData.surface);
-      formDataToSend.append('rooms', formData.rooms);
-      formDataToSend.append('bedrooms', formData.bedrooms || '0');
-      formDataToSend.append('bathrooms', formData.bathrooms || '0');
-      formDataToSend.append('type', formData.type);
-      formDataToSend.append('category_id', formData.category_id);
-      formDataToSend.append('features', JSON.stringify(featuresList));
-      
-      // Ajout des images
-      images.forEach(image => {
-        formDataToSend.append('images[]', image);
-      });
+      // Préparer les données
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        address: formData.address,
+        city: formData.city,
+        postal_code: formData.postal_code,
+        surface: formData.surface,
+        rooms: formData.rooms,
+        bedrooms: formData.bedrooms || 0,
+        bathrooms: formData.bathrooms || 0,
+        type: formData.type,
+        category_id: formData.category_id,
+        status: formData.status,
+        features: JSON.stringify(featuresList),
+        images: existingImages
+      };
 
-      // Debug - Afficher les données envoyées
-      console.log('=== DONNÉES ENVOYÉES ===');
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
-
-      const response = await propertyService.create(formDataToSend);
+      const response = await propertyService.update(id, updateData);
       
       if (response.success) {
-        toast.success('Bien ajouté avec succès !');
-        navigate('/dashboard/agent?refresh=true');
+        toast.success('Bien modifié avec succès !');
+        navigate('/dashboard/agent');
       } else {
-        toast.error(response.message || 'Erreur lors de l\'ajout');
+        toast.error(response.message || 'Erreur lors de la modification');
       }
     } catch (error) {
       console.error('Erreur:', error);
       if (error.response?.status === 403) {
-        toast.error('Vous n\'avez pas les droits pour ajouter un bien');
-        navigate('/dashboard');
+        toast.error('Vous n\'avez pas les droits pour modifier ce bien');
       } else if (error.response?.status === 422) {
         const errors = error.response.data.errors;
-        console.log('Erreurs de validation:', errors);
         Object.values(errors).forEach(err => {
-          if (Array.isArray(err)) {
-            err.forEach(e => toast.error(e));
-          } else {
-            toast.error(err);
-          }
+          toast.error(err[0]);
         });
       } else {
-        toast.error(error.response?.data?.message || 'Erreur lors de l\'ajout du bien');
+        toast.error(error.response?.data?.message || 'Erreur lors de la modification du bien');
       }
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  // Si pas de droits, ne pas afficher le formulaire
-  if (!isAgent && !isAdmin && isAuthenticated) {
+  if (loading) {
     return (
-      <div className="unauthorized-container">
-        <div className="unauthorized-card">
-          <div className="unauthorized-icon">🔒</div>
-          <h2>Accès non autorisé</h2>
-          <p>Vous n'avez pas les droits pour ajouter un bien immobilier.</p>
-          <p className="required-role">Rôle requis : Agent immobilier ou Administrateur</p>
-          <button onClick={() => navigate('/dashboard')} className="btn-back-dashboard">
-            Retour au tableau de bord
-          </button>
-        </div>
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Chargement du bien...</p>
         <style>{`
-          .unauthorized-container {
+          .loading-container {
             min-height: calc(100vh - 70px);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
             background: #f8fafc;
           }
-          .unauthorized-card {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 500px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          }
-          .unauthorized-icon {
-            font-size: 60px;
+          .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e5e7eb;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             margin-bottom: 20px;
           }
-          .unauthorized-card h2 {
-            color: #dc2626;
-            margin-bottom: 15px;
-          }
-          .unauthorized-card p {
-            color: #6b7280;
-            margin-bottom: 10px;
-          }
-          .required-role {
-            background: #fef3c7;
-            color: #d97706;
-            padding: 8px;
-            border-radius: 5px;
-            margin: 15px 0;
-          }
-          .btn-back-dashboard {
-            padding: 12px 30px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 20px;
-          }
-          .btn-back-dashboard:hover {
-            background: #1d4ed8;
+          @keyframes spin {
+            to { transform: rotate(360deg); }
           }
         `}</style>
       </div>
@@ -285,15 +298,15 @@ const AddProperty = () => {
   }
 
   return (
-    <div className="add-property-page">
-      <div className="add-property-container">
+    <div className="edit-property-page">
+      <div className="edit-property-container">
         <div className="page-header">
           <button onClick={() => navigate(-1)} className="back-button">
             <ArrowLeftIcon className="h-5 w-5" />
             Retour
           </button>
-          <h1>Ajouter un bien immobilier</h1>
-          <p>Remplissez le formulaire pour ajouter un nouveau bien à la plateforme</p>
+          <h1>Modifier le bien immobilier</h1>
+          <p>Modifiez les informations du bien</p>
         </div>
 
         <form onSubmit={handleSubmit} className="property-form">
@@ -325,7 +338,7 @@ const AddProperty = () => {
                 value={formData.description}
                 onChange={handleChange}
                 rows="5"
-                placeholder="Décrivez le bien (surface, état, environnement, etc.)"
+                placeholder="Décrivez le bien"
                 required
               />
             </div>
@@ -349,19 +362,19 @@ const AddProperty = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="category_id">Catégorie *</label>
+                <label htmlFor="status">Statut *</label>
                 <select
-                  id="category_id"
-                  name="category_id"
-                  value={formData.category_id}
+                  id="status"
+                  name="status"
+                  value={formData.status}
                   onChange={handleChange}
                   required
                 >
-                  <option value="1">Appartement</option>
-                  <option value="2">Maison</option>
-                  <option value="3">Local commercial</option>
-                  <option value="4">Terrain</option>
-                  <option value="5">Studio</option>
+                  {statusOptions.map(status => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -508,7 +521,7 @@ const AddProperty = () => {
           <div className="form-section">
             <h2>
               <CheckCircleIcon className="section-icon" />
-              Équipements et caractéristiques
+              Équipements
             </h2>
             
             <div className="features-input">
@@ -517,7 +530,7 @@ const AddProperty = () => {
                 value={newFeature}
                 onChange={(e) => setNewFeature(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ajouter un équipement (ex: Ascenseur, Balcon, Parking, Wifi...)"
+                placeholder="Ajouter un équipement (ex: Ascenseur, Balcon, Parking...)"
               />
               <button type="button" onClick={addFeature} className="btn-add-feature">
                 <PlusIcon className="h-5 w-5" />
@@ -538,10 +551,6 @@ const AddProperty = () => {
                 ))}
               </div>
             )}
-            
-            {featuresList.length === 0 && (
-              <p className="no-features">Aucun équipement ajouté pour le moment</p>
-            )}
           </div>
 
           {/* Images */}
@@ -551,33 +560,57 @@ const AddProperty = () => {
               Photos du bien
             </h2>
             
-            <div className="image-upload">
-              <label className="image-upload-label">
-                <PhotoIcon className="h-10 w-10" />
-                <span>Cliquez pour ajouter des photos</span>
-                <span className="upload-hint">Formats acceptés : JPG, PNG, GIF (max 2MB)</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </div>
-            
-            {imagePreviews.length > 0 && (
-              <div className="image-previews">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="image-preview">
-                    <img src={preview} alt={`Aperçu ${index + 1}`} />
-                    <button type="button" onClick={() => removeImage(index)}>
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
+            {/* Images existantes */}
+            {existingImages.length > 0 && (
+              <div className="image-section">
+                <h3>Photos actuelles</h3>
+                <div className="image-previews existing">
+                  {existingImages.map((image, index) => (
+                    <div key={index} className="image-preview">
+                      <img 
+                        src={`http://localhost:8000/storage/${image}`} 
+                        alt={`Photo ${index + 1}`} 
+                      />
+                      <button type="button" onClick={() => removeExistingImage(index)}>
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+            
+            {/* Nouvelles images */}
+            <div className="image-section">
+              <h3>Ajouter des photos</h3>
+              <div className="image-upload">
+                <label className="image-upload-label">
+                  <PhotoIcon className="h-10 w-10" />
+                  <span>Cliquez pour ajouter des photos</span>
+                  <span className="upload-hint">Formats : JPG, PNG (max 2MB)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+              
+              {imagePreviews.length > 0 && (
+                <div className="image-previews new">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="image-preview">
+                      <img src={preview} alt={`Nouvelle photo ${index + 1}`} />
+                      <button type="button" onClick={() => removeNewImage(index)}>
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Actions */}
@@ -585,21 +618,21 @@ const AddProperty = () => {
             <button type="button" onClick={() => navigate(-1)} className="btn-cancel">
               Annuler
             </button>
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? 'Ajout en cours...' : 'Ajouter le bien'}
+            <button type="submit" className="btn-submit" disabled={submitting}>
+              {submitting ? 'Modification en cours...' : 'Enregistrer les modifications'}
             </button>
           </div>
         </form>
       </div>
 
       <style>{`
-        .add-property-page {
+        .edit-property-page {
           min-height: calc(100vh - 70px);
           background: #f8fafc;
           padding: 40px 20px;
         }
 
-        .add-property-container {
+        .edit-property-container {
           max-width: 800px;
           margin: 0 auto;
         }
@@ -618,7 +651,6 @@ const AddProperty = () => {
           cursor: pointer;
           margin-bottom: 20px;
           font-size: 14px;
-          transition: color 0.3s;
         }
 
         .back-button:hover {
@@ -661,6 +693,12 @@ const AddProperty = () => {
           display: flex;
           align-items: center;
           gap: 8px;
+        }
+
+        .form-section h3 {
+          color: #374151;
+          font-size: 16px;
+          margin-bottom: 15px;
         }
 
         .section-icon {
@@ -770,13 +808,8 @@ const AddProperty = () => {
           color: #dc2626;
         }
 
-        .no-features {
-          color: #9ca3af;
-          font-size: 14px;
-          text-align: center;
-          padding: 20px;
-          background: #f9fafb;
-          border-radius: 5px;
+        .image-section {
+          margin-bottom: 25px;
         }
 
         .image-upload {
@@ -809,6 +842,7 @@ const AddProperty = () => {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 15px;
+          margin-top: 15px;
         }
 
         .image-preview {
@@ -888,10 +922,6 @@ const AddProperty = () => {
         }
 
         @media (max-width: 768px) {
-          .add-property-container {
-            padding: 0;
-          }
-
           .form-row {
             grid-template-columns: 1fr;
             gap: 0;
@@ -910,4 +940,4 @@ const AddProperty = () => {
   );
 };
 
-export default AddProperty;
+export default EditProperty;

@@ -5,12 +5,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('rental_requests', function (Blueprint $table) {
             $table->id();
             $table->string('request_number')->unique();
-            $table->foreignId('user_id')->constrained(); // Client
+            $table->foreignId('user_id')->constrained();
             $table->foreignId('property_id')->constrained();
             $table->date('start_date');
             $table->date('end_date');
@@ -23,7 +23,7 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('rental_requests');
     }

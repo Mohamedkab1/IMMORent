@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { propertyService } from '../services/properties';
+import { requestService } from '../services/requests';
+import { contractService } from '../services/contracts';
+import { toast } from 'react-toastify';
 import {
   BuildingOfficeIcon,
   DocumentTextIcon,
@@ -10,50 +14,170 @@ import {
   PlusIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  HomeIcon,
+  MapPinIcon,
+  CalendarIcon,
+  ClockIcon,
+  DocumentDuplicateIcon  // Remplacer FileTextIcon par DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 
 const AgentDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [properties, setProperties] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    availableProperties: 0,
+    pendingRequests: 0,
+    activeContracts: 0,
+    monthlyRevenue: 0
+  });
 
-  // Données simulées
-  const stats = {
-    totalProperties: 12,
-    availableProperties: 8,
-    pendingRequests: 5,
-    activeContracts: 7,
-    monthlyRevenue: 12500
+  // Charger les données au montage du composant
+  useEffect(() => {
+    // Vérifier si un paramètre refresh est présent dans l'URL
+    const queryParams = new URLSearchParams(location.search);
+    const shouldRefresh = queryParams.get('refresh');
+    
+    loadAllData();
+    
+    // Si refresh=true, recharger les données après 1 seconde
+    if (shouldRefresh === 'true') {
+      setTimeout(() => {
+        loadAllData();
+      }, 1000);
+    }
+  }, [location.search]);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    await Promise.all([
+      loadProperties(),
+      loadRequests(),
+      loadContracts(),
+      loadStats()
+    ]);
+    setLoading(false);
   };
 
-  const properties = [
-    { id: 1, title: 'Appartement Lyon Centre', price: 850, status: 'available', city: 'Lyon', requests: 3 },
-    { id: 2, title: 'Maison Caluire', price: 1500, status: 'available', city: 'Caluire', requests: 5 },
-    { id: 3, title: 'Studio Villeurbanne', price: 450, status: 'rented', city: 'Villeurbanne', requests: 0 },
-    { id: 4, title: 'Local commercial Part-Dieu', price: 2000, status: 'available', city: 'Lyon', requests: 2 },
-  ];
+  const loadProperties = async () => {
+    try {
+      const response = await propertyService.getMyProperties();
+      if (response.success) {
+        const propertiesData = response.data.data || [];
+        setProperties(propertiesData);
+        setStats(prev => ({
+          ...prev,
+          totalProperties: propertiesData.length,
+          availableProperties: propertiesData.filter(p => p.status === 'available').length
+        }));
+      }
+    } catch (error) {
+      console.error('Erreur chargement biens:', error);
+      toast.error('Erreur lors du chargement des biens');
+    }
+  };
 
-  const pendingRequests = [
-    { id: 1, client: 'Pierre Durand', property: 'Appartement Lyon Centre', date: '2024-01-15', status: 'pending' },
-    { id: 2, client: 'Sophie Bernard', property: 'Maison Caluire', date: '2024-01-14', status: 'pending' },
-    { id: 3, client: 'Thomas Petit', property: 'Studio Villeurbanne', date: '2024-01-13', status: 'pending' },
-    { id: 4, client: 'Marie Lambert', property: 'Local commercial Part-Dieu', date: '2024-01-12', status: 'pending' },
-    { id: 5, client: 'Lucas Martin', property: 'Appartement Lyon Centre', date: '2024-01-11', status: 'pending' },
-  ];
+  const loadRequests = async () => {
+    try {
+      const response = await requestService.getAll();
+      if (response.success) {
+        const requestsData = response.data.data || [];
+        setRequests(requestsData);
+        setStats(prev => ({
+          ...prev,
+          pendingRequests: requestsData.filter(r => r.status === 'pending').length
+        }));
+      }
+    } catch (error) {
+      console.error('Erreur chargement demandes:', error);
+    }
+  };
 
-  const recentContracts = [
-    { id: 1, tenant: 'Pierre Durand', property: 'Appartement Lyon Centre', date: '2024-01-10', amount: 850 },
-    { id: 2, tenant: 'Sophie Bernard', property: 'Maison Caluire', date: '2024-01-08', amount: 1500 },
-  ];
+  const loadContracts = async () => {
+    try {
+      const response = await contractService.getAgentContracts();
+      if (response.success) {
+        const contractsData = response.data.data || [];
+        setContracts(contractsData);
+        setStats(prev => ({
+          ...prev,
+          activeContracts: contractsData.filter(c => c.status === 'active').length,
+          monthlyRevenue: contractsData
+            .filter(c => c.status === 'active')
+            .reduce((sum, c) => sum + (c.monthly_rent || 0), 0)
+        }));
+      }
+    } catch (error) {
+      console.error('Erreur chargement contrats:', error);
+    }
+  };
+
+  const loadStats = async () => {
+    // Les stats sont déjà mises à jour dans les autres fonctions
+  };
+
+  const handleDeleteProperty = async (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce bien ?')) {
+      try {
+        await propertyService.delete(id);
+        toast.success('Bien supprimé avec succès');
+        loadProperties();
+      } catch (error) {
+        toast.error('Erreur lors de la suppression');
+      }
+    }
+  };
+
+  const handleProcessRequest = async (requestId, status, rejectionReason = null) => {
+    const actionText = status === 'approved' ? 'approuver' : 'refuser';
+    if (!window.confirm(`Êtes-vous sûr de vouloir ${actionText} cette demande ?`)) {
+      return;
+    }
+
+    try {
+      const response = await requestService.process(requestId, {
+        status,
+        rejection_reason: rejectionReason
+      });
+      
+      if (response.success) {
+        toast.success(`Demande ${status === 'approved' ? 'approuvée' : 'refusée'} avec succès`);
+        
+        if (status === 'approved') {
+          // Rediriger vers la création de contrat
+          navigate(`/contracts/new?request=${requestId}`);
+        } else {
+          loadRequests();
+        }
+      } else {
+        toast.error(response.message || 'Erreur lors du traitement');
+      }
+    } catch (error) {
+      toast.error('Erreur lors du traitement de la demande');
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
       available: { color: '#10b981', text: 'Disponible' },
       rented: { color: '#6b7280', text: 'Loué' },
-      pending: { color: '#f59e0b', text: 'En attente' }
+      reserved: { color: '#f59e0b', text: 'Réservé' },
+      pending: { color: '#f59e0b', text: 'En attente' },
+      approved: { color: '#10b981', text: 'Approuvée' },
+      rejected: { color: '#ef4444', text: 'Refusée' },
+      cancelled: { color: '#9ca3af', text: 'Annulée' },
+      active: { color: '#10b981', text: 'Actif' },
+      terminated: { color: '#ef4444', text: 'Résilié' },
+      expired: { color: '#6b7280', text: 'Expiré' }
     };
     const config = statusConfig[status] || statusConfig.pending;
     
@@ -62,7 +186,7 @@ const AgentDashboard = () => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '5px',
-        padding: '5px 10px',
+        padding: '4px 10px',
         background: config.color + '20',
         color: config.color,
         borderRadius: '20px',
@@ -73,6 +197,27 @@ const AgentDashboard = () => {
       </span>
     );
   };
+
+  if (loading && properties.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <div className="spinner"></div>
+        <style>{`
+          .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="agent-dashboard">
@@ -102,7 +247,7 @@ const AgentDashboard = () => {
             className={`nav-link ${activeTab === 'properties' ? 'active' : ''}`}
             onClick={() => setActiveTab('properties')}
           >
-            <BuildingOfficeIcon className="nav-icon" />
+            <HomeIcon className="nav-icon" />
             <span>Mes biens</span>
             <span className="badge">{stats.totalProperties}</span>
           </button>
@@ -120,15 +265,9 @@ const AgentDashboard = () => {
             className={`nav-link ${activeTab === 'contracts' ? 'active' : ''}`}
             onClick={() => setActiveTab('contracts')}
           >
-            <DocumentTextIcon className="nav-icon" />
+            <DocumentDuplicateIcon className="nav-icon" />
             <span>Contrats</span>
-          </button>
-          <button 
-            className={`nav-link ${activeTab === 'payments' ? 'active' : ''}`}
-            onClick={() => setActiveTab('payments')}
-          >
-            <CurrencyEuroIcon className="nav-icon" />
-            <span>Paiements</span>
+            <span className="badge">{stats.activeContracts}</span>
           </button>
         </nav>
 
@@ -169,7 +308,7 @@ const AgentDashboard = () => {
 
           <div className="stat-card">
             <div className="stat-icon available">
-              <BuildingOfficeIcon className="h-8 w-8" />
+              <HomeIcon className="h-8 w-8" />
             </div>
             <div className="stat-info">
               <h3>{stats.availableProperties}</h3>
@@ -192,7 +331,7 @@ const AgentDashboard = () => {
               <CurrencyEuroIcon className="h-8 w-8" />
             </div>
             <div className="stat-info">
-              <h3>{stats.monthlyRevenue}€</h3>
+              <h3>{stats.monthlyRevenue.toLocaleString()}€</h3>
               <p>Revenus mensuels</p>
             </div>
           </div>
@@ -200,8 +339,52 @@ const AgentDashboard = () => {
 
         {/* Content based on active tab */}
         <div className="tab-content">
+          {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             <>
+              {/* Recent Properties */}
+              <div className="content-section">
+                <div className="section-header">
+                  <h2>Mes biens récents</h2>
+                  <button className="view-all" onClick={() => setActiveTab('properties')}>
+                    Voir tout ({stats.totalProperties})
+                  </button>
+                </div>
+                <div className="properties-list">
+                  {properties.slice(0, 3).map(property => (
+                    <div key={property.id} className="property-item">
+                      <div className="property-info">
+                        <h4>{property.title}</h4>
+                        <p className="property-location">
+                          <MapPinIcon className="h-4 w-4" />
+                          {property.city} • {property.price}€/mois
+                        </p>
+                      </div>
+                      {getStatusBadge(property.status)}
+                      <div className="property-actions">
+                        <Link to={`/properties/${property.id}`} className="btn-view" title="Voir">
+                          <EyeIcon className="h-4 w-4" />
+                        </Link>
+                        <Link to={`/properties/edit/${property.id}`} className="btn-edit" title="Modifier">
+                          <PencilIcon className="h-4 w-4" />
+                        </Link>
+                        <button onClick={() => handleDeleteProperty(property.id)} className="btn-delete" title="Supprimer">
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {properties.length === 0 && (
+                    <div className="empty-state">
+                      <p>Aucun bien ajouté pour le moment</p>
+                      <Link to="/properties/new" className="btn-add-first">
+                        Ajouter votre premier bien
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Pending Requests */}
               <div className="content-section">
                 <div className="section-header">
@@ -211,57 +394,39 @@ const AgentDashboard = () => {
                   </button>
                 </div>
                 <div className="requests-list">
-                  {pendingRequests.slice(0, 3).map(request => (
+                  {requests.filter(r => r.status === 'pending').slice(0, 3).map(request => (
                     <div key={request.id} className="request-item">
                       <div className="request-info">
-                        <h4>{request.client}</h4>
-                        <p>{request.property}</p>
+                        <h4>{request.user?.name || 'Client'}</h4>
+                        <p>{request.property?.title || 'Bien'}</p>
                         <span className="request-date">
-                          {new Date(request.date).toLocaleDateString('fr-FR')}
+                          <CalendarIcon className="h-3 w-3" />
+                          {new Date(request.created_at).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
                       <div className="request-actions">
-                        <button className="btn-approve" title="Approuver">
+                        <button 
+                          onClick={() => handleProcessRequest(request.id, 'approved')} 
+                          className="btn-approve" 
+                          title="Approuver"
+                        >
                           <CheckCircleIcon className="h-5 w-5" />
                         </button>
-                        <button className="btn-reject" title="Refuser">
+                        <button 
+                          onClick={() => handleProcessRequest(request.id, 'rejected')} 
+                          className="btn-reject" 
+                          title="Refuser"
+                        >
                           <XCircleIcon className="h-5 w-5" />
                         </button>
-                        <button className="btn-view" title="Voir détails">
-                          <EyeIcon className="h-5 w-5" />
-                        </button>
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Recent Properties */}
-              <div className="content-section">
-                <div className="section-header">
-                  <h2>Biens récents</h2>
-                  <button className="view-all" onClick={() => setActiveTab('properties')}>
-                    Voir tout
-                  </button>
-                </div>
-                <div className="properties-list">
-                  {properties.slice(0, 3).map(property => (
-                    <div key={property.id} className="property-item">
-                      <div className="property-info">
-                        <h4>{property.title}</h4>
-                        <p>{property.city} • {property.price}€/mois</p>
-                      </div>
-                      {getStatusBadge(property.status)}
-                      <div className="property-actions">
-                        <button className="btn-edit" title="Modifier">
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button className="btn-delete" title="Supprimer">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                  {requests.filter(r => r.status === 'pending').length === 0 && (
+                    <div className="empty-state">
+                      <p>Aucune demande en attente</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -270,111 +435,216 @@ const AgentDashboard = () => {
                 <div className="section-header">
                   <h2>Contrats récents</h2>
                   <button className="view-all" onClick={() => setActiveTab('contracts')}>
-                    Voir tout
+                    Voir tout ({stats.activeContracts})
                   </button>
                 </div>
                 <div className="contracts-list">
-                  {recentContracts.map(contract => (
-                    <div key={contract.id} className="contract-item">
+                  {contracts.slice(0, 3).map(contract => (
+                    <Link to={`/contracts/${contract.id}`} key={contract.id} className="contract-item">
                       <div className="contract-info">
-                        <h4>{contract.tenant}</h4>
-                        <p>{contract.property}</p>
-                        <span className="contract-date">
-                          Signé le {new Date(contract.date).toLocaleDateString('fr-FR')}
-                        </span>
+                        <h4>{contract.property?.title}</h4>
+                        <p>Locataire: {contract.tenant?.name}</p>
+                        <p className="contract-period">
+                          <CalendarIcon className="h-3 w-3" />
+                          {new Date(contract.start_date).toLocaleDateString('fr-FR')} - {new Date(contract.end_date).toLocaleDateString('fr-FR')}
+                        </p>
                       </div>
                       <div className="contract-amount">
-                        {contract.amount}€
+                        {contract.monthly_rent}€
+                        <span>/mois</span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
+                  {contracts.length === 0 && (
+                    <div className="empty-state">
+                      <p>Aucun contrat pour le moment</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
           )}
 
+          {/* Properties Tab */}
           {activeTab === 'properties' && (
-            <div className="content-section">
+            <div className="content-section full-width">
               <div className="section-header">
-                <h2>Gestion des biens</h2>
+                <h2>Mes biens</h2>
                 <Link to="/properties/new" className="btn-add">
                   <PlusIcon className="h-5 w-5" />
                   Ajouter un bien
                 </Link>
               </div>
               <div className="properties-table">
-                <table>
+                <table className="data-table">
                   <thead>
                     <tr>
                       <th>Titre</th>
                       <th>Ville</th>
                       <th>Prix</th>
+                      <th>Surface</th>
                       <th>Statut</th>
-                      <th>Demandes</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {properties.map(property => (
                       <tr key={property.id}>
-                        <td>{property.title}</td>
+                        <td><strong>{property.title}</strong></td>
                         <td>{property.city}</td>
                         <td>{property.price}€</td>
+                        <td>{property.surface} m²</td>
                         <td>{getStatusBadge(property.status)}</td>
-                        <td>
-                          {property.requests > 0 && (
-                            <span className="request-count">{property.requests}</span>
-                          )}
-                        </td>
-                        <td>
-                          <button className="btn-icon" title="Voir">
+                        <td className="actions-cell">
+                          <Link to={`/properties/${property.id}`} className="action-btn" title="Voir">
                             <EyeIcon className="h-4 w-4" />
-                          </button>
-                          <button className="btn-icon" title="Modifier">
+                          </Link>
+                          <Link to={`/properties/edit/${property.id}`} className="action-btn" title="Modifier">
                             <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button className="btn-icon delete" title="Supprimer">
+                          </Link>
+                          <button onClick={() => handleDeleteProperty(property.id)} className="action-btn delete" title="Supprimer">
                             <TrashIcon className="h-4 w-4" />
                           </button>
                         </td>
                       </tr>
                     ))}
+                    {properties.length === 0 && (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>
+                          <p>Aucun bien ajouté pour le moment</p>
+                          <Link to="/properties/new" style={{ marginTop: '10px', display: 'inline-block' }}>
+                            Ajouter votre premier bien
+                          </Link>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
           )}
 
+          {/* Requests Tab */}
           {activeTab === 'requests' && (
-            <div className="content-section">
+            <div className="content-section full-width">
               <div className="section-header">
                 <h2>Demandes de location</h2>
               </div>
               <div className="requests-table">
-                <table>
+                <table className="data-table">
                   <thead>
                     <tr>
                       <th>Client</th>
                       <th>Bien</th>
-                      <th>Date</th>
+                      <th>Période</th>
+                      <th>Date demande</th>
                       <th>Statut</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingRequests.map(request => (
+                    {requests.map(request => (
                       <tr key={request.id}>
-                        <td>{request.client}</td>
-                        <td>{request.property}</td>
-                        <td>{new Date(request.date).toLocaleDateString('fr-FR')}</td>
-                        <td>{getStatusBadge(request.status)}</td>
                         <td>
-                          <button className="btn-approve-small">Approuver</button>
-                          <button className="btn-reject-small">Refuser</button>
-                          <button className="btn-view-small">Voir</button>
+                          <strong>{request.user?.name || 'Client'}</strong>
+                          <p className="text-sm text-gray-500">{request.user?.email}</p>
+                        </td>
+                        <td>{request.property?.title || 'Bien'}</td>
+                        <td>
+                          <span className="date-range">
+                            {new Date(request.start_date).toLocaleDateString('fr-FR')} - {new Date(request.end_date).toLocaleDateString('fr-FR')}
+                          </span>
+                        </td>
+                        <td>{new Date(request.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>{getStatusBadge(request.status)}</td>
+                        <td className="actions-cell">
+                          {request.status === 'pending' && (
+                            <>
+                              <button 
+                                onClick={() => handleProcessRequest(request.id, 'approved')} 
+                                className="btn-approve-small"
+                              >
+                                Approuver
+                              </button>
+                              <button 
+                                onClick={() => handleProcessRequest(request.id, 'rejected')} 
+                                className="btn-reject-small"
+                              >
+                                Refuser
+                              </button>
+                            </>
+                          )}
+                          {request.status === 'approved' && (
+                            <Link to={`/contracts/new?request=${request.id}`} className="btn-create-contract">
+                              Créer contrat
+                            </Link>
+                          )}
                         </td>
                       </tr>
                     ))}
+                    {requests.length === 0 && (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>
+                          Aucune demande reçue
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Contracts Tab */}
+          {activeTab === 'contracts' && (
+            <div className="content-section full-width">
+              <div className="section-header">
+                <h2>Contrats de location</h2>
+              </div>
+              <div className="contracts-table">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>N° Contrat</th>
+                      <th>Bien</th>
+                      <th>Locataire</th>
+                      <th>Période</th>
+                      <th>Loyer</th>
+                      <th>Statut</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contracts.map(contract => (
+                      <tr key={contract.id}>
+                        <td>
+                          <Link to={`/contracts/${contract.id}`} className="contract-link">
+                            {contract.contract_number}
+                          </Link>
+                        </td>
+                        <td>{contract.property?.title || 'Bien'}</td>
+                        <td>{contract.tenant?.name || 'Locataire'}</td>
+                        <td>
+                          <span className="date-range">
+                            {new Date(contract.start_date).toLocaleDateString('fr-FR')} - {new Date(contract.end_date).toLocaleDateString('fr-FR')}
+                          </span>
+                        </td>
+                        <td>{contract.monthly_rent}€ / mois</td>
+                        <td>{getStatusBadge(contract.status)}</td>
+                        <td className="actions-cell">
+                          <Link to={`/contracts/${contract.id}`} className="action-btn" title="Voir">
+                            <EyeIcon className="h-4 w-4" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                    {contracts.length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>
+                          Aucun contrat pour le moment
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -387,7 +657,7 @@ const AgentDashboard = () => {
         .agent-dashboard {
           display: flex;
           min-height: calc(100vh - 70px);
-          background: #f3f4f6;
+          background: #f8fafc;
         }
 
         .dashboard-sidebar {
@@ -617,12 +887,21 @@ const AgentDashboard = () => {
           font-size: 14px;
         }
 
+        .tab-content {
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+        }
+
         .content-section {
           background: white;
           border-radius: 10px;
           padding: 20px;
-          margin-bottom: 30px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-section.full-width {
+          width: 100%;
         }
 
         .section-header {
@@ -657,16 +936,16 @@ const AgentDashboard = () => {
           font-size: 14px;
         }
 
-        .requests-list,
         .properties-list,
+        .requests-list,
         .contracts-list {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
 
-        .request-item,
         .property-item,
+        .request-item,
         .contract-item {
           display: flex;
           align-items: center;
@@ -674,54 +953,74 @@ const AgentDashboard = () => {
           padding: 15px;
           background: #f9fafb;
           border-radius: 5px;
+          text-decoration: none;
+          transition: background-color 0.3s;
         }
 
-        .request-info h4,
+        .contract-item {
+          cursor: pointer;
+        }
+
+        .contract-item:hover {
+          background: #f3f4f6;
+        }
+
         .property-info h4,
+        .request-info h4,
         .contract-info h4 {
           color: #1f2937;
           margin-bottom: 5px;
         }
 
-        .request-info p,
-        .property-info p,
-        .contract-info p {
+        .property-location {
+          display: flex;
+          align-items: center;
+          gap: 5px;
           color: #6b7280;
           font-size: 14px;
         }
 
         .request-date,
-        .contract-date {
+        .contract-period {
+          display: flex;
+          align-items: center;
+          gap: 5px;
           color: #9ca3af;
           font-size: 12px;
+          margin-top: 5px;
         }
 
-        .request-actions,
-        .property-actions {
+        .contract-amount {
+          font-size: 18px;
+          font-weight: 600;
+          color: #2563eb;
+        }
+
+        .contract-amount span {
+          font-size: 12px;
+          font-weight: normal;
+          color: #6b7280;
+        }
+
+        .property-actions,
+        .request-actions {
           display: flex;
-          gap: 5px;
+          gap: 10px;
         }
 
-        .btn-approve,
-        .btn-reject,
         .btn-view,
         .btn-edit,
-        .btn-delete {
+        .btn-delete,
+        .btn-approve,
+        .btn-reject {
           padding: 8px;
           border: none;
           border-radius: 5px;
           cursor: pointer;
           transition: opacity 0.3s;
-        }
-
-        .btn-approve {
-          background: #dcfce7;
-          color: #059669;
-        }
-
-        .btn-reject {
-          background: #fee2e2;
-          color: #dc2626;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .btn-view {
@@ -739,15 +1038,27 @@ const AgentDashboard = () => {
           color: #dc2626;
         }
 
+        .btn-approve {
+          background: #dcfce7;
+          color: #059669;
+        }
+
+        .btn-reject {
+          background: #fee2e2;
+          color: #dc2626;
+        }
+
         .btn-approve-small,
         .btn-reject-small,
-        .btn-view-small {
+        .btn-create-contract {
           padding: 5px 10px;
           border: none;
           border-radius: 5px;
           cursor: pointer;
           font-size: 12px;
           margin-right: 5px;
+          text-decoration: none;
+          display: inline-block;
         }
 
         .btn-approve-small {
@@ -760,60 +1071,98 @@ const AgentDashboard = () => {
           color: #dc2626;
         }
 
-        .btn-view-small {
-          background: #e0f2fe;
-          color: #0284c7;
+        .btn-create-contract {
+          background: #2563eb;
+          color: white;
         }
 
-        .contract-amount {
-          font-size: 18px;
-          font-weight: 600;
-          color: #2563eb;
+        .empty-state {
+          text-align: center;
+          padding: 40px;
+          color: #6b7280;
         }
 
-        table {
+        .btn-add-first {
+          display: inline-block;
+          margin-top: 15px;
+          padding: 10px 20px;
+          background: #2563eb;
+          color: white;
+          text-decoration: none;
+          border-radius: 5px;
+        }
+
+        .data-table {
           width: 100%;
           border-collapse: collapse;
         }
 
-        th {
+        .data-table th {
           text-align: left;
           padding: 12px;
           background: #f9fafb;
           color: #6b7280;
           font-weight: 500;
           font-size: 14px;
+          border-bottom: 1px solid #e5e7eb;
         }
 
-        td {
+        .data-table td {
           padding: 12px;
           border-bottom: 1px solid #e5e7eb;
           color: #1f2937;
         }
 
-        .btn-icon {
+        .data-table tr:hover {
+          background: #f9fafb;
+        }
+
+        .actions-cell {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+        }
+
+        .action-btn {
           padding: 5px;
           border: none;
           background: none;
           cursor: pointer;
           color: #6b7280;
-          margin-right: 5px;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
         }
 
-        .btn-icon:hover {
+        .action-btn:hover {
           color: #2563eb;
         }
 
-        .btn-icon.delete:hover {
+        .action-btn.delete:hover {
           color: #dc2626;
         }
 
-        .request-count {
-          background: #2563eb;
-          color: white;
-          padding: 2px 8px;
-          border-radius: 20px;
+        .contract-link {
+          color: #2563eb;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .contract-link:hover {
+          text-decoration: underline;
+        }
+
+        .date-range {
           font-size: 12px;
+          white-space: nowrap;
+        }
+
+        .text-sm {
+          font-size: 12px;
+        }
+
+        .text-gray-500 {
+          color: #6b7280;
         }
 
         @media (max-width: 1024px) {
@@ -829,6 +1178,33 @@ const AgentDashboard = () => {
 
           .dashboard-main {
             margin-left: 0;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .property-item,
+          .request-item,
+          .contract-item {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+          }
+
+          .property-actions,
+          .request-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+
+          .data-table {
+            display: block;
+            overflow-x: auto;
+          }
+
+          .actions-cell {
+            flex-wrap: wrap;
           }
         }
       `}</style>

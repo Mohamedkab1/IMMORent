@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Models\Category;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class PropertyController extends Controller
 {
@@ -37,26 +37,8 @@ class PropertyController extends Controller
                 $query->where('rooms', '>=', $request->rooms);
             }
 
-            if ($request->has('surface_min') && $request->surface_min > 0) {
-                $query->where('surface', '>=', $request->surface_min);
-            }
+            $properties = $query->latest()->paginate($request->get('per_page', 12));
 
-            if ($request->has('surface_max') && $request->surface_max > 0) {
-                $query->where('surface', '<=', $request->surface_max);
-            }
-
-            if ($request->has('category_id') && !empty($request->category_id)) {
-                $query->where('category_id', $request->category_id);
-            }
-
-            // Tri
-            $orderBy = $request->get('order_by', 'created_at');
-            $orderDir = $request->get('order_dir', 'desc');
-            $query->orderBy($orderBy, $orderDir);
-
-            $properties = $query->paginate($request->get('per_page', 12));
-
-            // Transformer les données
             $properties->getCollection()->transform(function ($property) {
                 return $this->formatProperty($property);
             });
@@ -66,6 +48,7 @@ class PropertyController extends Controller
                 'data' => $properties
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur index properties: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du chargement des biens',
@@ -94,6 +77,7 @@ class PropertyController extends Controller
                 'data' => $this->formatProperty($property, true)
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur show property: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du chargement du bien',
@@ -108,6 +92,11 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         try {
+            Log::info('Tentative de création de bien', [
+                'user_id' => $request->user()?->id,
+                'data' => $request->except('images')
+            ]);
+
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -118,11 +107,10 @@ class PropertyController extends Controller
                 'surface' => 'required|numeric|min:0',
                 'type' => 'required|in:apartment,house,commercial,land,studio',
                 'category_id' => 'required|exists:categories,id',
-                'owner_id' => 'nullable|exists:users,id',
                 'rooms' => 'nullable|integer|min:0',
                 'bedrooms' => 'nullable|integer|min:0',
                 'bathrooms' => 'nullable|integer|min:0',
-                'features' => 'nullable|array',
+                'features' => 'nullable|string',
                 'images' => 'nullable|array',
                 'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
             ]);
@@ -138,26 +126,30 @@ class PropertyController extends Controller
             $data = $request->except('images');
             
             // Gestion des images
+            $images = [];
             if ($request->hasFile('images')) {
-                $images = [];
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('properties', 'public');
                     $images[] = $path;
                 }
-                $data['images'] = $images;
-            } else {
-                $data['images'] = [];
             }
+            $data['images'] = $images;
 
             // Traiter les features (équipements)
-            if (isset($data['features']) && is_array($data['features'])) {
+            if (isset($data['features']) && is_string($data['features'])) {
+                // Déjà en JSON
+            } elseif (isset($data['features']) && is_array($data['features'])) {
                 $data['features'] = json_encode($data['features']);
+            } else {
+                $data['features'] = json_encode([]);
             }
 
             $data['user_id'] = $request->user()->id; // Agent connecté
             $data['status'] = 'available';
 
             $property = Property::create($data);
+
+            Log::info('Bien créé avec succès', ['property_id' => $property->id]);
 
             return response()->json([
                 'success' => true,
@@ -166,6 +158,7 @@ class PropertyController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            Log::error('Erreur store property: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la création du bien',
@@ -208,11 +201,10 @@ class PropertyController extends Controller
                 'status' => 'sometimes|in:available,rented,reserved,unavailable',
                 'type' => 'sometimes|in:apartment,house,commercial,land,studio',
                 'category_id' => 'sometimes|exists:categories,id',
-                'owner_id' => 'nullable|exists:users,id',
                 'rooms' => 'nullable|integer|min:0',
                 'bedrooms' => 'nullable|integer|min:0',
                 'bathrooms' => 'nullable|integer|min:0',
-                'features' => 'nullable|array',
+                'features' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -225,7 +217,7 @@ class PropertyController extends Controller
 
             $data = $request->all();
             
-            // Traiter les features (équipements)
+            // Traiter les features
             if (isset($data['features']) && is_array($data['features'])) {
                 $data['features'] = json_encode($data['features']);
             }
@@ -239,6 +231,7 @@ class PropertyController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur update property: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du bien',
@@ -285,6 +278,7 @@ class PropertyController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur destroy property: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression du bien',
@@ -317,7 +311,7 @@ class PropertyController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'images' => 'required|array',
-                'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
             if ($validator->fails()) {
@@ -349,58 +343,10 @@ class PropertyController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur uploadImages: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'upload des images',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Supprimer une image d'un bien
-     */
-    public function deleteImage(Request $request, $id, $index)
-    {
-        try {
-            $property = Property::find($id);
-
-            if (!$property) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bien non trouvé'
-                ], 404);
-            }
-
-            if ($property->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Non autorisé'
-                ], 403);
-            }
-
-            $images = $property->images ?? [];
-            if (is_string($images)) {
-                $images = json_decode($images, true) ?? [];
-            }
-
-            if (isset($images[$index])) {
-                Storage::disk('public')->delete($images[$index]);
-                unset($images[$index]);
-                $property->images = array_values($images); // Réindexer le tableau
-                $property->save();
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Image supprimée avec succès',
-                'data' => $this->formatProperty($property)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la suppression de l\'image',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -427,96 +373,10 @@ class PropertyController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur myProperties: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du chargement des biens',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Liste de tous les biens (Admin uniquement)
-     */
-    public function adminIndex(Request $request)
-    {
-        try {
-            $query = Property::with(['user', 'category', 'owner']);
-
-            // Filtres
-            if ($request->has('status') && !empty($request->status)) {
-                $query->where('status', $request->status);
-            }
-
-            if ($request->has('user_id') && !empty($request->user_id)) {
-                $query->where('user_id', $request->user_id);
-            }
-
-            $properties = $query->orderBy('created_at', 'desc')->paginate(20);
-
-            $properties->getCollection()->transform(function ($property) {
-                return $this->formatProperty($property);
-            });
-
-            return response()->json([
-                'success' => true,
-                'data' => $properties
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du chargement des biens',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Vérifier/Approuver un bien (Admin)
-     */
-    public function verify(Request $request, $id)
-    {
-        try {
-            $property = Property::find($id);
-
-            if (!$property) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bien non trouvé'
-                ], 404);
-            }
-
-            $validator = Validator::make($request->all(), [
-                'status' => 'required|in:available,unavailable',
-                'verified' => 'required|boolean',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $property->update([
-                'status' => $request->status,
-                'verified' => $request->verified,
-                'verified_at' => now(),
-                'verified_by' => $request->user()->id
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Bien vérifié avec succès',
-                'data' => $this->formatProperty($property)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la vérification du bien',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -566,45 +426,30 @@ class PropertyController extends Controller
             'features' => $features,
             'images' => $images,
             'category_id' => $property->category_id,
-            'category' => $property->category ? [
-                'id' => $property->category->id,
-                'name' => $property->category->name,
-                'slug' => $property->category->slug,
-            ] : null,
             'user_id' => $property->user_id,
-            'user' => $property->user ? [
+            'owner_id' => $property->owner_id,
+            'created_at' => $property->created_at,
+            'updated_at' => $property->updated_at,
+        ];
+
+        if ($detailed) {
+            $formatted['full_address'] = $property->address . ', ' . $property->city . ' ' . $property->postal_code;
+            $formatted['user'] = $property->user ? [
                 'id' => $property->user->id,
                 'name' => $property->user->name,
                 'email' => $property->user->email,
                 'phone' => $property->user->phone,
-            ] : null,
-            'owner_id' => $property->owner_id,
-            'owner' => $property->owner ? [
-                'id' => $property->owner->id,
-                'name' => $property->owner->name,
-                'email' => $property->owner->email,
-                'phone' => $property->owner->phone,
-            ] : null,
-            'created_at' => $property->created_at,
-            'updated_at' => $property->updated_at,
-            'full_address' => $property->address . ', ' . $property->city . ' ' . $property->postal_code,
-        ];
-
-        // Ajouter des détails supplémentaires pour la vue détaillée
-        if ($detailed) {
-            $formatted['latitude'] = $property->latitude;
-            $formatted['longitude'] = $property->longitude;
-            $formatted['deleted_at'] = $property->deleted_at;
-            $formatted['requests_count'] = $property->rentalRequests()->count();
-            $formatted['contracts_count'] = $property->contracts()->count();
+            ] : null;
+            $formatted['category'] = $property->category ? [
+                'id' => $property->category->id,
+                'name' => $property->category->name,
+                'slug' => $property->category->slug,
+            ] : null;
         }
 
         return $formatted;
     }
 
-    /**
-     * Obtenir le libellé du type de bien
-     */
     private function getTypeLabel($type)
     {
         $labels = [
@@ -617,9 +462,6 @@ class PropertyController extends Controller
         return $labels[$type] ?? $type;
     }
 
-    /**
-     * Obtenir le libellé du statut
-     */
     private function getStatusLabel($status)
     {
         $labels = [

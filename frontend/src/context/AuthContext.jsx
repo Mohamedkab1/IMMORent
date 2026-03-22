@@ -18,12 +18,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const storedUser = authService.getStoredUser();
-      if (storedUser && authService.isAuthenticated()) {
+      const token = localStorage.getItem('token');
+      
+      console.log('Init Auth - Token présent:', !!token);
+      console.log('Stored user:', storedUser);
+      
+      if (storedUser && token) {
         setUser(storedUser);
         try {
           // Vérifier que le token est toujours valide
           const response = await authService.getCurrentUser();
+          console.log('Current user response:', response);
           setUser(response.data.user);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
         } catch (error) {
           console.error('Session expirée', error);
           logout();
@@ -37,13 +44,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await authService.login(email, password);
-    setUser(response.data.user);
+    console.log('Login response:', response);
+    if (response.success && response.data.user) {
+      setUser(response.data.user);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
     return response;
   };
 
   const register = async (userData) => {
     const response = await authService.register(userData);
-    setUser(response.data.user);
+    if (response.success && response.data.user) {
+      setUser(response.data.user);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
     return response;
   };
 
@@ -52,6 +66,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Créer les méthodes de vérification
+  const isAdmin = user?.role?.slug === 'admin';
+  const isAgent = user?.role?.slug === 'agent';
+  const isClient = user?.role?.slug === 'client';
+
   const value = {
     user,
     loading,
@@ -59,9 +78,9 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAuthenticated: !!user,
-    isAdmin: user?.role?.slug === 'admin',
-    isAgent: user?.role?.slug === 'agent',
-    isClient: user?.role?.slug === 'client',
+    isAdmin,
+    isAgent,
+    isClient,
   };
 
   return (

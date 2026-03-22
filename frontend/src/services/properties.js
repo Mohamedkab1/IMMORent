@@ -23,16 +23,11 @@ export const propertyService = {
 
   async create(data) {
     try {
-      const formData = new FormData();
-      Object.keys(data).forEach(key => {
-        if (key === 'images' && data[key]) {
-          data[key].forEach(image => formData.append('images[]', image));
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
-      const response = await api.post('/properties', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      // Ne pas mettre de Content-Type, laisser axios le gérer automatiquement
+      const response = await api.post('/properties', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {
@@ -43,10 +38,14 @@ export const propertyService = {
 
   async update(id, data) {
     try {
-      const response = await api.put(`/properties/${id}`, data);
+      const response = await api.post(`/properties/${id}?_method=PUT`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
-      console.error(`Erreur propertyService.update(${id}):`, error);
+      console.error('Erreur propertyService.update:', error);
       throw error;
     }
   },
@@ -56,7 +55,7 @@ export const propertyService = {
       const response = await api.delete(`/properties/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Erreur propertyService.delete(${id}):`, error);
+      console.error('Erreur propertyService.delete:', error);
       throw error;
     }
   },
@@ -66,11 +65,13 @@ export const propertyService = {
       const formData = new FormData();
       images.forEach(image => formData.append('images[]', image));
       const response = await api.post(`/properties/${id}/images`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {
-      console.error(`Erreur propertyService.uploadImages(${id}):`, error);
+      console.error('Erreur propertyService.uploadImages:', error);
       throw error;
     }
   },
@@ -83,5 +84,5 @@ export const propertyService = {
       console.error('Erreur propertyService.getMyProperties:', error);
       throw error;
     }
-  },
+  }
 };

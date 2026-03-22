@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\TestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,14 +49,19 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ========== TABLEAUX DE BORD ==========
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-    Route::get('/dashboard/admin', [DashboardController::class, 'adminStats'])->middleware('admin');
     
     // ========== UTILISATEURS ==========
-    Route::get('/users', [UserController::class, 'index'])->middleware('admin');
+    Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->middleware('admin');
-    Route::put('/users/{id}/status', [UserController::class, 'toggleStatus'])->middleware('admin');
+    
+    // Routes admin
+    Route::middleware(['admin'])->group(function () {
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::put('/users/{id}/status', [UserController::class, 'toggleStatus']);
+        Route::get('/admin/stats', [DashboardController::class, 'adminStats']);
+        Route::get('/admin/logs', [DashboardController::class, 'logs']);
+    });
     
     // ========== PROPRIÉTÉS (Gestion) ==========
     // Routes pour les agents et admin
@@ -81,17 +87,22 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     // ========== CONTRATS ==========
-    // Routes pour les clients
+    // Routes publiques pour tous les utilisateurs authentifiés
+    Route::get('/contracts', [ContractController::class, 'index']);
+    Route::get('/contracts/{id}', [ContractController::class, 'show']);
     Route::get('/my/contracts', [ContractController::class, 'myContracts']);
     
     // Routes pour les agents et admin
     Route::middleware(['agent'])->group(function () {
-        Route::get('/contracts', [ContractController::class, 'index']);
         Route::post('/contracts', [ContractController::class, 'store']);
-        Route::get('/contracts/{id}', [ContractController::class, 'show']);
-        Route::put('/contracts/{id}', [ContractController::class, 'update']);
         Route::put('/contracts/{id}/status', [ContractController::class, 'updateStatus']);
-        Route::delete('/contracts/{id}', [ContractController::class, 'destroy'])->middleware('admin');
+        Route::get('/agent/contracts', [ContractController::class, 'agentContracts']);
+    });
+    
+    // Routes admin uniquement
+    Route::middleware(['admin'])->group(function () {
+        Route::delete('/contracts/{id}', [ContractController::class, 'destroy']);
+        Route::get('/admin/contracts', [ContractController::class, 'adminIndex']);
     });
     
     // ========== PAIEMENTS ==========
@@ -108,44 +119,26 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ===========================================
-// ROUTES ADMIN (Accès restreint aux administrateurs)
+// ROUTES DE TEST (Pour débogage)
 // ===========================================
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    // Statistiques avancées
-    Route::get('/stats', [DashboardController::class, 'adminStats']);
-    
-    // Gestion complète des utilisateurs
-    Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    Route::put('/users/{id}/status', [UserController::class, 'toggleStatus']);
-    
-    // Gestion des rôles
-    Route::get('/roles', [UserController::class, 'roles']);
-    Route::post('/roles', [UserController::class, 'createRole']);
-    Route::put('/roles/{id}', [UserController::class, 'updateRole']);
-    Route::delete('/roles/{id}', [UserController::class, 'deleteRole']);
-    
-    // Supervision des biens
-    Route::get('/all-properties', [PropertyController::class, 'adminIndex']);
-    Route::put('/properties/{id}/verify', [PropertyController::class, 'verify']);
-    
-    // Supervision des contrats
-    Route::get('/all-contracts', [ContractController::class, 'adminIndex']);
-    
-    // Logs et activités
-    Route::get('/logs', [DashboardController::class, 'logs']);
-});
-
-// ===========================================
-// ROUTES DE TEST (À supprimer en production)
-// ===========================================
-Route::get('/test', function () {
+Route::middleware('auth:sanctum')->get('/test', function (Illuminate\Http\Request $request) {
     return response()->json([
         'success' => true,
         'message' => 'API is working!',
+        'user' => [
+            'id' => $request->user()->id,
+            'name' => $request->user()->name,
+            'email' => $request->user()->email,
+            'role' => $request->user()->role->slug ?? 'unknown'
+        ]
+    ]);
+});
+
+// Route de test public
+Route::get('/health', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'API is running',
         'timestamp' => now()->toDateTimeString()
     ]);
 });

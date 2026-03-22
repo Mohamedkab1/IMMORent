@@ -23,10 +23,12 @@ const NewRequest = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    property_id: '',
     start_date: '',
     end_date: '',
     message: ''
   });
+  const [errors, setErrors] = useState({});
 
   // Récupérer l'ID du bien depuis l'URL
   const queryParams = new URLSearchParams(location.search);
@@ -39,24 +41,42 @@ const NewRequest = () => {
       return;
     }
 
-    fetchProperty();
+    // S'assurer que propertyId est un nombre
+    const id = parseInt(propertyId);
+    if (isNaN(id)) {
+      toast.error('ID de bien invalide');
+      navigate('/properties');
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, property_id: id }));
+    fetchProperty(id);
   }, [propertyId]);
 
-  const fetchProperty = async () => {
+  const fetchProperty = async (id) => {
     try {
-      const response = await propertyService.getById(propertyId);
+      const response = await propertyService.getById(id);
       if (response.success && response.data) {
         setProperty(response.data);
+        
         // Définir les dates par défaut
         const today = new Date();
         const nextMonth = new Date(today);
         nextMonth.setMonth(today.getMonth() + 1);
         
-        setFormData({
-          ...formData,
-          start_date: today.toISOString().split('T')[0],
-          end_date: nextMonth.toISOString().split('T')[0]
-        });
+        // Formater les dates au format YYYY-MM-DD
+        const formatDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        
+        setFormData(prev => ({
+          ...prev,
+          start_date: formatDate(today),
+          end_date: formatDate(nextMonth)
+        }));
       } else {
         toast.error('Bien non trouvé');
         navigate('/properties');
@@ -71,15 +91,46 @@ const NewRequest = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Effacer l'erreur du champ quand l'utilisateur modifie
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
+
+const validateForm = () => {
+    const newErrors = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const startDate = new Date(formData.start_date);
+    const endDate = new Date(formData.end_date);
+    
+    if (!formData.start_date) {
+        newErrors.start_date = 'La date de début est requise';
+    } else if (startDate < today) {
+        newErrors.start_date = 'La date de début ne peut pas être dans le passé';
+    }
+    // Note: Nous autorisons aujourd'hui (startDate >= today)
+    
+    if (!formData.end_date) {
+        newErrors.end_date = 'La date de fin est requise';
+    } else if (endDate <= startDate) {
+        newErrors.end_date = 'La date de fin doit être postérieure à la date de début';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!validateForm()) {
+      return;
+    }
+
     if (!user) {
       toast.info('Veuillez vous connecter pour faire une demande');
       navigate('/login');
@@ -91,32 +142,21 @@ const NewRequest = () => {
       return;
     }
 
-    // Validation des dates
-    const startDate = new Date(formData.start_date);
-    const endDate = new Date(formData.end_date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (startDate < today) {
-      toast.error('La date de début ne peut pas être dans le passé');
-      return;
-    }
-
-    if (endDate <= startDate) {
-      toast.error('La date de fin doit être postérieure à la date de début');
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      const response = await requestService.create({
-        property_id: parseInt(propertyId),
+      // Préparer les données au format attendu par l'API
+      const requestData = {
+        property_id: parseInt(formData.property_id),
         start_date: formData.start_date,
         end_date: formData.end_date,
-        message: formData.message
-      });
-
+        message: formData.message || ''
+      };
+      
+      console.log('Données envoyées:', requestData);
+      
+      const response = await requestService.create(requestData);
+      
       if (response.success) {
         toast.success('Demande envoyée avec succès !');
         navigate('/dashboard/client');
@@ -125,7 +165,26 @@ const NewRequest = () => {
       }
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+      if (error.response?.status === 422) {
+        const validationErrors = error.response.data.errors;
+        console.log('Erreurs de validation:', validationErrors);
+        
+        // Afficher les erreurs
+        if (validationErrors.start_date) {
+          toast.error(validationErrors.start_date[0]);
+        }
+        if (validationErrors.end_date) {
+          toast.error(validationErrors.end_date[0]);
+        }
+        if (validationErrors.property_id) {
+          toast.error(validationErrors.property_id[0]);
+        }
+        
+        // Stocker les erreurs pour les afficher dans le formulaire
+        setErrors(validationErrors);
+      } else {
+        toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -169,7 +228,6 @@ const NewRequest = () => {
   return (
     <div className="request-page">
       <div className="request-container">
-        {/* En-tête */}
         <div className="request-header">
           <button onClick={() => navigate(-1)} className="back-button">
             <ArrowLeftIcon className="h-5 w-5" />
@@ -233,8 +291,12 @@ const NewRequest = () => {
                   value={formData.start_date}
                   onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
+                  className={errors.start_date ? 'error' : ''}
                   required
                 />
+                {errors.start_date && (
+                  <span className="error-message">{errors.start_date}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -249,8 +311,12 @@ const NewRequest = () => {
                   value={formData.end_date}
                   onChange={handleChange}
                   min={formData.start_date}
+                  className={errors.end_date ? 'error' : ''}
                   required
                 />
+                {errors.end_date && (
+                  <span className="error-message">{errors.end_date}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -441,8 +507,16 @@ const NewRequest = () => {
           box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
-        .form-group input[type="date"] {
-          font-family: inherit;
+        .form-group input.error,
+        .form-group textarea.error {
+          border-color: #dc2626;
+        }
+
+        .error-message {
+          display: block;
+          color: #dc2626;
+          font-size: 12px;
+          margin-top: 5px;
         }
 
         .form-info {

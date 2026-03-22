@@ -2,9 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './App.css'; // Import du CSS global
+import './App.css';
 
+// Context
 import { AuthProvider } from './context/AuthContext';
+
+// Components
 import PrivateRoute from './components/auth/PrivateRoute';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
@@ -22,13 +25,24 @@ import Privacy from './pages/Privacy';
 import About from './pages/About';
 import NotFound from './pages/NotFound';
 
-// Pages protégées
+// Pages protégées (biens)
 import AddProperty from './pages/AddProperty';
+// import EditProperty from './pages/EditProperty'; // Décommentez quand le fichier sera créé
+
+// Pages protégées (demandes)
 import NewRequest from './pages/NewRequest';
+
+// Pages protégées (contrats)
+import CreateContract from './pages/CreateContract';
+import ContractDetail from './pages/ContractDetail';
+
+// Pages protégées (dashboard)
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentDashboard from './pages/AgentDashboard';
 import ClientDashboard from './pages/ClientDashboard';
+
+// Pages protégées (profil)
 import Profile from './pages/Profile';
 
 function App() {
@@ -39,7 +53,7 @@ function App() {
           <Header />
           <main className="main-content">
             <Routes>
-              {/* Routes publiques */}
+              {/* ==================== ROUTES PUBLIQUES ==================== */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -51,52 +65,102 @@ function App() {
               <Route path="/confidentialite" element={<Privacy />} />
               <Route path="/about" element={<About />} />
 
-              {/* Route pour ajouter une propriété (protégée - agent et admin uniquement) */}
-              <Route path="/properties/new" element={
-                <PrivateRoute requiredRole="agent">
-                  <AddProperty />
-                </PrivateRoute>
-              } />
+              {/* ==================== ROUTES PROTÉGÉES - BIENS ==================== */}
+              <Route 
+                path="/properties/new" 
+                element={
+                  <PrivateRoute requiredRole="agent">
+                    <AddProperty />
+                  </PrivateRoute>
+                } 
+              />
+              {/* Route d'édition - à décommenter quand EditProperty est prêt
+              <Route 
+                path="/properties/edit/:id" 
+                element={
+                  <PrivateRoute requiredRole="agent">
+                    <EditProperty />
+                  </PrivateRoute>
+                } 
+              />
+              */}
 
-              {/* Route pour les demandes de location (protégée - client uniquement) */}
-              <Route path="/requests/new" element={
-                <PrivateRoute requiredRole="client">
-                  <NewRequest />
-                </PrivateRoute>
-              } />
+              {/* ==================== ROUTES PROTÉGÉES - DEMANDES ==================== */}
+              <Route 
+                path="/requests/new" 
+                element={
+                  <PrivateRoute requiredRole="client">
+                    <NewRequest />
+                  </PrivateRoute>
+                } 
+              />
+
+              {/* ==================== ROUTES PROTÉGÉES - CONTRATS ==================== */}
+              <Route 
+                path="/contracts/new" 
+                element={
+                  <PrivateRoute requiredRole="agent">
+                    <CreateContract />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/contracts/:id" 
+                element={
+                  <PrivateRoute>
+                    <ContractDetail />
+                  </PrivateRoute>
+                } 
+              />
+
+              {/* ==================== ROUTES PROTÉGÉES - DASHBOARD ==================== */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                } 
+              />
               
-              {/* Dashboard routes */}
-              <Route path="/dashboard" element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              } />
+              <Route 
+                path="/dashboard/admin" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </PrivateRoute>
+                } 
+              />
               
-              <Route path="/dashboard/admin" element={
-                <PrivateRoute requiredRole="admin">
-                  <AdminDashboard />
-                </PrivateRoute>
-              } />
+              <Route 
+                path="/dashboard/agent" 
+                element={
+                  <PrivateRoute requiredRole="agent">
+                    <AgentDashboard />
+                  </PrivateRoute>
+                } 
+              />
               
-              <Route path="/dashboard/agent" element={
-                <PrivateRoute requiredRole="agent">
-                  <AgentDashboard />
-                </PrivateRoute>
-              } />
-              
-              <Route path="/dashboard/client" element={
-                <PrivateRoute requiredRole="client">
-                  <ClientDashboard />
-                </PrivateRoute>
-              } />
-              
-              <Route path="/profile" element={
-                <PrivateRoute>
-                  <Profile />
-                </PrivateRoute>
-              } />
-              
-              {/* Route 404 */}
+              <Route 
+                path="/dashboard/client" 
+                element={
+                  <PrivateRoute requiredRole="client">
+                    <ClientDashboard />
+                  </PrivateRoute>
+                } 
+              />
+
+              {/* ==================== ROUTES PROTÉGÉES - PROFIL ==================== */}
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                } 
+              />
+
+              {/* ==================== ROUTE 404 ==================== */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

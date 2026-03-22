@@ -63,7 +63,7 @@ class Contract extends Model
         return $this->hasMany(Payment::class);
     }
 
-    // Accessors
+    // Accesseurs
     public function getTotalMonthlyAttribute(): float
     {
         return $this->monthly_rent + ($this->charges ?? 0);
@@ -77,10 +77,5 @@ class Contract extends Model
             'expired' => 'Expiré',
             default => $this->status,
         };
-    }
-
-    public function getIsActiveAttribute(): bool
-    {
-        return $this->status === 'active';
     }
 }
