@@ -52,10 +52,20 @@ const CreateContract = () => {
       const response = await requestService.getById(requestId);
       if (response.success && response.data) {
         setRequest(response.data);
+        
+        // Formater les dates
+        const formatDate = (date) => {
+          const d = new Date(date);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+        
         setFormData({
           rental_request_id: response.data.id,
-          start_date: response.data.start_date,
-          end_date: response.data.end_date,
+          start_date: formatDate(response.data.start_date),
+          end_date: formatDate(response.data.end_date),
           monthly_rent: response.data.property?.price || '',
           security_deposit: response.data.property?.price || '',
           charges: ''
@@ -97,7 +107,14 @@ const CreateContract = () => {
       
       if (response.success) {
         toast.success('Contrat créé avec succès !');
-        navigate(`/dashboard/agent/contracts`);
+        
+        // Rediriger vers la page de détail du contrat créé
+        if (response.data && response.data.id) {
+          navigate(`/contracts/${response.data.id}`);
+        } else {
+          // Fallback: rediriger vers le dashboard agent
+          navigate('/dashboard/agent?refresh=true');
+        }
       } else {
         toast.error(response.message || 'Erreur lors de la création du contrat');
       }

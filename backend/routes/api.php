@@ -9,7 +9,6 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\TestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +28,9 @@ use App\Http\Controllers\Api\TestController;
 // Authentification
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
+Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+Route::post('/check-email', [AuthController::class, 'checkEmail']);
 
 // Biens immobiliers (consultation publique)
 Route::get('/properties', [PropertyController::class, 'index']);
@@ -38,6 +40,29 @@ Route::get('/properties/{id}', [PropertyController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
+// Route de test public
+Route::get('/health', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'API is running',
+        'timestamp' => now()->toDateTimeString()
+    ]);
+});
+
+// Route de test PDF
+Route::get('/test-pdf', function() {
+    try {
+        $pdf = Barryvdh\DomPDF\Facade\Pdf::loadHTML('<h1>Test PDF</h1><p>Ceci est un test de génération de PDF</p><p>Date: ' . date('d/m/Y H:i:s') . '</p>');
+        return $pdf->download('test.pdf');
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la génération du PDF',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // ===========================================
 // ROUTES PROTÉGÉES (Nécessitent une authentification)
 // ===========================================
@@ -46,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========== AUTHENTIFICATION ==========
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
     
     // ========== TABLEAUX DE BORD ==========
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
@@ -70,6 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/properties/{id}', [PropertyController::class, 'update']);
         Route::delete('/properties/{id}', [PropertyController::class, 'destroy']);
         Route::post('/properties/{id}/images', [PropertyController::class, 'uploadImages']);
+        Route::delete('/properties/{id}/images/{index}', [PropertyController::class, 'deleteImage']);
         Route::get('/my/properties', [PropertyController::class, 'myProperties']);
     });
     
@@ -84,13 +111,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['agent'])->group(function () {
         Route::get('/requests', [RentalRequestController::class, 'index']);
         Route::put('/requests/{id}/process', [RentalRequestController::class, 'process']);
+        Route::get('/properties/{id}/requests', [RentalRequestController::class, 'propertyRequests']);
+        Route::get('/requests/stats', [RentalRequestController::class, 'stats']);
     });
     
     // ========== CONTRATS ==========
-    // Routes publiques pour tous les utilisateurs authentifiés
+    // Routes pour tous les utilisateurs authentifiés
     Route::get('/contracts', [ContractController::class, 'index']);
     Route::get('/contracts/{id}', [ContractController::class, 'show']);
     Route::get('/my/contracts', [ContractController::class, 'myContracts']);
+    
+    // Route de téléchargement PDF
+    Route::get('/contracts/{id}/download', [ContractController::class, 'download']);
     
     // Routes pour les agents et admin
     Route::middleware(['agent'])->group(function () {
@@ -116,6 +148,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/payments/{id}', [PaymentController::class, 'show']);
         Route::put('/payments/{id}/status', [PaymentController::class, 'updateStatus']);
     });
+    
+    // Routes admin uniquement
+    Route::middleware(['admin'])->group(function () {
+        Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
+    });
 });
 
 // ===========================================
@@ -134,11 +171,7 @@ Route::middleware('auth:sanctum')->get('/test', function (Illuminate\Http\Reques
     ]);
 });
 
-// Route de test public
-Route::get('/health', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'API is running',
-        'timestamp' => now()->toDateTimeString()
-    ]);
-});
+// ===========================================
+// ROUTES DE TEST POUR CONTRAT PDF
+// ===========================================
+Route::middleware('auth:sanctum')->get('/test-pdf-contract/{id}', [App\Http\Controllers\Api\TestPdfController::class, 'downloadContract']);

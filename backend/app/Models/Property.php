@@ -11,7 +11,7 @@ class Property extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'price', 'address', 'city', 'postal_code',
+        'title', 'description', 'price', 'transaction_type', 'address', 'city', 'postal_code',
         'surface', 'rooms', 'bedrooms', 'bathrooms', 'status', 'type',
         'features', 'images', 'user_id', 'category_id', 'owner_id',
         'latitude', 'longitude'
@@ -27,30 +27,31 @@ class Property extends Model
     ];
 
     // Relations
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function owner(): BelongsTo
+    public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function category(): BelongsTo
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function rentalRequests(): HasMany
+    public function rentalRequests()
     {
         return $this->hasMany(RentalRequest::class);
     }
 
-    public function contracts(): HasMany
+    public function contracts()
     {
         return $this->hasMany(Contract::class);
     }
+
 
     // Scopes
     public function scopeAvailable($query)
@@ -58,39 +59,44 @@ class Property extends Model
         return $query->where('status', 'available');
     }
 
-    public function scopeInCity($query, string $city)
+    public function scopeForRent($query)
     {
-        return $query->where('city', 'like', "%{$city}%");
+        return $query->where('transaction_type', 'rent');
     }
 
-    public function scopePriceRange($query, float $min, float $max)
+    public function scopeForSale($query)
     {
-        return $query->whereBetween('price', [$min, $max]);
+        return $query->where('transaction_type', 'sale');
     }
 
-    public function scopeOfType($query, string $type)
-    {
-        return $query->where('type', $type);
-    }
-
-    // Accessors
-    public function getFullAddressAttribute(): string
+    // Accesseurs
+    public function getFullAddressAttribute()
     {
         return "{$this->address}, {$this->city} {$this->postal_code}";
     }
 
-    public function getStatusLabelAttribute(): string
+    public function getStatusLabelAttribute()
     {
         return match($this->status) {
             'available' => 'Disponible',
             'rented' => 'Loué',
             'reserved' => 'Réservé',
             'unavailable' => 'Indisponible',
+            'sold' => 'Vendu',
             default => $this->status,
         };
     }
 
-    public function getTypeLabelAttribute(): string
+    public function getTransactionTypeLabelAttribute()
+    {
+        return match($this->transaction_type) {
+            'rent' => 'Location',
+            'sale' => 'Vente',
+            default => $this->transaction_type,
+        };
+    }
+
+    public function getTypeLabelAttribute()
     {
         return match($this->type) {
             'apartment' => 'Appartement',
@@ -102,8 +108,16 @@ class Property extends Model
         };
     }
 
-    public function getMainImageAttribute(): ?string
+    public function getMainImageAttribute()
     {
         return $this->images[0] ?? null;
+    }
+
+    public function getPriceDisplayAttribute()
+    {
+        if ($this->transaction_type === 'rent') {
+            return number_format($this->price, 0, ',', ' ') . ' € / mois';
+        }
+        return number_format($this->price, 0, ',', ' ') . ' €';
     }
 }

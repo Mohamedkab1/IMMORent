@@ -13,7 +13,9 @@ import {
   CurrencyEuroIcon,
   BuildingOfficeIcon,
   DocumentTextIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  KeyIcon,
+  TagIcon
 } from '@heroicons/react/24/outline';
 
 const AddProperty = () => {
@@ -24,11 +26,14 @@ const AddProperty = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [featuresList, setFeaturesList] = useState([]);
   const [newFeature, setNewFeature] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
+    transaction_type: 'rent',
     address: '',
     city: '',
     postal_code: '',
@@ -37,17 +42,40 @@ const AddProperty = () => {
     bedrooms: '',
     bathrooms: '',
     type: 'apartment',
-    category_id: '1',
+    category_id: '',
   });
+
+  // Charger les catégories
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/categories');
+      const data = await response.json();
+      if (data.success) {
+        setCategories(data.data);
+        if (data.data.length > 0) {
+          setFormData(prev => ({ ...prev, category_id: data.data[0].id }));
+        }
+      }
+    } catch (error) {
+      console.error('Erreur chargement catégories:', error);
+      // Catégories par défaut
+      setCategories([
+        { id: 1, name: 'Appartement', slug: 'apartment' },
+        { id: 2, name: 'Maison', slug: 'house' },
+        { id: 3, name: 'Local commercial', slug: 'commercial' },
+        { id: 4, name: 'Terrain', slug: 'land' },
+        { id: 5, name: 'Studio', slug: 'studio' },
+      ]);
+      setFormData(prev => ({ ...prev, category_id: 1 }));
+    }
+  };
 
   // Vérification des droits au chargement
   useEffect(() => {
-    console.log('=== ADD PROPERTY DEBUG ===');
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('User:', user);
-    console.log('isAgent:', isAgent);
-    console.log('isAdmin:', isAdmin);
-    
     if (!isAuthenticated) {
       toast.error('Veuillez vous connecter');
       navigate('/login');
@@ -55,11 +83,11 @@ const AddProperty = () => {
     }
     
     if (!isAgent && !isAdmin) {
-      toast.error('Vous n\'avez pas les droits pour ajouter un bien. Seuls les agents et administrateurs peuvent le faire.');
+      toast.error('Vous n\'avez pas les droits pour ajouter un bien');
       navigate('/dashboard');
       return;
     }
-  }, [isAuthenticated, isAgent, isAdmin, user, navigate]);
+  }, [isAuthenticated, isAgent, isAdmin, navigate]);
 
   const propertyTypes = [
     { value: 'apartment', label: 'Appartement' },
@@ -69,18 +97,26 @@ const AddProperty = () => {
     { value: 'land', label: 'Terrain' }
   ];
 
+  const transactionTypes = [
+    { value: 'rent', label: 'Location', icon: KeyIcon, description: 'Location mensuelle', color: '#10b981' },
+    { value: 'sale', label: 'Vente', icon: TagIcon, description: 'Vente définitive', color: '#ef4444' }
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleTransactionTypeSelect = (type) => {
+    setFormData(prev => ({ ...prev, transaction_type: type }));
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const validImages = files.filter(file => file.type.startsWith('image/'));
-    
-    if (validImages.length !== files.length) {
-      toast.warning('Seules les images sont acceptées');
-    }
     
     setImages(prev => [...prev, ...validImages]);
     
@@ -100,10 +136,6 @@ const AddProperty = () => {
 
   const addFeature = () => {
     if (newFeature.trim()) {
-      if (featuresList.length >= 20) {
-        toast.warning('Maximum 20 équipements');
-        return;
-      }
       setFeaturesList([...featuresList, newFeature.trim()]);
       setNewFeature('');
     }
@@ -121,72 +153,80 @@ const AddProperty = () => {
   };
 
   const validateForm = () => {
-    const errors = [];
+    const errors = {};
     
-    if (!formData.title.trim()) errors.push('Le titre est requis');
-    if (!formData.description.trim()) errors.push('La description est requise');
-    if (!formData.price || formData.price <= 0) errors.push('Le prix doit être supérieur à 0');
-    if (!formData.address.trim()) errors.push('L\'adresse est requise');
-    if (!formData.city.trim()) errors.push('La ville est requise');
-    if (!formData.postal_code.trim()) errors.push('Le code postal est requis');
-    if (!formData.surface || formData.surface <= 0) errors.push('La surface doit être supérieure à 0');
-    if (!formData.rooms || formData.rooms <= 0) errors.push('Le nombre de pièces doit être supérieur à 0');
-    if (!formData.type) errors.push('Le type de bien est requis');
-    if (!formData.category_id) errors.push('La catégorie est requise');
+    if (!formData.title.trim()) errors.title = 'Le titre est requis';
+    if (!formData.description.trim()) errors.description = 'La description est requise';
+    if (!formData.price || isNaN(formData.price) || formData.price <= 0) errors.price = 'Le prix doit être un nombre positif';
+    if (!formData.address.trim()) errors.address = 'L\'adresse est requise';
+    if (!formData.city.trim()) errors.city = 'La ville est requise';
+    if (!formData.postal_code.trim()) errors.postal_code = 'Le code postal est requis';
+    if (!formData.surface || isNaN(formData.surface) || formData.surface <= 0) errors.surface = 'La surface doit être un nombre positif';
+    if (!formData.rooms || isNaN(formData.rooms) || formData.rooms <= 0) errors.rooms = 'Le nombre de pièces doit être un nombre positif';
+    if (!formData.type) errors.type = 'Le type de bien est requis';
+    if (!formData.category_id) errors.category_id = 'La catégorie est requise';
     
-    if (errors.length > 0) {
-      errors.forEach(error => toast.error(error));
-      return false;
-    }
-    
-    return true;
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Vérification des droits avant soumission
-    if (!isAgent && !isAdmin) {
-      toast.error('Vous n\'avez pas les droits pour ajouter un bien');
-      navigate('/dashboard');
-      return;
-    }
-
     if (!validateForm()) {
+      Object.values(validationErrors).forEach(error => {
+        if (error) toast.error(error);
+      });
       return;
     }
 
+    // === ÉTAPE 1: AFFICHER LES DONNÉES ENVOYÉES POUR DÉBOGAGE ===
+    const dataToSend = {
+      title: formData.title,
+      description: formData.description,
+      price: parseFloat(formData.price),
+      transaction_type: formData.transaction_type,
+      address: formData.address,
+      city: formData.city,
+      postal_code: formData.postal_code,
+      surface: parseFloat(formData.surface),
+      rooms: parseInt(formData.rooms),
+      bedrooms: parseInt(formData.bedrooms) || 0,
+      bathrooms: parseInt(formData.bathrooms) || 0,
+      type: formData.type,
+      category_id: parseInt(formData.category_id),
+      features: JSON.stringify(featuresList),
+      images_count: images.length
+    };
+    
+    console.log('=== DONNÉES ENVOYÉES AU SERVEUR ===');
+    console.log(dataToSend);
+    console.log('=== FIN DES DONNÉES ===');
+    
     setLoading(true);
 
     try {
-      // Création du FormData
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('postal_code', formData.postal_code);
-      formDataToSend.append('surface', formData.surface);
-      formDataToSend.append('rooms', formData.rooms);
-      formDataToSend.append('bedrooms', formData.bedrooms || '0');
-      formDataToSend.append('bathrooms', formData.bathrooms || '0');
-      formDataToSend.append('type', formData.type);
-      formDataToSend.append('category_id', formData.category_id);
-      formDataToSend.append('features', JSON.stringify(featuresList));
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('description', formData.description);
+      data.append('price', parseFloat(formData.price));
+      data.append('transaction_type', formData.transaction_type);
+      data.append('address', formData.address);
+      data.append('city', formData.city);
+      data.append('postal_code', formData.postal_code);
+      data.append('surface', parseFloat(formData.surface));
+      data.append('rooms', parseInt(formData.rooms));
+      data.append('bedrooms', parseInt(formData.bedrooms) || 0);
+      data.append('bathrooms', parseInt(formData.bathrooms) || 0);
+      data.append('type', formData.type);
+      data.append('category_id', parseInt(formData.category_id));
+      data.append('features', JSON.stringify(featuresList));
       
-      // Ajout des images
       images.forEach(image => {
-        formDataToSend.append('images[]', image);
+        data.append('images[]', image);
       });
 
-      // Debug - Afficher les données envoyées
-      console.log('=== DONNÉES ENVOYÉES ===');
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
-
-      const response = await propertyService.create(formDataToSend);
+      const response = await propertyService.create(data);
       
       if (response.success) {
         toast.success('Bien ajouté avec succès !');
@@ -195,13 +235,11 @@ const AddProperty = () => {
         toast.error(response.message || 'Erreur lors de l\'ajout');
       }
     } catch (error) {
+      console.error('=== ERREUR DÉTAILLÉE ===');
       console.error('Erreur:', error);
-      if (error.response?.status === 403) {
-        toast.error('Vous n\'avez pas les droits pour ajouter un bien');
-        navigate('/dashboard');
-      } else if (error.response?.status === 422) {
+      if (error.response?.status === 422) {
         const errors = error.response.data.errors;
-        console.log('Erreurs de validation:', errors);
+        console.log('Erreurs de validation du serveur:', errors);
         Object.values(errors).forEach(err => {
           if (Array.isArray(err)) {
             err.forEach(e => toast.error(e));
@@ -217,69 +255,11 @@ const AddProperty = () => {
     }
   };
 
-  // Si pas de droits, ne pas afficher le formulaire
   if (!isAgent && !isAdmin && isAuthenticated) {
     return (
-      <div className="unauthorized-container">
-        <div className="unauthorized-card">
-          <div className="unauthorized-icon">🔒</div>
-          <h2>Accès non autorisé</h2>
-          <p>Vous n'avez pas les droits pour ajouter un bien immobilier.</p>
-          <p className="required-role">Rôle requis : Agent immobilier ou Administrateur</p>
-          <button onClick={() => navigate('/dashboard')} className="btn-back-dashboard">
-            Retour au tableau de bord
-          </button>
-        </div>
-        <style>{`
-          .unauthorized-container {
-            min-height: calc(100vh - 70px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            background: #f8fafc;
-          }
-          .unauthorized-card {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 500px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          }
-          .unauthorized-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-          }
-          .unauthorized-card h2 {
-            color: #dc2626;
-            margin-bottom: 15px;
-          }
-          .unauthorized-card p {
-            color: #6b7280;
-            margin-bottom: 10px;
-          }
-          .required-role {
-            background: #fef3c7;
-            color: #d97706;
-            padding: 8px;
-            border-radius: 5px;
-            margin: 15px 0;
-          }
-          .btn-back-dashboard {
-            padding: 12px 30px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 20px;
-          }
-          .btn-back-dashboard:hover {
-            background: #1d4ed8;
-          }
-        `}</style>
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <h2>Accès non autorisé</h2>
+        <button onClick={() => navigate('/dashboard')}>Retour</button>
       </div>
     );
   }
@@ -293,231 +273,189 @@ const AddProperty = () => {
             Retour
           </button>
           <h1>Ajouter un bien immobilier</h1>
-          <p>Remplissez le formulaire pour ajouter un nouveau bien à la plateforme</p>
+          <p>Remplissez le formulaire pour ajouter un nouveau bien</p>
         </div>
 
         <form onSubmit={handleSubmit} className="property-form">
-          {/* Informations de base */}
           <div className="form-section">
-            <h2>
-              <DocumentTextIcon className="section-icon" />
-              Informations générales
-            </h2>
+            <h2>Informations générales</h2>
             
             <div className="form-group">
-              <label htmlFor="title">Titre du bien *</label>
+              <label>Titre *</label>
               <input
                 type="text"
-                id="title"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Ex: Bel appartement centre-ville"
-                required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="description">Description *</label>
+              <label>Description *</label>
               <textarea
-                id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows="5"
-                placeholder="Décrivez le bien (surface, état, environnement, etc.)"
-                required
+                rows="4"
+                placeholder="Décrivez le bien"
               />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="type">Type de bien *</label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                >
+                <label>Type de bien *</label>
+                <select name="type" value={formData.type} onChange={handleChange}>
                   {propertyTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
+                    <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
               </div>
               
               <div className="form-group">
-                <label htmlFor="category_id">Catégorie *</label>
-                <select
-                  id="category_id"
-                  name="category_id"
-                  value={formData.category_id}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="1">Appartement</option>
-                  <option value="2">Maison</option>
-                  <option value="3">Local commercial</option>
-                  <option value="4">Terrain</option>
-                  <option value="5">Studio</option>
+                <label>Catégorie *</label>
+                <select name="category_id" value={formData.category_id} onChange={handleChange}>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="price">
-                <CurrencyEuroIcon className="input-icon" />
-                Prix mensuel (€) *
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="Ex: 850"
-                min="0"
-                step="1"
-                required
-              />
+            <div className="form-row">
+              <div className="form-group">
+                <label>Prix *</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="Ex: 850"
+                  step="1"
+                />
+                <small>{formData.transaction_type === 'rent' ? '€/mois' : '€'}</small>
+              </div>
+              
+              <div className="form-group">
+                <label>Type de transaction *</label>
+                <div className="transaction-selector">
+                  {transactionTypes.map(type => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      className={`transaction-btn ${formData.transaction_type === type.value ? 'active' : ''}`}
+                      onClick={() => handleTransactionTypeSelect(type.value)}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Localisation */}
           <div className="form-section">
-            <h2>
-              <MapPinIcon className="section-icon" />
-              Localisation
-            </h2>
+            <h2>Localisation</h2>
             
             <div className="form-group">
-              <label htmlFor="address">Adresse *</label>
+              <label>Adresse *</label>
               <input
                 type="text"
-                id="address"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Numéro et nom de rue"
-                required
               />
             </div>
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="city">Ville *</label>
+                <label>Ville *</label>
                 <input
                   type="text"
-                  id="city"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="Ex: Paris, Lyon"
-                  required
+                  placeholder="Ex: Paris"
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="postal_code">Code postal *</label>
+                <label>Code postal *</label>
                 <input
                   type="text"
-                  id="postal_code"
                   name="postal_code"
                   value={formData.postal_code}
                   onChange={handleChange}
                   placeholder="Ex: 75001"
-                  required
                 />
               </div>
             </div>
           </div>
 
-          {/* Caractéristiques */}
           <div className="form-section">
-            <h2>
-              <HomeIcon className="section-icon" />
-              Caractéristiques
-            </h2>
+            <h2>Caractéristiques</h2>
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="surface">Surface (m²) *</label>
+                <label>Surface (m²) *</label>
                 <input
                   type="number"
-                  id="surface"
                   name="surface"
                   value={formData.surface}
                   onChange={handleChange}
                   placeholder="Ex: 65"
-                  min="0"
                   step="1"
-                  required
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="rooms">Nombre de pièces *</label>
+                <label>Nombre de pièces *</label>
                 <input
                   type="number"
-                  id="rooms"
                   name="rooms"
                   value={formData.rooms}
                   onChange={handleChange}
                   placeholder="Ex: 3"
-                  min="0"
                   step="1"
-                  required
                 />
               </div>
             </div>
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="bedrooms">Chambres</label>
+                <label>Chambres</label>
                 <input
                   type="number"
-                  id="bedrooms"
                   name="bedrooms"
                   value={formData.bedrooms}
                   onChange={handleChange}
                   placeholder="Ex: 2"
-                  min="0"
-                  step="1"
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="bathrooms">Salles de bain</label>
+                <label>Salles de bain</label>
                 <input
                   type="number"
-                  id="bathrooms"
                   name="bathrooms"
                   value={formData.bathrooms}
                   onChange={handleChange}
                   placeholder="Ex: 1"
-                  min="0"
-                  step="1"
                 />
               </div>
             </div>
           </div>
 
-          {/* Équipements */}
           <div className="form-section">
-            <h2>
-              <CheckCircleIcon className="section-icon" />
-              Équipements et caractéristiques
-            </h2>
-            
+            <h2>Équipements</h2>
             <div className="features-input">
               <input
                 type="text"
                 value={newFeature}
                 onChange={(e) => setNewFeature(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ajouter un équipement (ex: Ascenseur, Balcon, Parking, Wifi...)"
+                placeholder="Ajouter un équipement..."
               />
               <button type="button" onClick={addFeature} className="btn-add-feature">
                 <PlusIcon className="h-5 w-5" />
@@ -525,37 +463,24 @@ const AddProperty = () => {
               </button>
             </div>
             
-            {featuresList.length > 0 && (
-              <div className="features-list">
-                {featuresList.map((feature, index) => (
-                  <div key={index} className="feature-tag">
-                    <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                    <span>{feature}</span>
-                    <button type="button" onClick={() => removeFeature(index)}>
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {featuresList.length === 0 && (
-              <p className="no-features">Aucun équipement ajouté pour le moment</p>
-            )}
+            <div className="features-list">
+              {featuresList.map((feature, index) => (
+                <div key={index} className="feature-tag">
+                  <span>{feature}</span>
+                  <button type="button" onClick={() => removeFeature(index)}>
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Images */}
           <div className="form-section">
-            <h2>
-              <PhotoIcon className="section-icon" />
-              Photos du bien
-            </h2>
-            
+            <h2>Photos</h2>
             <div className="image-upload">
               <label className="image-upload-label">
                 <PhotoIcon className="h-10 w-10" />
-                <span>Cliquez pour ajouter des photos</span>
-                <span className="upload-hint">Formats acceptés : JPG, PNG, GIF (max 2MB)</span>
+                <span>Ajouter des photos</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -566,21 +491,18 @@ const AddProperty = () => {
               </label>
             </div>
             
-            {imagePreviews.length > 0 && (
-              <div className="image-previews">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="image-preview">
-                    <img src={preview} alt={`Aperçu ${index + 1}`} />
-                    <button type="button" onClick={() => removeImage(index)}>
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="image-previews">
+              {imagePreviews.map((preview, index) => (
+                <div key={index} className="image-preview">
+                  <img src={preview} alt={`Photo ${index + 1}`} />
+                  <button type="button" onClick={() => removeImage(index)}>
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Actions */}
           <div className="form-actions">
             <button type="button" onClick={() => navigate(-1)} className="btn-cancel">
               Annuler
@@ -617,8 +539,6 @@ const AddProperty = () => {
           color: #6b7280;
           cursor: pointer;
           margin-bottom: 20px;
-          font-size: 14px;
-          transition: color 0.3s;
         }
 
         .back-button:hover {
@@ -628,11 +548,6 @@ const AddProperty = () => {
         .page-header h1 {
           color: #1f2937;
           font-size: 28px;
-          margin-bottom: 10px;
-        }
-
-        .page-header p {
-          color: #6b7280;
         }
 
         .property-form {
@@ -650,7 +565,6 @@ const AddProperty = () => {
 
         .form-section:last-child {
           border-bottom: none;
-          margin-bottom: 0;
           padding-bottom: 0;
         }
 
@@ -658,22 +572,12 @@ const AddProperty = () => {
           color: #1f2937;
           font-size: 18px;
           margin-bottom: 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .section-icon {
-          width: 20px;
-          height: 20px;
-          color: #2563eb;
         }
 
         .form-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 20px;
-          margin-bottom: 15px;
         }
 
         .form-group {
@@ -681,37 +585,46 @@ const AddProperty = () => {
         }
 
         .form-group label {
-          display: flex;
-          align-items: center;
-          gap: 5px;
+          display: block;
           color: #374151;
           font-weight: 500;
           margin-bottom: 8px;
-          font-size: 14px;
-        }
-
-        .input-icon {
-          width: 16px;
-          height: 16px;
-          color: #6b7280;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
           width: 100%;
-          padding: 12px;
+          padding: 10px;
           border: 1px solid #d1d5db;
           border-radius: 5px;
-          font-size: 14px;
         }
 
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-          outline: none;
+        .form-group small {
+          display: block;
+          font-size: 11px;
+          color: #6b7280;
+          margin-top: 4px;
+        }
+
+        .transaction-selector {
+          display: flex;
+          gap: 10px;
+        }
+
+        .transaction-btn {
+          flex: 1;
+          padding: 10px;
+          border: 1px solid #d1d5db;
+          border-radius: 5px;
+          background: white;
+          cursor: pointer;
+        }
+
+        .transaction-btn.active {
+          background: #2563eb;
+          color: white;
           border-color: #2563eb;
-          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
         .features-input {
@@ -722,41 +635,36 @@ const AddProperty = () => {
 
         .features-input input {
           flex: 1;
-          padding: 10px;
+          padding: 8px;
           border: 1px solid #d1d5db;
           border-radius: 5px;
         }
 
         .btn-add-feature {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          padding: 10px 20px;
+          padding: 8px 15px;
           background: #f3f4f6;
           border: none;
           border-radius: 5px;
           cursor: pointer;
-        }
-
-        .btn-add-feature:hover {
-          background: #e5e7eb;
+          display: flex;
+          align-items: center;
+          gap: 5px;
         }
 
         .features-list {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
-          margin-top: 15px;
         }
 
         .feature-tag {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 6px 12px;
+          padding: 5px 10px;
           background: #f3f4f6;
           border-radius: 20px;
-          font-size: 14px;
+          font-size: 13px;
         }
 
         .feature-tag button {
@@ -766,49 +674,22 @@ const AddProperty = () => {
           color: #6b7280;
         }
 
-        .feature-tag button:hover {
-          color: #dc2626;
-        }
-
-        .no-features {
-          color: #9ca3af;
-          font-size: 14px;
-          text-align: center;
-          padding: 20px;
-          background: #f9fafb;
-          border-radius: 5px;
-        }
-
-        .image-upload {
-          margin-bottom: 20px;
-        }
-
         .image-upload-label {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
           gap: 10px;
-          padding: 40px;
+          padding: 30px;
           border: 2px dashed #d1d5db;
           border-radius: 10px;
           cursor: pointer;
-        }
-
-        .image-upload-label:hover {
-          border-color: #2563eb;
-          background: #f8fafc;
-        }
-
-        .upload-hint {
-          font-size: 12px;
-          color: #9ca3af;
         }
 
         .image-previews {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 15px;
+          margin-top: 20px;
         }
 
         .image-preview {
@@ -841,16 +722,10 @@ const AddProperty = () => {
           color: white;
         }
 
-        .image-preview button:hover {
-          background: #dc2626;
-        }
-
         .form-actions {
           display: flex;
           gap: 15px;
           margin-top: 30px;
-          padding-top: 20px;
-          border-top: 1px solid #e5e7eb;
         }
 
         .btn-cancel {
@@ -859,12 +734,7 @@ const AddProperty = () => {
           background: #f3f4f6;
           border: none;
           border-radius: 5px;
-          font-weight: 600;
           cursor: pointer;
-        }
-
-        .btn-cancel:hover {
-          background: #e5e7eb;
         }
 
         .btn-submit {
@@ -873,13 +743,8 @@ const AddProperty = () => {
           background: #2563eb;
           border: none;
           border-radius: 5px;
-          font-weight: 600;
-          cursor: pointer;
           color: white;
-        }
-
-        .btn-submit:hover:not(:disabled) {
-          background: #1d4ed8;
+          cursor: pointer;
         }
 
         .btn-submit:disabled {
@@ -888,21 +753,12 @@ const AddProperty = () => {
         }
 
         @media (max-width: 768px) {
-          .add-property-container {
-            padding: 0;
-          }
-
           .form-row {
             grid-template-columns: 1fr;
-            gap: 0;
           }
-
+          
           .image-previews {
             grid-template-columns: repeat(2, 1fr);
-          }
-
-          .form-actions {
-            flex-direction: column;
           }
         }
       `}</style>

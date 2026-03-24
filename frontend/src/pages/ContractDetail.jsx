@@ -13,7 +13,8 @@ import {
   MapPinIcon,
   BuildingOfficeIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowDownTrayIcon  // Ajouter cette icône
 } from '@heroicons/react/24/outline';
 
 const ContractDetail = () => {
@@ -23,6 +24,7 @@ const ContractDetail = () => {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     fetchContract();
@@ -43,6 +45,18 @@ const ContractDetail = () => {
       navigate('/dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await contractService.download(id);
+      toast.success('Téléchargement du contrat en cours...');
+    } catch (error) {
+      toast.error('Erreur lors du téléchargement');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -218,28 +232,39 @@ const ContractDetail = () => {
             </div>
           </div>
 
-          {/* Actions (si agent ou admin) */}
-          {(isAgent || isAdmin) && contract.status === 'active' && (
-            <div className="actions-section">
-              <h2>Actions</h2>
-              <div className="action-buttons">
-                <button 
-                  onClick={() => handleStatusChange('terminated')}
-                  className="btn-terminate"
-                  disabled={updating}
-                >
-                  Résilier le contrat
-                </button>
-                <button 
-                  onClick={() => handleStatusChange('expired')}
-                  className="btn-expire"
-                  disabled={updating}
-                >
-                  Marquer comme expiré
-                </button>
-              </div>
+          {/* Actions */}
+          <div className="actions-section">
+            <h2>Actions</h2>
+            <div className="action-buttons">
+              <button 
+                onClick={handleDownload}
+                className="btn-download"
+                disabled={downloading}
+              >
+                <ArrowDownTrayIcon className="h-5 w-5" />
+                {downloading ? 'Téléchargement...' : 'Télécharger le contrat (PDF)'}
+              </button>
+              
+              {(isAgent || isAdmin) && contract.status === 'active' && (
+                <>
+                  <button 
+                    onClick={() => handleStatusChange('terminated')}
+                    className="btn-terminate"
+                    disabled={updating}
+                  >
+                    Résilier le contrat
+                  </button>
+                  <button 
+                    onClick={() => handleStatusChange('expired')}
+                    className="btn-expire"
+                    disabled={updating}
+                  >
+                    Marquer comme expiré
+                  </button>
+                </>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Note */}
           <div className="note-section">
@@ -466,11 +491,16 @@ const ContractDetail = () => {
         .action-buttons {
           display: flex;
           gap: 15px;
+          flex-wrap: wrap;
         }
 
-        .btn-terminate,
-        .btn-expire {
+        .btn-download {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           padding: 12px 24px;
+          background: #10b981;
+          color: white;
           border: none;
           border-radius: 5px;
           font-weight: 600;
@@ -478,9 +508,19 @@ const ContractDetail = () => {
           transition: all 0.3s;
         }
 
+        .btn-download:hover:not(:disabled) {
+          background: #059669;
+        }
+
         .btn-terminate {
+          padding: 12px 24px;
           background: #fee2e2;
           color: #dc2626;
+          border: none;
+          border-radius: 5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
         }
 
         .btn-terminate:hover:not(:disabled) {
@@ -488,8 +528,14 @@ const ContractDetail = () => {
         }
 
         .btn-expire {
+          padding: 12px 24px;
           background: #f3f4f6;
           color: #6b7280;
+          border: none;
+          border-radius: 5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
         }
 
         .btn-expire:hover:not(:disabled) {
@@ -506,6 +552,29 @@ const ContractDetail = () => {
           padding: 20px;
           color: #9ca3af;
           font-size: 12px;
+        }
+
+        .loading-container {
+          min-height: calc(100vh - 70px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #f8fafc;
+        }
+
+        .spinner {
+          width: 50px;
+          height: 50px;
+          border: 5px solid #e5e7eb;
+          border-top-color: #2563eb;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {

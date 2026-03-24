@@ -17,6 +17,7 @@ export const authService = {
 
   async register(userData) {
     try {
+      // Envoyer le rôle dans les données d'inscription
       const response = await api.post('/register', userData);
       if (response.data.success) {
         localStorage.setItem('token', response.data.data.token);

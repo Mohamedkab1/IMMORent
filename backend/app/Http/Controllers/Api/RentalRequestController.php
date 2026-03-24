@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class RentalRequestController extends Controller
 {
     /**
-     * Liste des demandes (pour les agents et admin)
+     * Liste des demandes (pour les agents)
      */
     public function index(Request $request)
     {
@@ -20,25 +20,30 @@ class RentalRequestController extends Controller
             
             // Si l'utilisateur est agent, voir les demandes de ses biens
             if ($user->isAgent()) {
-                $requests = RentalRequest::with(['user', 'property'])
+                $requests = RentalRequest::with(['user', 'property', 'property.user'])
                     ->whereHas('property', function($q) use ($user) {
                         $q->where('user_id', $user->id);
                     })
                     ->orderBy('created_at', 'desc')
-                    ->paginate(20);
+                    ->get(); // Utiliser get() au lieu de paginate() pour simplifier
+                    
+                Log::info('Demandes pour agent', [
+                    'agent_id' => $user->id,
+                    'count' => $requests->count()
+                ]);
             } 
             // Si admin, voir toutes les demandes
             elseif ($user->isAdmin()) {
                 $requests = RentalRequest::with(['user', 'property'])
                     ->orderBy('created_at', 'desc')
-                    ->paginate(20);
+                    ->get();
             } 
             // Sinon, voir uniquement ses propres demandes
             else {
                 $requests = RentalRequest::with(['property'])
                     ->where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
-                    ->paginate(20);
+                    ->get();
             }
             
             return response()->json([
@@ -64,7 +69,7 @@ class RentalRequestController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'property_id' => 'required|exists:properties,id',
-                'start_date' => 'required|date|after_or_equal:today', // Changé de "after" à "after_or_equal"
+                'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date',
                 'message' => 'nullable|string|max:1000',
             ]);
@@ -98,11 +103,7 @@ class RentalRequestController extends Controller
                 ->where('status', 'pending')
                 ->where(function($query) use ($request) {
                     $query->whereBetween('start_date', [$request->start_date, $request->end_date])
-                          ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
-                          ->orWhere(function($q) use ($request) {
-                              $q->where('start_date', '<=', $request->start_date)
-                                ->where('end_date', '>=', $request->end_date);
-                          });
+                          ->orWhereBetween('end_date', [$request->start_date, $request->end_date]);
                 })->first();
 
             if ($existingRequest) {
@@ -121,13 +122,16 @@ class RentalRequestController extends Controller
                 'status' => 'pending'
             ]);
 
-            // Charger les relations pour la réponse
-            $rentalRequest->load('property', 'user');
+            Log::info('Nouvelle demande créée', [
+                'request_id' => $rentalRequest->id,
+                'property_id' => $rentalRequest->property_id,
+                'user_id' => $rentalRequest->user_id
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Demande envoyée avec succès',
-                'data' => $rentalRequest
+                'data' => $rentalRequest->load(['property', 'user'])
             ], 201);
 
         } catch (\Exception $e) {
@@ -146,8 +150,7 @@ class RentalRequestController extends Controller
     public function show($id)
     {
         try {
-            $request = RentalRequest::with(['user', 'property', 'property.user', 'processor'])
-                ->find($id);
+            $request = RentalRequest::with(['user', 'property'])->find($id);
             
             if (!$request) {
                 return response()->json([
@@ -162,11 +165,9 @@ class RentalRequestController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Erreur show request: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement de la demande',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors du chargement'
             ], 500);
         }
     }
@@ -177,7 +178,7 @@ class RentalRequestController extends Controller
     public function process(Request $request, $id)
     {
         try {
-            $rentalRequest = RentalRequest::with(['property', 'user'])->find($id);
+            $rentalRequest = RentalRequest::with(['property'])->find($id);
             
             if (!$rentalRequest) {
                 return response()->json([
@@ -199,48 +200,38 @@ class RentalRequestController extends Controller
                 ], 422);
             }
             
-            // Vérifier que l'utilisateur a le droit de traiter cette demande
-            $user = $request->user();
-            $property = $rentalRequest->property;
-            
-            if (!$user->isAdmin() && $property->user_id !== $user->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à traiter cette demande'
-                ], 403);
-            }
-            
-            // Vérifier que la demande est toujours en attente
-            if ($rentalRequest->status !== 'pending') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cette demande a déjà été traitée'
-                ], 400);
-            }
-            
             $rentalRequest->update([
                 'status' => $request->status,
                 'rejection_reason' => $request->rejection_reason,
                 'processed_at' => now(),
-                'processed_by' => $user->id
+                'processed_by' => $request->user()->id
             ]);
             
             // Si approuvé, mettre à jour le statut du bien
             if ($request->status === 'approved') {
-                $property->update(['status' => 'reserved']);
+                $property = Property::find($rentalRequest->property_id);
+                if ($property) {
+                    $property->update(['status' => 'reserved']);
+                }
             }
+            
+            Log::info('Demande traitée', [
+                'request_id' => $id,
+                'status' => $request->status,
+                'processed_by' => $request->user()->id
+            ]);
             
             return response()->json([
                 'success' => true,
-                'message' => $request->status === 'approved' ? 'Demande approuvée avec succès' : 'Demande refusée',
-                'data' => $rentalRequest->load('user', 'property')
+                'message' => $request->status === 'approved' ? 'Demande approuvée' : 'Demande refusée',
+                'data' => $rentalRequest
             ]);
             
         } catch (\Exception $e) {
             Log::error('Erreur process request: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du traitement de la demande',
+                'message' => 'Erreur lors du traitement',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -261,14 +252,6 @@ class RentalRequestController extends Controller
                 ], 404);
             }
             
-            // Vérifier que l'utilisateur est le propriétaire de la demande
-            if ($rentalRequest->user_id !== auth()->id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à annuler cette demande'
-                ], 403);
-            }
-            
             if ($rentalRequest->status !== 'pending') {
                 return response()->json([
                     'success' => false,
@@ -280,16 +263,13 @@ class RentalRequestController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => 'Demande annulée avec succès',
-                'data' => $rentalRequest
+                'message' => 'Demande annulée avec succès'
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Erreur cancel request: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'annulation de la demande',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors de l\'annulation'
             ], 500);
         }
     }
@@ -300,10 +280,10 @@ class RentalRequestController extends Controller
     public function myRequests(Request $request)
     {
         try {
-            $requests = RentalRequest::with(['property', 'property.user'])
+            $requests = RentalRequest::with(['property'])
                 ->where('user_id', $request->user()->id)
                 ->orderBy('created_at', 'desc')
-                ->paginate(10);
+                ->get();
                 
             return response()->json([
                 'success' => true,
@@ -311,96 +291,9 @@ class RentalRequestController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Erreur myRequests: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement de vos demandes',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Demandes pour un bien spécifique (Agent)
-     */
-    public function propertyRequests(Request $request, $propertyId)
-    {
-        try {
-            $property = Property::find($propertyId);
-            
-            if (!$property) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bien non trouvé'
-                ], 404);
-            }
-            
-            // Vérifier que l'utilisateur a le droit de voir ces demandes
-            $user = $request->user();
-            if (!$user->isAdmin() && $property->user_id !== $user->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à voir les demandes de ce bien'
-                ], 403);
-            }
-            
-            $requests = RentalRequest::with(['user'])
-                ->where('property_id', $propertyId)
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-                
-            return response()->json([
-                'success' => true,
-                'data' => $requests
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Erreur propertyRequests: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du chargement des demandes',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Statistiques des demandes (Agent)
-     */
-    public function stats(Request $request)
-    {
-        try {
-            $user = $request->user();
-            
-            $query = RentalRequest::query();
-            
-            // Filtrer par biens de l'agent si ce n'est pas admin
-            if (!$user->isAdmin()) {
-                $query->whereHas('property', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                });
-            }
-            
-            $stats = [
-                'total' => $query->count(),
-                'pending' => (clone $query)->where('status', 'pending')->count(),
-                'approved' => (clone $query)->where('status', 'approved')->count(),
-                'rejected' => (clone $query)->where('status', 'rejected')->count(),
-                'cancelled' => (clone $query)->where('status', 'cancelled')->count(),
-                'this_month' => (clone $query)->whereMonth('created_at', now()->month)->count(),
-            ];
-            
-            return response()->json([
-                'success' => true,
-                'data' => $stats
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('Erreur stats requests: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du chargement des statistiques',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors du chargement'
             ], 500);
         }
     }

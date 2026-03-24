@@ -8,6 +8,7 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\DomPDF\Facades\Pdf;
 
 class ContractController extends Controller
 {
@@ -238,6 +239,82 @@ class ContractController extends Controller
                 'success' => false,
                 'message' => 'Erreur lors du chargement des contrats',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Télécharger le contrat au format PDF
+     */
+    public function download($id)
+    {
+        try {
+            // Récupérer le contrat
+            $contract = Contract::find($id);
+            
+            if (!$contract) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contrat non trouvé'
+                ], 404);
+            }
+            
+            // Créer un PDF simple sans relations
+            $html = '<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Contrat de location</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; }
+                    h1 { color: #2563eb; text-align: center; }
+                    .info { margin: 20px 0; }
+                    .label { font-weight: bold; display: inline-block; width: 150px; }
+                </style>
+            </head>
+            <body>
+                <h1>ImmoGest</h1>
+                <h2 style="text-align:center">Contrat de location</h2>
+                <p style="text-align:center">N° ' . $contract->contract_number . '</p>
+                <p style="text-align:center">Date: ' . date('d/m/Y') . '</p>
+
+                <div class="info">
+                    <p><span class="label">Contrat N°:</span> ' . $contract->contract_number . '</p>
+                    <p><span class="label">Date de début:</span> ' . date('d/m/Y', strtotime($contract->start_date)) . '</p>
+                    <p><span class="label">Date de fin:</span> ' . date('d/m/Y', strtotime($contract->end_date)) . '</p>
+                    <p><span class="label">Loyer mensuel:</span> ' . number_format($contract->monthly_rent, 2) . ' €</p>
+                    <p><span class="label">Charges:</span> ' . number_format($contract->charges ?? 0, 2) . ' €</p>
+                    <p><span class="label">Dépôt de garantie:</span> ' . number_format($contract->security_deposit, 2) . ' €</p>
+                </div>
+
+                <div style="margin-top: 50px;">
+                    <div style="display: inline-block; width: 45%;">
+                        <p>Signature du bailleur</p>
+                        <div style="border-top: 1px solid black; width: 80%; margin-top: 50px;"></div>
+                    </div>
+                    <div style="display: inline-block; width: 45%; float: right;">
+                        <p>Signature du locataire</p>
+                        <div style="border-top: 1px solid black; width: 80%; margin-top: 50px;"></div>
+                    </div>
+                </div>
+
+                <p style="text-align:center; margin-top:50px; font-size:10px; color:gray;">
+                    ImmoGest - Plateforme de gestion immobilière
+                </p>
+            </body>
+            </html>';
+            
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('A4', 'portrait');
+            
+            return $pdf->download('contrat_' . $contract->contract_number . '.pdf');
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }

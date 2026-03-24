@@ -51,14 +51,46 @@ export const contractService = {
         }
     },
 
-    // Alternative - utiliser la route index avec filtrage
     async getAgentContracts() {
         try {
-            // Utiliser la route index qui filtre déjà pour les agents
-            const response = await api.get('/contracts');
+            const response = await api.get('/agent/contracts');
             return response.data;
         } catch (error) {
             console.error('Erreur contractService.getAgentContracts:', error);
+            throw error;
+        }
+    },
+
+    // Nouvelle méthode pour télécharger le PDF
+    async download(id) {
+        try {
+            // Pour télécharger un fichier, on utilise une approche différente
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${api.defaults.baseURL}/contracts/${id}/download`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/pdf',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du téléchargement');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `contrat_${id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Erreur contractService.download:', error);
             throw error;
         }
     }

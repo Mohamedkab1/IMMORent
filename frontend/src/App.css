@@ -110,3 +110,10 @@ body {
 .Toastify__toast--info {
   background: #3b82f6;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 15px;
+  }
+}

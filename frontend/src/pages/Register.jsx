@@ -10,7 +10,9 @@ import {
   MapPinIcon,
   EyeIcon,
   EyeSlashIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  BuildingOfficeIcon,
+  HomeIcon
 } from '@heroicons/react/24/outline';
 
 const Register = () => {
@@ -21,28 +23,55 @@ const Register = () => {
     password_confirmation: '',
     phone: '',
     address: '',
-    acceptTerms: false
+    role: 'client'
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedRole, setSelectedRole] = useState('client');
   
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: value
+      [name]: value
     });
   };
 
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role);
+    setFormData({
+      ...formData,
+      role: role
+    });
+  };
+
+  // Validation ÉTAPE 1 - Seulement le rôle
   const validateStep1 = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.password_confirmation) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+    if (!selectedRole) {
+      toast.error('Veuillez sélectionner un rôle');
+      return false;
+    }
+    return true;
+  };
+
+  // Validation ÉTAPE 2 - Tous les champs obligatoires
+  const validateStep2 = () => {
+    if (!formData.name.trim()) {
+      toast.error('Le nom est requis');
+      return false;
+    }
+    if (!formData.email.trim()) {
+      toast.error('L\'email est requis');
+      return false;
+    }
+    if (!formData.password) {
+      toast.error('Le mot de passe est requis');
       return false;
     }
     if (formData.password.length < 8) {
@@ -51,14 +80,6 @@ const Register = () => {
     }
     if (formData.password !== formData.password_confirmation) {
       toast.error('Les mots de passe ne correspondent pas');
-      return false;
-    }
-    return true;
-  };
-
-  const validateStep2 = () => {
-    if (!formData.acceptTerms) {
-      toast.error('Vous devez accepter les conditions d\'utilisation');
       return false;
     }
     return true;
@@ -84,10 +105,22 @@ const Register = () => {
       const response = await register(formData);
       toast.success(response.message || 'Inscription réussie');
       
-      // Redirection selon le rôle (par défaut client)
-      navigate('/dashboard/client');
+      // Redirection selon le rôle sélectionné
+      if (formData.role === 'agent') {
+        navigate('/dashboard/agent');
+      } else {
+        navigate('/dashboard/client');
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
+      console.error('Erreur:', error);
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        Object.values(errors).forEach(err => {
+          toast.error(err[0]);
+        });
+      } else {
+        toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
+      }
     } finally {
       setLoading(false);
     }
@@ -129,19 +162,83 @@ const Register = () => {
         <div className="progress-bar">
           <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
             <span className="step-number">1</span>
-            <span className="step-label">Informations</span>
+            <span className="step-label">Choix du rôle</span>
           </div>
           <div className={`progress-line ${currentStep >= 2 ? 'active' : ''}`}></div>
           <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
             <span className="step-number">2</span>
-            <span className="step-label">Validation</span>
+            <span className="step-label">Informations</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="register-form">
           {currentStep === 1 && (
             <div className="step step-1">
+              <h3>Choisissez votre profil</h3>
+              <p className="step-description">Sélectionnez le rôle qui correspond à votre activité</p>
+              
+              <div className="role-selection">
+                <div 
+                  className={`role-card ${selectedRole === 'client' ? 'selected' : ''}`}
+                  onClick={() => handleRoleSelect('client')}
+                >
+                  <div className="role-icon client">
+                    <HomeIcon className="h-8 w-8" />
+                  </div>
+                  <h3>Client / Locataire</h3>
+                  <p>Je recherche un logement à louer</p>
+                  <ul className="role-features">
+                    <li>✓ Consultation des biens</li>
+                    <li>✓ Demandes de location</li>
+                    <li>✓ Gestion des contrats</li>
+                    <li>✓ Suivi des paiements</li>
+                  </ul>
+                  {selectedRole === 'client' && (
+                    <div className="selected-badge">
+                      <CheckCircleIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+
+                <div 
+                  className={`role-card ${selectedRole === 'agent' ? 'selected' : ''}`}
+                  onClick={() => handleRoleSelect('agent')}
+                >
+                  <div className="role-icon agent">
+                    <BuildingOfficeIcon className="h-8 w-8" />
+                  </div>
+                  <h3>Agent immobilier</h3>
+                  <p>Je gère des biens immobiliers</p>
+                  <ul className="role-features">
+                    <li>✓ Gestion des biens</li>
+                    <li>✓ Traitement des demandes</li>
+                    <li>✓ Création de contrats</li>
+                    <li>✓ Suivi des paiements</li>
+                  </ul>
+                  {selectedRole === 'agent' && (
+                    <div className="selected-badge">
+                      <CheckCircleIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-navigation">
+                <button type="button" className="btn-next" onClick={handleNext}>
+                  Suivant
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 2 && (
+            <div className="step step-2">
               <h3>Informations personnelles</h3>
+              <p className="step-description">
+                {selectedRole === 'agent' 
+                  ? 'Créez votre compte agent pour commencer à gérer des biens' 
+                  : 'Créez votre compte client pour trouver votre prochain logement'}
+              </p>
               
               <div className="form-row">
                 <div className="form-group">
@@ -294,39 +391,13 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="form-navigation">
-                <button type="button" className="btn-next" onClick={handleNext}>
-                  Suivant
-                </button>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="step step-2">
-              <h3>Validation du compte</h3>
-              
-              <div className="summary-card">
-                <h4>Récapitulatif</h4>
-                <p><strong>Nom :</strong> {formData.name}</p>
-                <p><strong>Email :</strong> {formData.email}</p>
-                <p><strong>Téléphone :</strong> {formData.phone || 'Non renseigné'}</p>
-                <p><strong>Adresse :</strong> {formData.address || 'Non renseignée'}</p>
-              </div>
-
-              <div className="terms-section">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="acceptTerms"
-                    checked={formData.acceptTerms}
-                    onChange={handleChange}
-                  />
-                  <span>
-                    J'accepte les <Link to="/cgv" target="_blank">conditions générales</Link> et la{' '}
-                    <Link to="/confidentialite" target="_blank">politique de confidentialité</Link>
-                  </span>
-                </label>
+              <div className="form-info">
+                <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                <p>
+                  En créant un compte, vous acceptez nos 
+                  <Link to="/cgv" target="_blank"> conditions générales</Link> et notre 
+                  <Link to="/confidentialite" target="_blank"> politique de confidentialité</Link>.
+                </p>
               </div>
 
               <div className="form-navigation">
@@ -357,7 +428,7 @@ const Register = () => {
         }
 
         .register-container {
-          max-width: 600px;
+          max-width: 800px;
           margin: 0 auto;
           background: white;
           border-radius: 10px;
@@ -413,7 +484,7 @@ const Register = () => {
         }
 
         .step-label {
-          font-size: 14px;
+          font-size: 12px;
           color: #6b7280;
         }
 
@@ -433,15 +504,102 @@ const Register = () => {
           background: #2563eb;
         }
 
-        .register-form h3 {
+        .step h3 {
           color: #1f2937;
-          margin-bottom: 20px;
+          font-size: 20px;
+          margin-bottom: 10px;
+        }
+
+        .step-description {
+          color: #6b7280;
+          margin-bottom: 30px;
+        }
+
+        .role-selection {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 30px;
+          margin-bottom: 30px;
+        }
+
+        .role-card {
+          position: relative;
+          padding: 30px;
+          border: 2px solid #e5e7eb;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .role-card:hover {
+          border-color: #2563eb;
+          transform: translateY(-5px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-card.selected {
+          border-color: #2563eb;
+          background: #eff6ff;
+        }
+
+        .role-icon {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 20px;
+        }
+
+        .role-icon.client {
+          background: #dcfce7;
+          color: #059669;
+        }
+
+        .role-icon.agent {
+          background: #dbeafe;
+          color: #2563eb;
+        }
+
+        .role-card h3 {
+          text-align: center;
+          color: #1f2937;
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+
+        .role-card p {
+          text-align: center;
+          color: #6b7280;
+          font-size: 14px;
+          margin-bottom: 15px;
+        }
+
+        .role-features {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .role-features li {
+          color: #4b5563;
+          font-size: 13px;
+          padding: 5px 0;
+          text-align: center;
+        }
+
+        .selected-badge {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          color: #2563eb;
         }
 
         .form-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 15px;
+          gap: 20px;
           margin-bottom: 15px;
         }
 
@@ -453,15 +611,16 @@ const Register = () => {
           display: flex;
           align-items: center;
           gap: 5px;
-          margin-bottom: 5px;
           color: #374151;
           font-weight: 500;
+          margin-bottom: 8px;
+          font-size: 14px;
         }
 
         .input-icon {
-          width: 18px;
-          height: 18px;
-          color: #2563eb;
+          width: 16px;
+          height: 16px;
+          color: #6b7280;
         }
 
         .form-group input {
@@ -469,8 +628,7 @@ const Register = () => {
           padding: 12px;
           border: 1px solid #d1d5db;
           border-radius: 5px;
-          font-size: 16px;
-          transition: border-color 0.3s;
+          font-size: 14px;
         }
 
         .form-group input:focus {
@@ -492,10 +650,6 @@ const Register = () => {
           border: none;
           cursor: pointer;
           color: #6b7280;
-        }
-
-        .password-toggle:hover {
-          color: #2563eb;
         }
 
         .password-strength {
@@ -520,44 +674,32 @@ const Register = () => {
 
         .password-match {
           margin-top: 5px;
-          font-size: 14px;
+          font-size: 12px;
         }
 
-        .summary-card {
-          background: #f9fafb;
-          padding: 20px;
-          border-radius: 5px;
-          margin-bottom: 20px;
-        }
-
-        .summary-card h4 {
-          color: #1f2937;
-          margin-bottom: 15px;
-        }
-
-        .summary-card p {
-          margin-bottom: 10px;
-          color: #4b5563;
-        }
-
-        .terms-section {
-          margin-bottom: 20px;
-        }
-
-        .checkbox-label {
+        .form-info {
           display: flex;
           align-items: center;
           gap: 10px;
-          color: #4b5563;
-          cursor: pointer;
+          padding: 15px;
+          background: #f0f9ff;
+          border-radius: 5px;
+          margin: 20px 0;
         }
 
-        .checkbox-label a {
+        .form-info p {
+          color: #0369a1;
+          font-size: 13px;
+          margin: 0;
+        }
+
+        .form-info a {
           color: #2563eb;
           text-decoration: none;
+          margin: 0 5px;
         }
 
-        .checkbox-label a:hover {
+        .form-info a:hover {
           text-decoration: underline;
         }
 
@@ -570,40 +712,37 @@ const Register = () => {
         .btn-next,
         .btn-submit {
           flex: 1;
-          padding: 14px;
-          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+          padding: 12px;
+          background: #2563eb;
           color: white;
           border: none;
           border-radius: 5px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: opacity 0.3s;
-        }
-
-        .btn-back {
-          flex: 1;
-          padding: 14px;
-          background: #e5e7eb;
-          color: #374151;
-          border: none;
-          border-radius: 5px;
-          font-size: 16px;
           font-weight: 600;
           cursor: pointer;
           transition: background-color 0.3s;
         }
 
-        .btn-next:hover:not(:disabled),
+        .btn-next:hover,
         .btn-submit:hover:not(:disabled) {
-          opacity: 0.9;
+          background: #1d4ed8;
+        }
+
+        .btn-back {
+          flex: 1;
+          padding: 12px;
+          background: #f3f4f6;
+          color: #374151;
+          border: none;
+          border-radius: 5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.3s;
         }
 
         .btn-back:hover {
-          background: #d1d5db;
+          background: #e5e7eb;
         }
 
-        .btn-next:disabled,
         .btn-submit:disabled {
           opacity: 0.5;
           cursor: not-allowed;
@@ -636,16 +775,16 @@ const Register = () => {
             padding: 30px 20px;
           }
 
+          .role-selection {
+            grid-template-columns: 1fr;
+          }
+
           .form-row {
             grid-template-columns: 1fr;
           }
 
           .progress-line {
             width: 50px;
-          }
-
-          .form-navigation {
-            flex-direction: column;
           }
         }
       `}</style>

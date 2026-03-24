@@ -22,12 +22,10 @@ import {
   FireIcon,
   ComputerDesktopIcon,
   KeyIcon,
-  BoltIcon,
-  CloudIcon,
-  SunIcon,
-  Cog6ToothIcon,
-  CpuChipIcon,
-  SparklesIcon
+  SparklesIcon,
+  TagIcon,
+  BanknotesIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
@@ -45,14 +43,9 @@ const PropertyDetail = () => {
   const [contactMessage, setContactMessage] = useState('');
 
   useEffect(() => {
-    // Vérifier que l'ID est valide (nombre)
-    if (!id || id === 'new' || id === 'undefined') {
-      setError('ID de bien invalide');
-      setLoading(false);
-      return;
+    if (id) {
+      fetchProperty();
     }
-    
-    fetchProperty();
   }, [id]);
 
   // Fonction pour parser les features (qui peuvent être string JSON ou tableau)
@@ -75,16 +68,7 @@ const PropertyDetail = () => {
     setError(null);
     try {
       console.log('Chargement du bien ID:', id);
-      
-      // S'assurer que l'ID est un nombre
-      const propertyId = parseInt(id);
-      if (isNaN(propertyId)) {
-        setError('ID de bien invalide');
-        setLoading(false);
-        return;
-      }
-      
-      const response = await propertyService.getById(propertyId);
+      const response = await propertyService.getById(id);
       console.log('Réponse reçue:', response);
       
       if (response.success && response.data) {
@@ -110,28 +94,6 @@ const PropertyDetail = () => {
     }
   };
 
-    const handleRequestRental = () => {
-    if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter pour faire une demande');
-      navigate('/login');
-      return;
-    }
-    
-    if (user?.role?.slug !== 'client') {
-      toast.error('Seuls les clients peuvent faire des demandes de location');
-      return;
-    }
-    
-    // S'assurer que l'ID est un nombre
-    const propertyId = parseInt(id);
-    if (isNaN(propertyId)) {
-      toast.error('ID de bien invalide');
-      return;
-    }
-    
-    navigate(`/requests/new?property=${propertyId}`);
-  };
-
   const handleContact = () => {
     if (!isAuthenticated) {
       toast.info('Veuillez vous connecter pour contacter l\'agent');
@@ -146,7 +108,6 @@ const PropertyDetail = () => {
       toast.warning('Veuillez écrire un message');
       return;
     }
-    // Ici vous pouvez implémenter l'envoi du message via une API
     toast.success('Message envoyé avec succès');
     setShowContactForm(false);
     setContactMessage('');
@@ -162,6 +123,25 @@ const PropertyDetail = () => {
     toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
   };
 
+  const handleRequestRental = () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter pour faire une demande');
+      navigate('/login');
+      return;
+    }
+    
+    if (user?.role?.slug !== 'client') {
+      toast.error('Seuls les clients peuvent faire des demandes de location');
+      return;
+    }
+    
+    if (property?.transaction_type !== 'rent') {
+      toast.error('Ce bien n\'est pas disponible à la location');
+      return;
+    }
+    
+    navigate(`/requests/new?property=${id}`);
+  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -185,27 +165,18 @@ const PropertyDetail = () => {
       return <BuildingOfficeIcon className="h-4 w-4" />;
     
     if (featureLower.includes('parking') || featureLower.includes('garage')) 
-      return <Cog6ToothIcon className="h-4 w-4" />;
+      return <BanknotesIcon className="h-4 w-4" />;
     
     if (featureLower.includes('cave')) 
       return <KeyIcon className="h-4 w-4" />;
     
     if (featureLower.includes('balcon') || featureLower.includes('terrasse')) 
-      return <SunIcon className="h-4 w-4" />;
+      return <SparklesIcon className="h-4 w-4" />;
     
     if (featureLower.includes('meublé')) 
       return <SparklesIcon className="h-4 w-4" />;
     
     if (featureLower.includes('électroménager')) 
-      return <CpuChipIcon className="h-4 w-4" />;
-    
-    if (featureLower.includes('climatisation')) 
-      return <CloudIcon className="h-4 w-4" />;
-    
-    if (featureLower.includes('électricité')) 
-      return <BoltIcon className="h-4 w-4" />;
-    
-    if (featureLower.includes('ordinateur')) 
       return <ComputerDesktopIcon className="h-4 w-4" />;
     
     return <CheckCircleIcon className="h-4 w-4" />;
@@ -248,7 +219,7 @@ const PropertyDetail = () => {
   }
 
   // État d'erreur
-  if (error === 'ID de bien invalide') {
+  if (error) {
     return (
       <div className="error-container">
         <div className="error-card">
@@ -258,6 +229,9 @@ const PropertyDetail = () => {
           <div className="error-actions">
             <button onClick={() => navigate('/properties')} className="btn-primary">
               Voir tous les biens
+            </button>
+            <button onClick={fetchProperty} className="btn-secondary">
+              Réessayer
             </button>
           </div>
         </div>
@@ -390,6 +364,9 @@ const PropertyDetail = () => {
             {property.status === 'reserved' && (
               <span className="status-badge reserved">Réservé</span>
             )}
+            {property.status === 'sold' && (
+              <span className="status-badge sold">Vendu</span>
+            )}
           </div>
           
           {images.length > 1 && (
@@ -429,7 +406,12 @@ const PropertyDetail = () => {
             </div>
             <div className="price-tag">
               <span className="price">{property.price?.toLocaleString('fr-FR') || '0'}€</span>
-              <span className="price-period">/mois</span>
+              <span className="price-period">
+                {property.transaction_type === 'rent' ? '/mois' : ''}
+              </span>
+              <span className={`transaction-badge ${property.transaction_type}`}>
+                {property.transaction_type === 'rent' ? 'Location' : 'Vente'}
+              </span>
             </div>
           </div>
 
@@ -454,6 +436,11 @@ const PropertyDetail = () => {
               <HomeIcon className="feature-icon" />
               <span className="feature-label">Salles de bain</span>
               <span className="feature-value">{property.bathrooms || 0}</span>
+            </div>
+            <div className="feature-item">
+              <CalendarIcon className="feature-icon" />
+              <span className="feature-label">Transaction</span>
+              <span className="feature-value">{property.transaction_type === 'rent' ? 'Location' : 'Vente'}</span>
             </div>
           </div>
 
@@ -506,12 +493,18 @@ const PropertyDetail = () => {
                 <button onClick={handleContact} className="btn-contact">
                   Contacter l'agent
                 </button>
-                {property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
+                {property.transaction_type === 'rent' && property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
                   <button onClick={handleRequestRental} className="btn-request">
                     Faire une demande de location
                   </button>
                 )}
-                {!isAuthenticated && property.status === 'available' && (
+                {property.transaction_type === 'sale' && (
+                  <div className="sale-info">
+                    <ExclamationTriangleIcon className="h-5 w-5" />
+                    <p>Ce bien est à vendre. Contactez l'agent pour plus d'informations.</p>
+                  </div>
+                )}
+                {!isAuthenticated && property.transaction_type === 'rent' && property.status === 'available' && (
                   <button onClick={() => navigate('/login')} className="btn-login-prompt">
                     Connectez-vous pour faire une demande
                   </button>
@@ -645,6 +638,11 @@ const PropertyDetail = () => {
           color: white;
         }
 
+        .status-badge.sold {
+          background: #ef4444;
+          color: white;
+        }
+
         .thumbnail-grid {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
@@ -732,9 +730,28 @@ const PropertyDetail = () => {
           margin-left: 5px;
         }
 
+        .transaction-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+          margin-left: 10px;
+        }
+
+        .transaction-badge.rent {
+          background: #dcfce7;
+          color: #059669;
+        }
+
+        .transaction-badge.sale {
+          background: #fee2e2;
+          color: #dc2626;
+        }
+
         .features-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, 1fr);
           gap: 20px;
           margin-bottom: 30px;
           padding: 20px;
@@ -850,6 +867,7 @@ const PropertyDetail = () => {
 
         .contact-actions {
           display: flex;
+          flex-direction: column;
           gap: 15px;
         }
 
@@ -891,6 +909,21 @@ const PropertyDetail = () => {
 
         .btn-login-prompt:hover {
           background: #e5e7eb;
+        }
+
+        .sale-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 15px;
+          background: #fef3c7;
+          border-radius: 5px;
+          color: #d97706;
+        }
+
+        .sale-info p {
+          margin: 0;
+          font-size: 14px;
         }
 
         .contact-form {

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->decimal('price', 10, 2);
+            $table->enum('transaction_type', ['rent', 'sale'])->default('rent');
             $table->string('address');
             $table->string('city');
             $table->string('postal_code', 10);
@@ -19,13 +20,13 @@ return new class extends Migration
             $table->integer('rooms')->nullable();
             $table->integer('bedrooms')->nullable();
             $table->integer('bathrooms')->nullable();
-            $table->enum('status', ['available', 'rented', 'reserved', 'unavailable'])->default('available');
+            $table->enum('status', ['available', 'rented', 'reserved', 'unavailable', 'sold'])->default('available');
             $table->enum('type', ['apartment', 'house', 'commercial', 'land', 'studio']);
             $table->json('features')->nullable();
             $table->json('images')->nullable();
-            $table->foreignId('user_id')->constrained(); // Agent qui gère
+            $table->foreignId('user_id')->constrained();
             $table->foreignId('category_id')->constrained();
-            $table->foreignId('owner_id')->nullable()->constrained('users'); // Propriétaire
+            $table->foreignId('owner_id')->nullable()->constrained('users');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->timestamps();

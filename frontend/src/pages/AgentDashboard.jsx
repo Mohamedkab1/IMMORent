@@ -89,8 +89,9 @@ const AgentDashboard = () => {
   const loadRequests = async () => {
     try {
       const response = await requestService.getAll();
+      console.log('Demandes reçues:', response);
       if (response.success) {
-        const requestsData = response.data.data || [];
+        const requestsData = response.data || [];
         setRequests(requestsData);
         setStats(prev => ({
           ...prev,

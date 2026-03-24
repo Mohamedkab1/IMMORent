@@ -27,7 +27,7 @@ import NotFound from './pages/NotFound';
 
 // Pages protégées (biens)
 import AddProperty from './pages/AddProperty';
-// import EditProperty from './pages/EditProperty'; // Décommentez quand le fichier sera créé
+import EditProperty from './pages/EditProperty';
 
 // Pages protégées (demandes)
 import NewRequest from './pages/NewRequest';
@@ -41,6 +41,14 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AgentDashboard from './pages/AgentDashboard';
 import ClientDashboard from './pages/ClientDashboard';
+
+// Sous-pages Admin
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProperties from './pages/admin/AdminProperties';
+import AdminContracts from './pages/admin/AdminContracts';
+import AdminPayments from './pages/admin/AdminPayments';
+import AdminRequests from './pages/admin/AdminRequests';
+import AdminSettings from './pages/admin/AdminSettings';
 
 // Pages protégées (profil)
 import Profile from './pages/Profile';
@@ -74,7 +82,6 @@ function App() {
                   </PrivateRoute>
                 } 
               />
-              {/* Route d'édition - à décommenter quand EditProperty est prêt
               <Route 
                 path="/properties/edit/:id" 
                 element={
@@ -83,7 +90,6 @@ function App() {
                   </PrivateRoute>
                 } 
               />
-              */}
 
               {/* ==================== ROUTES PROTÉGÉES - DEMANDES ==================== */}
               <Route 
@@ -123,6 +129,7 @@ function App() {
                 } 
               />
               
+              {/* Dashboard Admin et ses sous-routes */}
               <Route 
                 path="/dashboard/admin" 
                 element={
@@ -131,7 +138,56 @@ function App() {
                   </PrivateRoute>
                 } 
               />
+              <Route 
+                path="/dashboard/admin/users" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminUsers />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard/admin/properties" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminProperties />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard/admin/contracts" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminContracts />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard/admin/payments" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminPayments />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard/admin/requests" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminRequests />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/dashboard/admin/settings" 
+                element={
+                  <PrivateRoute requiredRole="admin">
+                    <AdminSettings />
+                  </PrivateRoute>
+                } 
+              />
               
+              {/* Dashboard Agent */}
               <Route 
                 path="/dashboard/agent" 
                 element={
@@ -141,6 +197,7 @@ function App() {
                 } 
               />
               
+              {/* Dashboard Client */}
               <Route 
                 path="/dashboard/client" 
                 element={

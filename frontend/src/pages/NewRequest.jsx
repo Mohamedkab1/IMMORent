@@ -11,7 +11,8 @@ import {
   CurrencyEuroIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
-  UserIcon
+  UserIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 const NewRequest = () => {
@@ -41,7 +42,6 @@ const NewRequest = () => {
       return;
     }
 
-    // S'assurer que propertyId est un nombre
     const id = parseInt(propertyId);
     if (isNaN(id)) {
       toast.error('ID de bien invalide');
@@ -59,12 +59,18 @@ const NewRequest = () => {
       if (response.success && response.data) {
         setProperty(response.data);
         
+        // Vérifier si le bien est à louer
+        if (response.data.transaction_type !== 'rent') {
+          toast.error('Ce bien est à vendre, pas à louer. Les demandes de location ne sont pas acceptées.');
+          navigate('/properties');
+          return;
+        }
+        
         // Définir les dates par défaut
         const today = new Date();
         const nextMonth = new Date(today);
         nextMonth.setMonth(today.getMonth() + 1);
         
-        // Formater les dates au format YYYY-MM-DD
         const formatDate = (date) => {
           const year = date.getFullYear();
           const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -93,13 +99,12 @@ const NewRequest = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Effacer l'erreur du champ quand l'utilisateur modifie
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
-const validateForm = () => {
+  const validateForm = () => {
     const newErrors = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -108,21 +113,20 @@ const validateForm = () => {
     const endDate = new Date(formData.end_date);
     
     if (!formData.start_date) {
-        newErrors.start_date = 'La date de début est requise';
+      newErrors.start_date = 'La date de début est requise';
     } else if (startDate < today) {
-        newErrors.start_date = 'La date de début ne peut pas être dans le passé';
+      newErrors.start_date = 'La date de début ne peut pas être dans le passé';
     }
-    // Note: Nous autorisons aujourd'hui (startDate >= today)
     
     if (!formData.end_date) {
-        newErrors.end_date = 'La date de fin est requise';
+      newErrors.end_date = 'La date de fin est requise';
     } else if (endDate <= startDate) {
-        newErrors.end_date = 'La date de fin doit être postérieure à la date de début';
+      newErrors.end_date = 'La date de fin doit être postérieure à la date de début';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-};
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -142,10 +146,16 @@ const validateForm = () => {
       return;
     }
 
+    // Vérification supplémentaire
+    if (property?.transaction_type !== 'rent') {
+      toast.error('Ce bien n\'est pas disponible à la location');
+      navigate('/properties');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      // Préparer les données au format attendu par l'API
       const requestData = {
         property_id: parseInt(formData.property_id),
         start_date: formData.start_date,
@@ -153,13 +163,11 @@ const validateForm = () => {
         message: formData.message || ''
       };
       
-      console.log('Données envoyées:', requestData);
-      
       const response = await requestService.create(requestData);
       
       if (response.success) {
         toast.success('Demande envoyée avec succès !');
-        navigate('/dashboard/client');
+        navigate('/dashboard/client?refresh=true');
       } else {
         toast.error(response.message || 'Erreur lors de l\'envoi de la demande');
       }
@@ -167,20 +175,12 @@ const validateForm = () => {
       console.error('Erreur:', error);
       if (error.response?.status === 422) {
         const validationErrors = error.response.data.errors;
-        console.log('Erreurs de validation:', validationErrors);
-        
-        // Afficher les erreurs
         if (validationErrors.start_date) {
           toast.error(validationErrors.start_date[0]);
         }
         if (validationErrors.end_date) {
           toast.error(validationErrors.end_date[0]);
         }
-        if (validationErrors.property_id) {
-          toast.error(validationErrors.property_id[0]);
-        }
-        
-        // Stocker les erreurs pour les afficher dans le formulaire
         setErrors(validationErrors);
       } else {
         toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
@@ -223,6 +223,90 @@ const validateForm = () => {
 
   if (!property) {
     return null;
+  }
+
+  // Si le bien est à vendre, afficher un message d'erreur
+  if (property.transaction_type !== 'rent') {
+    return (
+      <div className="error-page">
+        <div className="error-card">
+          <ExclamationTriangleIcon className="error-icon" />
+          <h2>Bien à vendre</h2>
+          <p>Ce bien est à vendre, pas à louer. Les demandes de location ne sont pas acceptées.</p>
+          <p className="property-info">
+            <strong>Type de transaction:</strong> {property.transaction_type_label}
+          </p>
+          <div className="error-actions">
+            <button onClick={() => navigate('/properties')} className="btn-primary">
+              Voir tous les biens
+            </button>
+            <button onClick={() => navigate(`/properties/${property.id}`)} className="btn-secondary">
+              Retour au bien
+            </button>
+          </div>
+        </div>
+        <style>{`
+          .error-page {
+            min-height: calc(100vh - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: #f8fafc;
+          }
+          .error-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          }
+          .error-icon {
+            width: 60px;
+            height: 60px;
+            color: #f59e0b;
+            margin: 0 auto 20px;
+          }
+          .error-card h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+          }
+          .error-card p {
+            color: #6b7280;
+            margin-bottom: 10px;
+          }
+          .property-info {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+          }
+          .error-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+          }
+          .btn-primary {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          }
+          .btn-secondary {
+            padding: 10px 20px;
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (
@@ -270,6 +354,9 @@ const validateForm = () => {
                 <div className="property-features">
                   <span><HomeIcon className="h-4 w-4" /> {property.surface} m²</span>
                   <span><HomeIcon className="h-4 w-4" /> {property.rooms} pièces</span>
+                </div>
+                <div className="transaction-badge rent">
+                  Location
                 </div>
               </div>
             </div>
@@ -462,6 +549,20 @@ const validateForm = () => {
           gap: 5px;
         }
 
+        .transaction-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+          margin-top: 10px;
+        }
+
+        .transaction-badge.rent {
+          background: #dcfce7;
+          color: #059669;
+        }
+
         .request-form-container {
           background: white;
           border-radius: 10px;
@@ -497,14 +598,12 @@ const validateForm = () => {
           border: 1px solid #d1d5db;
           border-radius: 5px;
           font-size: 16px;
-          transition: all 0.3s;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
           outline: none;
           border-color: #2563eb;
-          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
         .form-group input.error,
@@ -513,10 +612,10 @@ const validateForm = () => {
         }
 
         .error-message {
-          display: block;
           color: #dc2626;
           font-size: 12px;
           margin-top: 5px;
+          display: block;
         }
 
         .form-info {
@@ -548,7 +647,6 @@ const validateForm = () => {
           border-radius: 5px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s;
         }
 
         .btn-submit {

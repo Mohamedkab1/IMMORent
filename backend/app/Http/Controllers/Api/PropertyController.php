@@ -92,22 +92,18 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         try {
-            Log::info('Tentative de création de bien', [
-                'user_id' => $request->user()?->id,
-                'data' => $request->except('images')
-            ]);
-
             $validator = Validator::make($request->all(), [
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
+                'transaction_type' => 'required|in:rent,sale',
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'postal_code' => 'required|string|max:10',
                 'surface' => 'required|numeric|min:0',
                 'type' => 'required|in:apartment,house,commercial,land,studio',
                 'category_id' => 'required|exists:categories,id',
-                'rooms' => 'nullable|integer|min:0',
+                'rooms' => 'required|integer|min:0',
                 'bedrooms' => 'nullable|integer|min:0',
                 'bathrooms' => 'nullable|integer|min:0',
                 'features' => 'nullable|string',
@@ -126,30 +122,26 @@ class PropertyController extends Controller
             $data = $request->except('images');
             
             // Gestion des images
-            $images = [];
             if ($request->hasFile('images')) {
+                $images = [];
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('properties', 'public');
                     $images[] = $path;
                 }
-            }
-            $data['images'] = $images;
-
-            // Traiter les features (équipements)
-            if (isset($data['features']) && is_string($data['features'])) {
-                // Déjà en JSON
-            } elseif (isset($data['features']) && is_array($data['features'])) {
-                $data['features'] = json_encode($data['features']);
+                $data['images'] = $images;
             } else {
-                $data['features'] = json_encode([]);
+                $data['images'] = [];
             }
 
-            $data['user_id'] = $request->user()->id; // Agent connecté
+            // Traiter les features
+            if (isset($data['features']) && is_array($data['features'])) {
+                $data['features'] = json_encode($data['features']);
+            }
+
+            $data['user_id'] = $request->user()->id;
             $data['status'] = 'available';
 
             $property = Property::create($data);
-
-            Log::info('Bien créé avec succès', ['property_id' => $property->id]);
 
             return response()->json([
                 'success' => true,
@@ -165,6 +157,74 @@ class PropertyController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function formatProperty($property, $detailed = false)
+    {
+        // Parser les features
+        $features = [];
+        if (isset($property->features)) {
+            if (is_string($property->features)) {
+                $features = json_decode($property->features, true) ?? [];
+            } elseif (is_array($property->features)) {
+                $features = $property->features;
+            }
+        }
+
+        // Parser les images
+        $images = [];
+        if (isset($property->images)) {
+            if (is_string($property->images)) {
+                $images = json_decode($property->images, true) ?? [];
+            } elseif (is_array($property->images)) {
+                $images = $property->images;
+            }
+        }
+
+        $formatted = [
+            'id' => $property->id,
+            'title' => $property->title,
+            'description' => $property->description,
+            'price' => (float) $property->price,
+            'transaction_type' => $property->transaction_type,
+            'transaction_type_label' => $property->transaction_type_label,
+            'price_display' => $property->price_display,
+            'address' => $property->address,
+            'city' => $property->city,
+            'postal_code' => $property->postal_code,
+            'surface' => (float) $property->surface,
+            'rooms' => $property->rooms,
+            'bedrooms' => $property->bedrooms,
+            'bathrooms' => $property->bathrooms,
+            'status' => $property->status,
+            'status_label' => $property->status_label,
+            'type' => $property->type,
+            'type_label' => $property->type_label,
+            'features' => $features,
+            'images' => $images,
+            'category_id' => $property->category_id,
+            'user_id' => $property->user_id,
+            'owner_id' => $property->owner_id,
+            'created_at' => $property->created_at,
+            'updated_at' => $property->updated_at,
+        ];
+
+        if ($detailed) {
+            $formatted['full_address'] = $property->full_address;
+            $formatted['user'] = $property->user ? [
+                'id' => $property->user->id,
+                'name' => $property->user->name,
+                'email' => $property->user->email,
+                'phone' => $property->user->phone,
+            ] : null;
+            $formatted['category'] = $property->category ? [
+                'id' => $property->category->id,
+                'name' => $property->category->name,
+                'slug' => $property->category->slug,
+            ] : null;
+        }
+
+        return $formatted;
     }
 
     /**
@@ -382,73 +442,6 @@ class PropertyController extends Controller
         }
     }
 
-    /**
-     * Formater les données d'une propriété
-     */
-    private function formatProperty($property, $detailed = false)
-    {
-        // Parser les features
-        $features = [];
-        if (isset($property->features)) {
-            if (is_string($property->features)) {
-                $features = json_decode($property->features, true) ?? [];
-            } elseif (is_array($property->features)) {
-                $features = $property->features;
-            }
-        }
-
-        // Parser les images
-        $images = [];
-        if (isset($property->images)) {
-            if (is_string($property->images)) {
-                $images = json_decode($property->images, true) ?? [];
-            } elseif (is_array($property->images)) {
-                $images = $property->images;
-            }
-        }
-
-        $formatted = [
-            'id' => $property->id,
-            'title' => $property->title,
-            'description' => $property->description,
-            'price' => (float) $property->price,
-            'address' => $property->address,
-            'city' => $property->city,
-            'postal_code' => $property->postal_code,
-            'surface' => (float) $property->surface,
-            'rooms' => $property->rooms,
-            'bedrooms' => $property->bedrooms,
-            'bathrooms' => $property->bathrooms,
-            'status' => $property->status,
-            'status_label' => $this->getStatusLabel($property->status),
-            'type' => $property->type,
-            'type_label' => $this->getTypeLabel($property->type),
-            'features' => $features,
-            'images' => $images,
-            'category_id' => $property->category_id,
-            'user_id' => $property->user_id,
-            'owner_id' => $property->owner_id,
-            'created_at' => $property->created_at,
-            'updated_at' => $property->updated_at,
-        ];
-
-        if ($detailed) {
-            $formatted['full_address'] = $property->address . ', ' . $property->city . ' ' . $property->postal_code;
-            $formatted['user'] = $property->user ? [
-                'id' => $property->user->id,
-                'name' => $property->user->name,
-                'email' => $property->user->email,
-                'phone' => $property->user->phone,
-            ] : null;
-            $formatted['category'] = $property->category ? [
-                'id' => $property->category->id,
-                'name' => $property->category->name,
-                'slug' => $property->category->slug,
-            ] : null;
-        }
-
-        return $formatted;
-    }
 
     private function getTypeLabel($type)
     {
