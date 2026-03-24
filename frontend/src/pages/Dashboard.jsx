@@ -7,16 +7,10 @@ const Dashboard = () => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // Rediriger vers le dashboard approprié selon le rôle
   switch (user.role?.slug) {
-    case 'admin':
-      return <Navigate to="/dashboard/admin" replace />;
-    case 'agent':
-      return <Navigate to="/dashboard/agent" replace />;
-    case 'client':
-      return <Navigate to="/dashboard/client" replace />;
-    default:
-      return <Navigate to="/" replace />;
+    case 'admin': return <Navigate to="/dashboard/admin" replace />;
+    case 'agent': return <Navigate to="/dashboard/agent" replace />;
+    default: return <Navigate to="/dashboard/client" replace />;
   }
 };
 

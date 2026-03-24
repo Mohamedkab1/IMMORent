@@ -1,1215 +1,306 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { toast } from 'react-toastify';
-import {
-  BuildingOfficeIcon,
-  DocumentTextIcon,
-  CurrencyEuroIcon,
-  BellIcon,
-  UserIcon,
-  PlusIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  HomeIcon,
-  MapPinIcon,
-  CalendarIcon,
-  ClockIcon,
-  DocumentDuplicateIcon  // Remplacer FileTextIcon par DocumentDuplicateIcon
+import { 
+  BuildingOfficeIcon, DocumentTextIcon, CurrencyEuroIcon, BellIcon, UserIcon, 
+  PlusIcon, CheckCircleIcon, XCircleIcon, EyeIcon, PencilIcon, TrashIcon, 
+  HomeIcon, MapPinIcon, CalendarIcon, DocumentDuplicateIcon 
 } from '@heroicons/react/24/outline';
 
 const AgentDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalProperties: 0,
-    availableProperties: 0,
-    pendingRequests: 0,
-    activeContracts: 0,
-    monthlyRevenue: 0
-  });
+  const [stats, setStats] = useState({ totalProperties: 0, availableProperties: 0, pendingRequests: 0, activeContracts: 0, monthlyRevenue: 0 });
 
-  // Charger les données au montage du composant
   useEffect(() => {
-    // Vérifier si un paramètre refresh est présent dans l'URL
-    const queryParams = new URLSearchParams(location.search);
-    const shouldRefresh = queryParams.get('refresh');
-    
     loadAllData();
-    
-    // Si refresh=true, recharger les données après 1 seconde
-    if (shouldRefresh === 'true') {
-      setTimeout(() => {
-        loadAllData();
-      }, 1000);
-    }
+    if (location.search.includes('refresh')) setTimeout(() => loadAllData(), 500);
   }, [location.search]);
 
   const loadAllData = async () => {
     setLoading(true);
-    await Promise.all([
-      loadProperties(),
-      loadRequests(),
-      loadContracts(),
-      loadStats()
-    ]);
+    await Promise.all([loadProperties(), loadRequests(), loadContracts()]);
     setLoading(false);
   };
 
   const loadProperties = async () => {
     try {
-      const response = await propertyService.getMyProperties();
-      if (response.success) {
-        const propertiesData = response.data.data || [];
-        setProperties(propertiesData);
-        setStats(prev => ({
-          ...prev,
-          totalProperties: propertiesData.length,
-          availableProperties: propertiesData.filter(p => p.status === 'available').length
-        }));
+      const res = await propertyService.getMyProperties();
+      if (res.success) {
+        const data = res.data.data || [];
+        setProperties(data);
+        setStats(prev => ({ ...prev, totalProperties: data.length, availableProperties: data.filter(p => p.status === 'available').length }));
       }
-    } catch (error) {
-      console.error('Erreur chargement biens:', error);
-      toast.error('Erreur lors du chargement des biens');
-    }
+    } catch (error) { toast.error('Erreur chargement biens'); }
   };
 
   const loadRequests = async () => {
     try {
-      const response = await requestService.getAll();
-      console.log('Demandes reçues:', response);
-      if (response.success) {
-        const requestsData = response.data || [];
-        setRequests(requestsData);
-        setStats(prev => ({
-          ...prev,
-          pendingRequests: requestsData.filter(r => r.status === 'pending').length
-        }));
+      const res = await requestService.getAll();
+      if (res.success) {
+        const data = res.data || [];
+        setRequests(data);
+        setStats(prev => ({ ...prev, pendingRequests: data.filter(r => r.status === 'pending').length }));
       }
-    } catch (error) {
-      console.error('Erreur chargement demandes:', error);
-    }
+    } catch (error) {}
   };
 
   const loadContracts = async () => {
     try {
-      const response = await contractService.getAgentContracts();
-      if (response.success) {
-        const contractsData = response.data.data || [];
-        setContracts(contractsData);
-        setStats(prev => ({
-          ...prev,
-          activeContracts: contractsData.filter(c => c.status === 'active').length,
-          monthlyRevenue: contractsData
-            .filter(c => c.status === 'active')
-            .reduce((sum, c) => sum + (c.monthly_rent || 0), 0)
-        }));
+      const res = await contractService.getAgentContracts();
+      if (res.success) {
+        const data = res.data.data || [];
+        setContracts(data);
+        setStats(prev => ({ ...prev, activeContracts: data.filter(c => c.status === 'active').length, monthlyRevenue: data.filter(c => c.status === 'active').reduce((s, c) => s + (c.monthly_rent || 0), 0) }));
       }
-    } catch (error) {
-      console.error('Erreur chargement contrats:', error);
-    }
-  };
-
-  const loadStats = async () => {
-    // Les stats sont déjà mises à jour dans les autres fonctions
+    } catch (error) {}
   };
 
   const handleDeleteProperty = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce bien ?')) {
-      try {
-        await propertyService.delete(id);
-        toast.success('Bien supprimé avec succès');
-        loadProperties();
-      } catch (error) {
-        toast.error('Erreur lors de la suppression');
-      }
-    }
-  };
-
-  const handleProcessRequest = async (requestId, status, rejectionReason = null) => {
-    const actionText = status === 'approved' ? 'approuver' : 'refuser';
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${actionText} cette demande ?`)) {
-      return;
-    }
-
-    try {
-      const response = await requestService.process(requestId, {
-        status,
-        rejection_reason: rejectionReason
-      });
-      
-      if (response.success) {
-        toast.success(`Demande ${status === 'approved' ? 'approuvée' : 'refusée'} avec succès`);
-        
-        if (status === 'approved') {
-          // Rediriger vers la création de contrat
-          navigate(`/contracts/new?request=${requestId}`);
-        } else {
-          loadRequests();
-        }
-      } else {
-        toast.error(response.message || 'Erreur lors du traitement');
-      }
-    } catch (error) {
-      toast.error('Erreur lors du traitement de la demande');
+    if (window.confirm('Supprimer ce bien ?')) {
+      await propertyService.delete(id);
+      toast.success('Bien supprimé');
+      loadProperties();
     }
   };
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      available: { color: '#10b981', text: 'Disponible' },
-      rented: { color: '#6b7280', text: 'Loué' },
-      reserved: { color: '#f59e0b', text: 'Réservé' },
-      pending: { color: '#f59e0b', text: 'En attente' },
-      approved: { color: '#10b981', text: 'Approuvée' },
-      rejected: { color: '#ef4444', text: 'Refusée' },
-      cancelled: { color: '#9ca3af', text: 'Annulée' },
-      active: { color: '#10b981', text: 'Actif' },
-      terminated: { color: '#ef4444', text: 'Résilié' },
-      expired: { color: '#6b7280', text: 'Expiré' }
+    const config = { 
+      available: { bg: '#dcfce7', color: '#059669', text: 'Disponible' }, 
+      rented: { bg: '#f3f4f6', color: '#6b7280', text: 'Loué' }, 
+      reserved: { bg: '#fef3c7', color: '#d97706', text: 'Réservé' }, 
+      pending: { bg: '#fef3c7', color: '#d97706', text: 'En attente' }, 
+      active: { bg: '#dcfce7', color: '#059669', text: 'Actif' } 
     };
-    const config = statusConfig[status] || statusConfig.pending;
-    
-    return (
-      <span style={{ 
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '5px',
-        padding: '4px 10px',
-        background: config.color + '20',
-        color: config.color,
-        borderRadius: '20px',
-        fontSize: '12px',
-        fontWeight: '500'
-      }}>
-        {config.text}
-      </span>
-    );
+    const c = config[status] || config.pending;
+    return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
   };
 
-  if (loading && properties.length === 0) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <div className="spinner"></div>
-        <style>{`
-          .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e5e7eb;
-            border-top-color: #2563eb;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading"><div className="spinner"></div></div>;
 
   return (
-    <div className="agent-dashboard">
-      {/* Sidebar */}
-      <div className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <div className="user-info">
-            <div className="user-avatar">
-              {user?.name?.charAt(0)}
-            </div>
-            <div className="user-details">
-              <h3>{user?.name}</h3>
-              <p>Agent immobilier</p>
+    <>
+      <div className="agent-dashboard">
+        <div className="dashboard-sidebar">
+          <div className="sidebar-header">
+            <div className="user-info">
+              <div className="user-avatar">{user?.name?.charAt(0)}</div>
+              <div><h3>{user?.name}</h3><p>Agent immobilier</p></div>
             </div>
           </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          <button 
-            className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <BuildingOfficeIcon className="nav-icon" />
-            <span>Tableau de bord</span>
-          </button>
-          <button 
-            className={`nav-link ${activeTab === 'properties' ? 'active' : ''}`}
-            onClick={() => setActiveTab('properties')}
-          >
-            <HomeIcon className="nav-icon" />
-            <span>Mes biens</span>
-            <span className="badge">{stats.totalProperties}</span>
-          </button>
-          <button 
-            className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
-            <DocumentTextIcon className="nav-icon" />
-            <span>Demandes</span>
-            {stats.pendingRequests > 0 && (
-              <span className="badge warning">{stats.pendingRequests}</span>
-            )}
-          </button>
-          <button 
-            className={`nav-link ${activeTab === 'contracts' ? 'active' : ''}`}
-            onClick={() => setActiveTab('contracts')}
-          >
-            <DocumentDuplicateIcon className="nav-icon" />
-            <span>Contrats</span>
-            <span className="badge">{stats.activeContracts}</span>
-          </button>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/properties/new" className="btn-add-property">
-            <PlusIcon className="h-5 w-5" />
-            Ajouter un bien
-          </Link>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="dashboard-main">
-        <div className="content-header">
-          <h1>Tableau de bord agent</h1>
-          <div className="header-actions">
-            <button className="btn-notification">
-              <BellIcon className="h-6 w-6" />
-              <span className="notification-badge">{stats.pendingRequests}</span>
+          <nav className="sidebar-nav">
+            <button className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+              <BuildingOfficeIcon className="nav-icon" /> Tableau de bord
             </button>
-            <Link to="/profile" className="btn-profile">
-              <UserIcon className="h-6 w-6" />
-            </Link>
+            <button className={`nav-link ${activeTab === 'properties' ? 'active' : ''}`} onClick={() => setActiveTab('properties')}>
+              <HomeIcon className="nav-icon" /> Mes biens <span className="badge">{stats.totalProperties}</span>
+            </button>
+            <button className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`} onClick={() => setActiveTab('requests')}>
+              <DocumentTextIcon className="nav-icon" /> Demandes {stats.pendingRequests > 0 && <span className="badge warning">{stats.pendingRequests}</span>}
+            </button>
+            <button className={`nav-link ${activeTab === 'contracts' ? 'active' : ''}`} onClick={() => setActiveTab('contracts')}>
+              <DocumentDuplicateIcon className="nav-icon" /> Contrats <span className="badge">{stats.activeContracts}</span>
+            </button>
+          </nav>
+          <div className="sidebar-footer">
+            <Link to="/properties/new" className="btn-add"><PlusIcon /> Ajouter un bien</Link>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon properties">
-              <BuildingOfficeIcon className="h-8 w-8" />
-            </div>
-            <div className="stat-info">
-              <h3>{stats.totalProperties}</h3>
-              <p>Biens gérés</p>
+        <div className="dashboard-main">
+          <div className="content-header">
+            <h1>Tableau de bord agent</h1>
+            <div className="header-actions">
+              <button className="btn-notification"><BellIcon /><span className="badge">{stats.pendingRequests}</span></button>
+              <Link to="/profile"><UserIcon /></Link>
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon available">
-              <HomeIcon className="h-8 w-8" />
-            </div>
-            <div className="stat-info">
-              <h3>{stats.availableProperties}</h3>
-              <p>Biens disponibles</p>
-            </div>
+          <div className="stats-grid">
+            <div className="stat-card"><div className="stat-icon properties"><BuildingOfficeIcon /></div><div><h3>{stats.totalProperties}</h3><p>Biens gérés</p></div></div>
+            <div className="stat-card"><div className="stat-icon available"><HomeIcon /></div><div><h3>{stats.availableProperties}</h3><p>Biens disponibles</p></div></div>
+            <div className="stat-card"><div className="stat-icon requests"><DocumentTextIcon /></div><div><h3>{stats.pendingRequests}</h3><p>Demandes en attente</p></div></div>
+            <div className="stat-card"><div className="stat-icon revenue"><CurrencyEuroIcon /></div><div><h3>{stats.monthlyRevenue.toLocaleString()}€</h3><p>Revenus mensuels</p></div></div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon requests">
-              <DocumentTextIcon className="h-8 w-8" />
-            </div>
-            <div className="stat-info">
-              <h3>{stats.pendingRequests}</h3>
-              <p>Demandes en attente</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon revenue">
-              <CurrencyEuroIcon className="h-8 w-8" />
-            </div>
-            <div className="stat-info">
-              <h3>{stats.monthlyRevenue.toLocaleString()}€</h3>
-              <p>Revenus mensuels</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Content based on active tab */}
-        <div className="tab-content">
-          {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             <>
-              {/* Recent Properties */}
               <div className="content-section">
-                <div className="section-header">
-                  <h2>Mes biens récents</h2>
-                  <button className="view-all" onClick={() => setActiveTab('properties')}>
-                    Voir tout ({stats.totalProperties})
-                  </button>
-                </div>
-                <div className="properties-list">
-                  {properties.slice(0, 3).map(property => (
-                    <div key={property.id} className="property-item">
-                      <div className="property-info">
-                        <h4>{property.title}</h4>
-                        <p className="property-location">
-                          <MapPinIcon className="h-4 w-4" />
-                          {property.city} • {property.price}€/mois
-                        </p>
-                      </div>
-                      {getStatusBadge(property.status)}
-                      <div className="property-actions">
-                        <Link to={`/properties/${property.id}`} className="btn-view" title="Voir">
-                          <EyeIcon className="h-4 w-4" />
-                        </Link>
-                        <Link to={`/properties/edit/${property.id}`} className="btn-edit" title="Modifier">
-                          <PencilIcon className="h-4 w-4" />
-                        </Link>
-                        <button onClick={() => handleDeleteProperty(property.id)} className="btn-delete" title="Supprimer">
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                <div className="section-header"><h2>Mes biens récents</h2><button className="view-all" onClick={() => setActiveTab('properties')}>Voir tout ({stats.totalProperties})</button></div>
+                {properties.slice(0, 3).map(p => (
+                  <div key={p.id} className="property-item">
+                    <div><h4>{p.title}</h4><p><MapPinIcon /> {p.city} • {p.price}€/mois</p></div>
+                    {getStatusBadge(p.status)}
+                    <div>
+                      <Link to={`/properties/${p.id}`}><EyeIcon /></Link>
+                      <Link to={`/properties/edit/${p.id}`}><PencilIcon /></Link>
+                      <button onClick={() => handleDeleteProperty(p.id)}><TrashIcon /></button>
                     </div>
-                  ))}
-                  {properties.length === 0 && (
-                    <div className="empty-state">
-                      <p>Aucun bien ajouté pour le moment</p>
-                      <Link to="/properties/new" className="btn-add-first">
-                        Ajouter votre premier bien
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))}
+                {properties.length === 0 && <div className="empty"><p>Aucun bien</p><Link to="/properties/new">Ajouter un bien</Link></div>}
               </div>
-
-              {/* Pending Requests */}
               <div className="content-section">
-                <div className="section-header">
-                  <h2>Demandes en attente</h2>
-                  <button className="view-all" onClick={() => setActiveTab('requests')}>
-                    Voir tout ({stats.pendingRequests})
-                  </button>
-                </div>
-                <div className="requests-list">
-                  {requests.filter(r => r.status === 'pending').slice(0, 3).map(request => (
-                    <div key={request.id} className="request-item">
-                      <div className="request-info">
-                        <h4>{request.user?.name || 'Client'}</h4>
-                        <p>{request.property?.title || 'Bien'}</p>
-                        <span className="request-date">
-                          <CalendarIcon className="h-3 w-3" />
-                          {new Date(request.created_at).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
-                      <div className="request-actions">
-                        <button 
-                          onClick={() => handleProcessRequest(request.id, 'approved')} 
-                          className="btn-approve" 
-                          title="Approuver"
-                        >
-                          <CheckCircleIcon className="h-5 w-5" />
-                        </button>
-                        <button 
-                          onClick={() => handleProcessRequest(request.id, 'rejected')} 
-                          className="btn-reject" 
-                          title="Refuser"
-                        >
-                          <XCircleIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {requests.filter(r => r.status === 'pending').length === 0 && (
-                    <div className="empty-state">
-                      <p>Aucune demande en attente</p>
-                    </div>
-                  )}
-                </div>
+                <div className="section-header"><h2>Demandes en attente</h2><button className="view-all" onClick={() => setActiveTab('requests')}>Voir tout ({stats.pendingRequests})</button></div>
+                {requests.filter(r => r.status === 'pending').slice(0, 3).map(r => (
+                  <div key={r.id} className="request-item">
+                    <div><h4>{r.user?.name}</h4><p>{r.property?.title}</p><span><CalendarIcon /> {new Date(r.created_at).toLocaleDateString()}</span></div>
+                    <div><button className="btn-approve"><CheckCircleIcon /></button><button className="btn-reject"><XCircleIcon /></button></div>
+                  </div>
+                ))}
               </div>
-
-              {/* Recent Contracts */}
               <div className="content-section">
-                <div className="section-header">
-                  <h2>Contrats récents</h2>
-                  <button className="view-all" onClick={() => setActiveTab('contracts')}>
-                    Voir tout ({stats.activeContracts})
-                  </button>
-                </div>
-                <div className="contracts-list">
-                  {contracts.slice(0, 3).map(contract => (
-                    <Link to={`/contracts/${contract.id}`} key={contract.id} className="contract-item">
-                      <div className="contract-info">
-                        <h4>{contract.property?.title}</h4>
-                        <p>Locataire: {contract.tenant?.name}</p>
-                        <p className="contract-period">
-                          <CalendarIcon className="h-3 w-3" />
-                          {new Date(contract.start_date).toLocaleDateString('fr-FR')} - {new Date(contract.end_date).toLocaleDateString('fr-FR')}
-                        </p>
-                      </div>
-                      <div className="contract-amount">
-                        {contract.monthly_rent}€
-                        <span>/mois</span>
-                      </div>
-                    </Link>
-                  ))}
-                  {contracts.length === 0 && (
-                    <div className="empty-state">
-                      <p>Aucun contrat pour le moment</p>
-                    </div>
-                  )}
-                </div>
+                <div className="section-header"><h2>Contrats récents</h2><button className="view-all" onClick={() => setActiveTab('contracts')}>Voir tout ({stats.activeContracts})</button></div>
+                {contracts.slice(0, 3).map(c => (
+                  <Link to={`/contracts/${c.id}`} key={c.id} className="contract-item">
+                    <div><h4>{c.property?.title}</h4><p>Locataire: {c.tenant?.name}</p><span><CalendarIcon /> {new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}</span></div>
+                    <div className="amount">{c.monthly_rent}€<span>/mois</span></div>
+                  </Link>
+                ))}
               </div>
             </>
           )}
 
-          {/* Properties Tab */}
           {activeTab === 'properties' && (
-            <div className="content-section full-width">
-              <div className="section-header">
-                <h2>Mes biens</h2>
-                <Link to="/properties/new" className="btn-add">
-                  <PlusIcon className="h-5 w-5" />
-                  Ajouter un bien
-                </Link>
-              </div>
-              <div className="properties-table">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Titre</th>
-                      <th>Ville</th>
-                      <th>Prix</th>
-                      <th>Surface</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
+            <div className="content-section full">
+              <div className="section-header"><h2>Mes biens</h2><Link to="/properties/new" className="btn-add-small"><PlusIcon /> Ajouter</Link></div>
+              <table className="data-table">
+                <thead><tr><th>Titre</th><th>Ville</th><th>Prix</th><th>Surface</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {properties.map(p => (
+                    <tr key={p.id}>
+                      <td><strong>{p.title}</strong></td>
+                      <td>{p.city}</td>
+                      <td>{p.price}€</td>
+                      <td>{p.surface} m²</td>
+                      <td>{getStatusBadge(p.status)}</td>
+                      <td className="actions">
+                        <Link to={`/properties/${p.id}`}><EyeIcon /></Link>
+                        <Link to={`/properties/edit/${p.id}`}><PencilIcon /></Link>
+                        <button onClick={() => handleDeleteProperty(p.id)}><TrashIcon /></button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {properties.map(property => (
-                      <tr key={property.id}>
-                        <td><strong>{property.title}</strong></td>
-                        <td>{property.city}</td>
-                        <td>{property.price}€</td>
-                        <td>{property.surface} m²</td>
-                        <td>{getStatusBadge(property.status)}</td>
-                        <td className="actions-cell">
-                          <Link to={`/properties/${property.id}`} className="action-btn" title="Voir">
-                            <EyeIcon className="h-4 w-4" />
-                          </Link>
-                          <Link to={`/properties/edit/${property.id}`} className="action-btn" title="Modifier">
-                            <PencilIcon className="h-4 w-4" />
-                          </Link>
-                          <button onClick={() => handleDeleteProperty(property.id)} className="action-btn delete" title="Supprimer">
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {properties.length === 0 && (
-                      <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>
-                          <p>Aucun bien ajouté pour le moment</p>
-                          <Link to="/properties/new" style={{ marginTop: '10px', display: 'inline-block' }}>
-                            Ajouter votre premier bien
-                          </Link>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* Requests Tab */}
           {activeTab === 'requests' && (
-            <div className="content-section full-width">
-              <div className="section-header">
-                <h2>Demandes de location</h2>
-              </div>
-              <div className="requests-table">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Client</th>
-                      <th>Bien</th>
-                      <th>Période</th>
-                      <th>Date demande</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
+            <div className="content-section full">
+              <div className="section-header"><h2>Demandes de location</h2></div>
+              <table className="data-table">
+                <thead><tr><th>Client</th><th>Bien</th><th>Période</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {requests.map(r => (
+                    <tr key={r.id}>
+                      <td><strong>{r.user?.name}</strong><br/>{r.user?.email}</td>
+                      <td>{r.property?.title}</td>
+                      <td>{new Date(r.start_date).toLocaleDateString()} - {new Date(r.end_date).toLocaleDateString()}</td>
+                      <td>{new Date(r.created_at).toLocaleDateString()}</td>
+                      <td>{getStatusBadge(r.status)}</td>
+                      <td className="actions">
+                        {r.status === 'pending' && <><button className="btn-approve-small">Approuver</button><button className="btn-reject-small">Refuser</button></>}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {requests.map(request => (
-                      <tr key={request.id}>
-                        <td>
-                          <strong>{request.user?.name || 'Client'}</strong>
-                          <p className="text-sm text-gray-500">{request.user?.email}</p>
-                        </td>
-                        <td>{request.property?.title || 'Bien'}</td>
-                        <td>
-                          <span className="date-range">
-                            {new Date(request.start_date).toLocaleDateString('fr-FR')} - {new Date(request.end_date).toLocaleDateString('fr-FR')}
-                          </span>
-                        </td>
-                        <td>{new Date(request.created_at).toLocaleDateString('fr-FR')}</td>
-                        <td>{getStatusBadge(request.status)}</td>
-                        <td className="actions-cell">
-                          {request.status === 'pending' && (
-                            <>
-                              <button 
-                                onClick={() => handleProcessRequest(request.id, 'approved')} 
-                                className="btn-approve-small"
-                              >
-                                Approuver
-                              </button>
-                              <button 
-                                onClick={() => handleProcessRequest(request.id, 'rejected')} 
-                                className="btn-reject-small"
-                              >
-                                Refuser
-                              </button>
-                            </>
-                          )}
-                          {request.status === 'approved' && (
-                            <Link to={`/contracts/new?request=${request.id}`} className="btn-create-contract">
-                              Créer contrat
-                            </Link>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {requests.length === 0 && (
-                      <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>
-                          Aucune demande reçue
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* Contracts Tab */}
           {activeTab === 'contracts' && (
-            <div className="content-section full-width">
-              <div className="section-header">
-                <h2>Contrats de location</h2>
-              </div>
-              <div className="contracts-table">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>N° Contrat</th>
-                      <th>Bien</th>
-                      <th>Locataire</th>
-                      <th>Période</th>
-                      <th>Loyer</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
+            <div className="content-section full">
+              <div className="section-header"><h2>Contrats</h2></div>
+              <table className="data-table">
+                <thead><tr><th>N° Contrat</th><th>Bien</th><th>Locataire</th><th>Période</th><th>Loyer</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {contracts.map(c => (
+                    <tr key={c.id}>
+                      <td><Link to={`/contracts/${c.id}`} className="link">{c.contract_number}</Link></td>
+                      <td>{c.property?.title}</td>
+                      <td>{c.tenant?.name}</td>
+                      <td>{new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}</td>
+                      <td>{c.monthly_rent}€</td>
+                      <td>{getStatusBadge(c.status)}</td>
+                      <td className="actions"><Link to={`/contracts/${c.id}`}><EyeIcon /></Link></td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {contracts.map(contract => (
-                      <tr key={contract.id}>
-                        <td>
-                          <Link to={`/contracts/${contract.id}`} className="contract-link">
-                            {contract.contract_number}
-                          </Link>
-                        </td>
-                        <td>{contract.property?.title || 'Bien'}</td>
-                        <td>{contract.tenant?.name || 'Locataire'}</td>
-                        <td>
-                          <span className="date-range">
-                            {new Date(contract.start_date).toLocaleDateString('fr-FR')} - {new Date(contract.end_date).toLocaleDateString('fr-FR')}
-                          </span>
-                        </td>
-                        <td>{contract.monthly_rent}€ / mois</td>
-                        <td>{getStatusBadge(contract.status)}</td>
-                        <td className="actions-cell">
-                          <Link to={`/contracts/${contract.id}`} className="action-btn" title="Voir">
-                            <EyeIcon className="h-4 w-4" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                    {contracts.length === 0 && (
-                      <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>
-                          Aucun contrat pour le moment
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
       </div>
 
       <style>{`
-        .agent-dashboard {
-          display: flex;
-          min-height: calc(100vh - 70px);
-          background: #f8fafc;
-        }
-
-        .dashboard-sidebar {
-          width: 280px;
-          background: white;
-          box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-          position: fixed;
-          top: 70px;
-          left: 0;
-          bottom: 0;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .sidebar-header {
-          padding: 30px 20px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .user-info {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .user-avatar {
-          width: 50px;
-          height: 50px;
-          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 20px;
-          font-weight: 600;
-        }
-
-        .user-details h3 {
-          color: #1f2937;
-          font-size: 16px;
-          margin-bottom: 5px;
-        }
-
-        .user-details p {
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        .sidebar-nav {
-          flex: 1;
-          padding: 20px;
-        }
-
-        .nav-link {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          width: 100%;
-          padding: 12px 15px;
-          color: #6b7280;
-          border: none;
-          background: none;
-          border-radius: 5px;
-          transition: all 0.3s;
-          margin-bottom: 5px;
-          cursor: pointer;
-          font-size: 14px;
-          position: relative;
-        }
-
-        .nav-link:hover {
-          background: #f3f4f6;
-          color: #2563eb;
-        }
-
-        .nav-link.active {
-          background: #2563eb;
-          color: white;
-        }
-
-        .nav-icon {
-          width: 20px;
-          height: 20px;
-        }
-
-        .badge {
-          position: absolute;
-          right: 15px;
-          background: #ef4444;
-          color: white;
-          font-size: 10px;
-          padding: 2px 6px;
-          border-radius: 10px;
-        }
-
-        .badge.warning {
-          background: #f59e0b;
-        }
-
-        .sidebar-footer {
-          padding: 20px;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .btn-add-property {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          width: 100%;
-          padding: 12px;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: white;
-          text-decoration: none;
-          border-radius: 5px;
-          font-size: 14px;
-          font-weight: 500;
-          transition: opacity 0.3s;
-        }
-
-        .btn-add-property:hover {
-          opacity: 0.9;
-        }
-
-        .dashboard-main {
-          flex: 1;
-          margin-left: 280px;
-          padding: 30px;
-        }
-
-        .content-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 30px;
-        }
-
-        .content-header h1 {
-          color: #1f2937;
-          font-size: 24px;
-        }
-
-        .header-actions {
-          display: flex;
-          gap: 15px;
-        }
-
-        .btn-notification,
-        .btn-profile {
-          background: white;
-          border: none;
-          padding: 10px;
-          border-radius: 50%;
-          cursor: pointer;
-          color: #6b7280;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          position: relative;
-        }
-
-        .notification-badge {
-          position: absolute;
-          top: 5px;
-          right: 5px;
-          background: #ef4444;
-          color: white;
-          font-size: 10px;
-          padding: 2px 5px;
-          border-radius: 10px;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          display: flex;
-          align-items: center;
-        }
-
-        .stat-icon {
-          width: 50px;
-          height: 50px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-right: 15px;
-        }
-
-        .stat-icon.properties {
-          background: #e0f2fe;
-          color: #0284c7;
-        }
-
-        .stat-icon.available {
-          background: #dcfce7;
-          color: #059669;
-        }
-
-        .stat-icon.requests {
-          background: #fef3c7;
-          color: #d97706;
-        }
-
-        .stat-icon.revenue {
-          background: #e9d5ff;
-          color: #7c3aed;
-        }
-
-        .stat-info h3 {
-          font-size: 24px;
-          color: #1f2937;
-          margin-bottom: 5px;
-        }
-
-        .stat-info p {
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        .tab-content {
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
-        }
-
-        .content-section {
-          background: white;
-          border-radius: 10px;
-          padding: 20px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .content-section.full-width {
-          width: 100%;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .section-header h2 {
-          color: #1f2937;
-          font-size: 18px;
-        }
-
-        .view-all {
-          background: none;
-          border: none;
-          color: #2563eb;
-          cursor: pointer;
-          font-size: 14px;
-        }
-
-        .btn-add {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          padding: 8px 15px;
-          background: #10b981;
-          color: white;
-          text-decoration: none;
-          border-radius: 5px;
-          font-size: 14px;
-        }
-
-        .properties-list,
-        .requests-list,
-        .contracts-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .property-item,
-        .request-item,
-        .contract-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 15px;
-          background: #f9fafb;
-          border-radius: 5px;
-          text-decoration: none;
-          transition: background-color 0.3s;
-        }
-
-        .contract-item {
-          cursor: pointer;
-        }
-
-        .contract-item:hover {
-          background: #f3f4f6;
-        }
-
-        .property-info h4,
-        .request-info h4,
-        .contract-info h4 {
-          color: #1f2937;
-          margin-bottom: 5px;
-        }
-
-        .property-location {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        .request-date,
-        .contract-period {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          color: #9ca3af;
-          font-size: 12px;
-          margin-top: 5px;
-        }
-
-        .contract-amount {
-          font-size: 18px;
-          font-weight: 600;
-          color: #2563eb;
-        }
-
-        .contract-amount span {
-          font-size: 12px;
-          font-weight: normal;
-          color: #6b7280;
-        }
-
-        .property-actions,
-        .request-actions {
-          display: flex;
-          gap: 10px;
-        }
-
-        .btn-view,
-        .btn-edit,
-        .btn-delete,
-        .btn-approve,
-        .btn-reject {
-          padding: 8px;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: opacity 0.3s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .btn-view {
-          background: #e0f2fe;
-          color: #0284c7;
-        }
-
-        .btn-edit {
-          background: #fef3c7;
-          color: #d97706;
-        }
-
-        .btn-delete {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .btn-approve {
-          background: #dcfce7;
-          color: #059669;
-        }
-
-        .btn-reject {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .btn-approve-small,
-        .btn-reject-small,
-        .btn-create-contract {
-          padding: 5px 10px;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 12px;
-          margin-right: 5px;
-          text-decoration: none;
-          display: inline-block;
-        }
-
-        .btn-approve-small {
-          background: #dcfce7;
-          color: #059669;
-        }
-
-        .btn-reject-small {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .btn-create-contract {
-          background: #2563eb;
-          color: white;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 40px;
-          color: #6b7280;
-        }
-
-        .btn-add-first {
-          display: inline-block;
-          margin-top: 15px;
-          padding: 10px 20px;
-          background: #2563eb;
-          color: white;
-          text-decoration: none;
-          border-radius: 5px;
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table th {
-          text-align: left;
-          padding: 12px;
-          background: #f9fafb;
-          color: #6b7280;
-          font-weight: 500;
-          font-size: 14px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .data-table td {
-          padding: 12px;
-          border-bottom: 1px solid #e5e7eb;
-          color: #1f2937;
-        }
-
-        .data-table tr:hover {
-          background: #f9fafb;
-        }
-
-        .actions-cell {
-          display: flex;
-          gap: 5px;
-          align-items: center;
-        }
-
-        .action-btn {
-          padding: 5px;
-          border: none;
-          background: none;
-          cursor: pointer;
-          color: #6b7280;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-        }
-
-        .action-btn:hover {
-          color: #2563eb;
-        }
-
-        .action-btn.delete:hover {
-          color: #dc2626;
-        }
-
-        .contract-link {
-          color: #2563eb;
-          text-decoration: none;
-          font-weight: 500;
-        }
-
-        .contract-link:hover {
-          text-decoration: underline;
-        }
-
-        .date-range {
-          font-size: 12px;
-          white-space: nowrap;
-        }
-
-        .text-sm {
-          font-size: 12px;
-        }
-
-        .text-gray-500 {
-          color: #6b7280;
-        }
-
-        @media (max-width: 1024px) {
-          .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .dashboard-sidebar {
-            display: none;
-          }
-
-          .dashboard-main {
-            margin-left: 0;
-          }
-
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .property-item,
-          .request-item,
-          .contract-item {
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-start;
-          }
-
-          .property-actions,
-          .request-actions {
-            width: 100%;
-            justify-content: flex-end;
-          }
-
-          .data-table {
-            display: block;
-            overflow-x: auto;
-          }
-
-          .actions-cell {
-            flex-wrap: wrap;
-          }
-        }
+        .agent-dashboard { display: flex; min-height: calc(100vh - 70px); background: #f8f9fa; }
+        .dashboard-sidebar { width: 280px; background: white; box-shadow: 2px 0 8px rgba(0,0,0,0.05); position: fixed; top: 70px; left: 0; bottom: 0; overflow-y: auto; }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar { width: 3rem; height: 3rem; background: linear-gradient(135deg, #d4af37 0%, #c4a52e 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0f2b4d; font-weight: 700; font-size: 1.25rem; }
+        .user-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+        .user-info p { font-size: 0.75rem; color: #6b7280; }
+        .sidebar-nav { padding: 1rem; }
+        .nav-link { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; background: none; border: none; border-radius: 0.5rem; cursor: pointer; text-align: left; font-size: 0.875rem; color: #6b7280; transition: all 0.3s; position: relative; }
+        .nav-link:hover { background: #f3f4f6; color: #d4af37; }
+        .nav-link.active { background: #d4af37; color: #0f2b4d; }
+        .nav-icon { width: 1.25rem; height: 1.25rem; }
+        .badge { position: absolute; right: 1rem; background: #ef4444; color: white; font-size: 0.625rem; padding: 0.125rem 0.375rem; border-radius: 1rem; }
+        .badge.warning { background: #f59e0b; }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid #e5e7eb; }
+        .btn-add { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.75rem; background: #d4af37; color: #0f2b4d; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s; }
+        .btn-add:hover { background: #c4a52e; }
+        .dashboard-main { flex: 1; margin-left: 280px; padding: 1.5rem; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .content-header h1 { font-size: 1.5rem; color: #0f2b4d; }
+        .header-actions { display: flex; gap: 1rem; align-items: center; }
+        .btn-notification { position: relative; background: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: white; padding: 1rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-icon { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; }
+        .stat-icon.properties { background: #e0f2fe; color: #0284c7; }
+        .stat-icon.available { background: #dcfce7; color: #059669; }
+        .stat-icon.requests { background: #fef3c7; color: #d97706; }
+        .stat-icon.revenue { background: #e9d5ff; color: #7c3aed; }
+        .stat-card h3 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .stat-card p { font-size: 0.75rem; color: #6b7280; }
+        .content-section { background: white; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .section-header h2 { font-size: 1rem; color: #0f2b4d; }
+        .view-all { background: none; border: none; color: #d4af37; cursor: pointer; font-size: 0.75rem; }
+        .property-item, .request-item, .contract-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: #f8f9fa; border-radius: 0.5rem; margin-bottom: 0.5rem; text-decoration: none; }
+        .property-item h4, .request-item h4, .contract-item h4 { font-size: 0.875rem; margin-bottom: 0.25rem; color: #0f2b4d; }
+        .property-item p, .request-item p, .contract-item p { font-size: 0.75rem; color: #6b7280; display: flex; align-items: center; gap: 0.25rem; }
+        .amount { font-size: 1rem; font-weight: 600; color: #d4af37; }
+        .btn-approve, .btn-reject { background: none; border: none; cursor: pointer; padding: 0.25rem; border-radius: 0.25rem; }
+        .btn-approve { color: #10b981; }
+        .btn-reject { color: #ef4444; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 0.75rem; background: #f8f9fa; font-size: 0.75rem; font-weight: 500; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+        .data-table td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; font-size: 0.75rem; }
+        .data-table tr:hover { background: #f8f9fa; }
+        .link { color: #d4af37; text-decoration: none; }
+        .btn-approve-small, .btn-reject-small { padding: 0.25rem 0.5rem; border: none; border-radius: 0.25rem; font-size: 0.625rem; cursor: pointer; margin-right: 0.25rem; }
+        .btn-approve-small { background: #dcfce7; color: #059669; }
+        .btn-reject-small { background: #fee2e2; color: #dc2626; }
+        .btn-add-small { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.375rem 0.75rem; background: #d4af37; color: #0f2b4d; text-decoration: none; border-radius: 0.375rem; font-size: 0.75rem; }
+        .loading { display: flex; justify-content: center; align-items: center; height: 50vh; }
+        .spinner { width: 2rem; height: 2rem; border: 2px solid #e5e7eb; border-top-color: #d4af37; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .dashboard-sidebar { display: none; } .dashboard-main { margin-left: 0; } }
       `}</style>
-    </div>
+    </>
   );
 };
 

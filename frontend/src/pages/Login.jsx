@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -28,160 +27,149 @@ const Login = () => {
     setLoading(true);
     
     try {
-      console.log('Tentative de connexion avec:', formData.email);
       const response = await login(formData.email, formData.password);
-      console.log('Réponse login:', response);
+      toast.success(response.message || 'Connexion réussie');
       
-      if (response.success) {
-        toast.success(response.message || 'Connexion réussie');
-        
-        // Redirection selon le rôle
-        const user = response.data.user;
-        if (user.role?.slug === 'admin') {
-          navigate('/dashboard/admin');
-        } else if (user.role?.slug === 'agent') {
-          navigate('/dashboard/agent');
-        } else {
-          navigate('/dashboard/client');
-        }
+      const user = response.data.user;
+      if (user.role?.slug === 'admin') {
+        navigate('/dashboard/admin');
+      } else if (user.role?.slug === 'agent') {
+        navigate('/dashboard/agent');
       } else {
-        toast.error(response.message || 'Erreur de connexion');
+        navigate('/dashboard/client');
       }
     } catch (error) {
-      console.error('Erreur détaillée:', error);
-      console.error('Response data:', error.response?.data);
-      
-      if (error.response?.status === 401) {
-        toast.error('Email ou mot de passe incorrect');
-      } else if (error.response?.status === 422) {
-        const errors = error.response.data.errors;
-        const firstError = Object.values(errors)[0]?.[0];
-        toast.error(firstError || 'Données invalides');
-      } else {
-        toast.error(error.response?.data?.message || 'Erreur de connexion au serveur');
-      }
+      toast.error(error.response?.data?.message || 'Email ou mot de passe incorrect');
     } finally {
       setLoading(false);
     }
   };
 
+  // CORRIGEZ CES EMAILS AVEC CEUX DE VOTRE BASE DE DONNÉES
+  const demoAccounts = [
+    { email: 'admin@immorent.com', password: 'password', role: 'Admin' },
+    { email: 'agent@immorent.com', password: 'password', role: 'Agent' },
+    { email: 'client@immorent.com', password: 'password', role: 'Client' }
+  ];
+
+  const fillDemoAccount = (email, password) => {
+    setFormData({ ...formData, email, password });
+  };
+
   return (
-    <div className="login-page">
-      <div className="login-container">
-        <div className="login-left">
-          <div className="login-left-content">
-            <h2>Bienvenue sur ImmoGest</h2>
-            <p>La plateforme complète pour la gestion immobilière et la location en ligne</p>
-            <ul className="benefits-list">
-              <li>✓ Accès à des milliers de biens</li>
-              <li>✓ Gestion simplifiée des locations</li>
-              <li>✓ Suivi des paiements en temps réel</li>
-              <li>✓ Contrats sécurisés</li>
-              <li>✓ Tableaux de bord personnalisés</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="login-right">
-          <div className="login-box">
-            <div className="login-header">
-              <h2>Connexion</h2>
-              <p>Accédez à votre espace personnel</p>
+    <>
+      <div className="login-page">
+        <div className="login-container">
+          <div className="login-left">
+            <div className="login-left-content">
+              <h2>Bienvenue sur IMMORent</h2>
+              <p>La plateforme complète pour la gestion immobilière et la location en ligne</p>
+              <ul className="benefits-list">
+                <li>✓ Accès à des milliers de biens</li>
+                <li>✓ Gestion simplifiée des locations</li>
+                <li>✓ Suivi des paiements en temps réel</li>
+                <li>✓ Contrats sécurisés</li>
+                <li>✓ Tableaux de bord personnalisés</li>
+              </ul>
             </div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="login-form">
-              <div className="form-group">
-                <label htmlFor="email">
-                  <EnvelopeIcon className="input-icon" />
-                  Adresse email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="exemple@email.com"
-                  required
-                  disabled={loading}
-                />
+          <div className="login-right">
+            <div className="login-box">
+              <div className="login-header">
+                <h2>Connexion</h2>
+                <p>Accédez à votre espace personnel</p>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="password">
-                  <LockClosedIcon className="input-icon" />
-                  Mot de passe
-                </label>
-                <div className="password-input-wrapper">
+              <form onSubmit={handleSubmit} className="login-form">
+                <div className="form-group">
+                  <label htmlFor="email">Adresse email</label>
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    value={formData.password}
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
-                    placeholder="••••••••"
+                    placeholder="exemple@email.com"
                     required
                     disabled={loading}
                   />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                  </button>
                 </div>
-              </div>
 
-              <div className="form-options">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                  />
-                  <span>Se souvenir de moi</span>
-                </label>
-                <Link to="/forgot-password" className="forgot-link">
-                  Mot de passe oublié ?
+                <div className="form-group">
+                  <label htmlFor="password">Mot de passe</label>
+                  <div className="password-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-options">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleChange}
+                    />
+                    <span>Se souvenir de moi</span>
+                  </label>
+                  <Link to="/forgot-password" className="forgot-link">
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
+
+                <button type="submit" className="btn-login-submit" disabled={loading}>
+                  {loading ? 'Connexion en cours...' : 'Se connecter'}
+                </button>
+              </form>
+
+              <div className="login-footer">
+                <p>Pas encore de compte ?</p>
+                <Link to="/register" className="register-link">
+                  Créer un compte gratuitement
                 </Link>
               </div>
 
-              <button type="submit" className="btn-login" disabled={loading}>
-                {loading ? 'Connexion en cours...' : 'Se connecter'}
-              </button>
-            </form>
-
-            <div className="login-footer">
-              <p>Pas encore de compte ?</p>
-              <Link to="/register" className="register-link">
-                Créer un compte gratuitement
-              </Link>
-            </div>
-
-            <div className="demo-accounts">
-              <p className="demo-title">Comptes de démonstration :</p>
-              <div className="demo-buttons">
-                <button className="demo-btn" onClick={() => setFormData({...formData, email: 'admin@immobilier.com', password: 'password'})}>
-                  Admin
-                </button>
-                <button className="demo-btn" onClick={() => setFormData({...formData, email: 'jean.dupont@agence.com', password: 'password'})}>
-                  Agent
-                </button>
-                <button className="demo-btn" onClick={() => setFormData({...formData, email: 'pierre.durand@email.com', password: 'password'})}>
-                  Client
-                </button>
+              <div className="demo-accounts">
+                <p className="demo-title">Comptes de démonstration :</p>
+                <div className="demo-buttons">
+                  {demoAccounts.map(acc => (
+                    <button 
+                      key={acc.role}
+                      className="demo-btn" 
+                      onClick={() => fillDemoAccount(acc.email, acc.password)}
+                    >
+                      {acc.role}
+                    </button>
+                  ))}
+                </div>
+                <p className="demo-note">Mot de passe pour tous : <strong>password</strong></p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <style >{`
+      <style>{`
         .login-page {
           min-height: calc(100vh - 70px);
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%);
         }
 
         .login-container {
@@ -196,8 +184,8 @@ const Login = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 40px;
-          background: rgba(255, 255, 255, 0.1);
+          padding: 2rem;
+          background: rgba(15, 43, 77, 0.9);
           backdrop-filter: blur(10px);
         }
 
@@ -207,13 +195,14 @@ const Login = () => {
         }
 
         .login-left-content h2 {
-          font-size: 36px;
-          margin-bottom: 20px;
+          font-size: 2rem;
+          margin-bottom: 1rem;
+          color: white;
         }
 
         .login-left-content p {
-          font-size: 18px;
-          margin-bottom: 30px;
+          font-size: 1rem;
+          margin-bottom: 1.5rem;
           opacity: 0.9;
         }
 
@@ -223,10 +212,8 @@ const Login = () => {
         }
 
         .benefits-list li {
-          margin-bottom: 15px;
-          font-size: 16px;
-          display: flex;
-          align-items: center;
+          margin-bottom: 0.75rem;
+          font-size: 0.875rem;
         }
 
         .login-right {
@@ -234,7 +221,7 @@ const Login = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 40px;
+          padding: 2rem;
           background: white;
         }
 
@@ -245,13 +232,13 @@ const Login = () => {
 
         .login-header {
           text-align: center;
-          margin-bottom: 30px;
+          margin-bottom: 2rem;
         }
 
         .login-header h2 {
-          color: #1f2937;
-          font-size: 28px;
-          margin-bottom: 10px;
+          color: #0f2b4d;
+          font-size: 1.75rem;
+          margin-bottom: 0.5rem;
         }
 
         .login-header p {
@@ -259,119 +246,109 @@ const Login = () => {
         }
 
         .form-group {
-          margin-bottom: 20px;
+          margin-bottom: 1.25rem;
         }
 
         .form-group label {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          margin-bottom: 5px;
+          display: block;
+          margin-bottom: 0.5rem;
           color: #374151;
           font-weight: 500;
-        }
-
-        .input-icon {
-          width: 18px;
-          height: 18px;
-          color: #2563eb;
+          font-size: 0.875rem;
         }
 
         .form-group input {
           width: 100%;
-          padding: 12px;
+          padding: 0.75rem;
           border: 1px solid #d1d5db;
-          border-radius: 5px;
-          font-size: 16px;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
           transition: border-color 0.3s;
         }
 
         .form-group input:focus {
           outline: none;
-          border-color: #2563eb;
-          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+          border-color: #d4af37;
+          box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
         }
 
-        .password-input-wrapper {
+        .password-wrapper {
           position: relative;
         }
 
         .password-toggle {
           position: absolute;
-          right: 12px;
+          right: 0.75rem;
           top: 50%;
           transform: translateY(-50%);
           background: none;
           border: none;
           cursor: pointer;
-          color: #6b7280;
-        }
-
-        .password-toggle:hover {
-          color: #2563eb;
+          font-size: 1.125rem;
         }
 
         .form-options {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
+          margin-bottom: 1.5rem;
         }
 
         .checkbox-label {
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 0.5rem;
           color: #6b7280;
+          font-size: 0.875rem;
           cursor: pointer;
         }
 
         .forgot-link {
-          color: #2563eb;
+          color: #d4af37;
           text-decoration: none;
-          font-size: 14px;
+          font-size: 0.875rem;
         }
 
         .forgot-link:hover {
           text-decoration: underline;
         }
 
-        .btn-login {
+        .btn-login-submit {
           width: 100%;
-          padding: 14px;
-          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-          color: white;
+          padding: 0.75rem;
+          background: #d4af37;
+          color: #0f2b4d;
           border: none;
-          border-radius: 5px;
-          font-size: 16px;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
           font-weight: 600;
           cursor: pointer;
           transition: opacity 0.3s;
         }
 
-        .btn-login:hover:not(:disabled) {
+        .btn-login-submit:hover:not(:disabled) {
           opacity: 0.9;
         }
 
-        .btn-login:disabled {
+        .btn-login-submit:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
 
         .login-footer {
-          margin-top: 30px;
+          margin-top: 1.5rem;
           text-align: center;
-          padding-top: 20px;
+          padding-top: 1.5rem;
           border-top: 1px solid #e5e7eb;
         }
 
         .login-footer p {
           color: #6b7280;
-          margin-bottom: 10px;
+          margin-bottom: 0.5rem;
         }
 
         .register-link {
-          color: #2563eb;
+          color: #d4af37;
           text-decoration: none;
           font-weight: 600;
         }
@@ -381,40 +358,48 @@ const Login = () => {
         }
 
         .demo-accounts {
-          margin-top: 30px;
-          padding: 20px;
+          margin-top: 1.5rem;
+          padding: 1rem;
           background: #f9fafb;
-          border-radius: 5px;
+          border-radius: 0.5rem;
         }
 
         .demo-title {
           color: #6b7280;
-          font-size: 14px;
-          margin-bottom: 10px;
+          font-size: 0.75rem;
+          margin-bottom: 0.75rem;
           text-align: center;
         }
 
         .demo-buttons {
           display: flex;
-          gap: 10px;
+          gap: 0.5rem;
           justify-content: center;
+          margin-bottom: 0.5rem;
         }
 
         .demo-btn {
-          padding: 8px 12px;
+          padding: 0.5rem 1rem;
           background: white;
           border: 1px solid #d1d5db;
-          border-radius: 5px;
+          border-radius: 0.5rem;
           color: #374151;
-          font-size: 12px;
+          font-size: 0.75rem;
           cursor: pointer;
           transition: all 0.3s;
         }
 
         .demo-btn:hover {
-          background: #2563eb;
-          color: white;
-          border-color: #2563eb;
+          background: #d4af37;
+          color: #0f2b4d;
+          border-color: #d4af37;
+        }
+
+        .demo-note {
+          text-align: center;
+          font-size: 0.7rem;
+          color: #9ca3af;
+          margin-top: 0.5rem;
         }
 
         @media (max-width: 768px) {
@@ -423,7 +408,7 @@ const Login = () => {
           }
 
           .login-left {
-            padding: 40px 20px;
+            padding: 2rem 1rem;
           }
 
           .login-left-content {
@@ -435,7 +420,7 @@ const Login = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

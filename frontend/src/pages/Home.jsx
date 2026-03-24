@@ -1,461 +1,356 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  BuildingOfficeIcon, 
-  MagnifyingGlassIcon,
-  DocumentTextIcon,
-  CurrencyEuroIcon,
-  ShieldCheckIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  CalendarIcon
-} from '@heroicons/react/24/outline';
 
 const Home = () => {
-  const features = [
-    {
-      icon: <BuildingOfficeIcon className="h-8 w-8" />,
-      title: "Large choix de biens",
-      description: "Appartements, maisons, locaux commerciaux : une sélection variée pour tous les besoins."
-    },
-    {
-      icon: <MagnifyingGlassIcon className="h-8 w-8" />,
-      title: "Recherche intelligente",
-      description: "Filtres avancés par ville, prix, type, superficie et équipements."
-    },
-    {
-      icon: <DocumentTextIcon className="h-8 w-8" />,
-      title: "Contrats sécurisés",
-      description: "Génération automatique de contrats et gestion des documents."
-    },
-    {
-      icon: <CurrencyEuroIcon className="h-8 w-8" />,
-      title: "Paiements en ligne",
-      description: "Suivi des loyers et historique des paiements."
-    },
-    {
-      icon: <ShieldCheckIcon className="h-8 w-8" />,
-      title: "Sécurité des données",
-      description: "Protection des informations personnelles et des transactions."
-    },
-    {
-      icon: <ChartBarIcon className="h-8 w-8" />,
-      title: "Tableaux de bord",
-      description: "Statistiques et indicateurs pour une gestion optimale."
-    },
-    {
-      icon: <UserGroupIcon className="h-8 w-8" />,
-      title: "Gestion multi-rôles",
-      description: "Interfaces adaptées pour administrateurs, agents et clients."
-    },
-    {
-      icon: <CalendarIcon className="h-8 w-8" />,
-      title: "Suivi des locations",
-      description: "Historique complet des locations et des contrats."
-    }
-  ];
-
-  const stats = [
-    { value: "500+", label: "Biens disponibles" },
-    { value: "1000+", label: "Clients satisfaits" },
-    { value: "50+", label: "Agences partenaires" },
-    { value: "98%", label: "Taux de satisfaction" }
-  ];
-
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <h1>Plateforme de Gestion Immobilière et Location en Ligne</h1>
-          <p>Gérez vos biens immobiliers, suivez vos locations et trouvez le logement idéal en toute simplicité</p>
-          
-          <div className="hero-search">
-            <input 
-              type="text" 
-              placeholder="Rechercher par ville, code postal..."
-              className="search-input"
-            />
-            <select className="search-select">
-              <option>Type de bien</option>
-              <option>Appartement</option>
-              <option>Maison</option>
-              <option>Local commercial</option>
-              <option>Terrain</option>
-              <option>Studio</option>
-            </select>
-            <button className="search-button">
-              <MagnifyingGlassIcon className="h-5 w-5" />
-              Rechercher
-            </button>
-          </div>
-
-          <div className="hero-buttons">
-            <Link to="/properties" className="btn-primary-large">
-              Voir tous les biens
-            </Link>
-            <Link to="/register" className="btn-secondary-large">
-              Créer un compte
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Statistiques */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-card">
-              <h3>{stat.value}</h3>
-              <p>{stat.label}</p>
+    <>
+      <div className="immorent-home">
+        {/* Hero Section */}
+        <section className="hero">
+          <div className="hero-content">
+            <h1>Bienvenue sur <span className="highlight">IMMORent</span></h1>
+            <p>La plateforme de référence pour la gestion immobilière et la location en ligne</p>
+            <div className="hero-buttons">
+              <Link to="/properties" className="btn-hero-primary">
+                Explorer les biens
+              </Link>
+              <Link to="/register" className="btn-hero-secondary">
+                Créer un compte
+              </Link>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Fonctionnalités */}
-      <section className="features-section">
-        <div className="section-header">
-          <h2>Fonctionnalités de la plateforme</h2>
-          <p>Une solution complète pour tous vos besoins immobiliers</p>
-        </div>
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <div key={index} className="feature-card">
-              <div className="feature-icon">{feature.icon}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
+        {/* Statistiques */}
+        <section className="stats">
+          <div className="container">
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-number">500+</div>
+                <div className="stat-label">Biens disponibles</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">1000+</div>
+                <div className="stat-label">Clients satisfaits</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">50+</div>
+                <div className="stat-label">Agences partenaires</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">98%</div>
+                <div className="stat-label">Taux de satisfaction</div>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Types de biens */}
-      <section className="property-types-section">
-        <div className="section-header">
-          <h2>Types de biens disponibles</h2>
-          <p>Trouvez le bien qui correspond à vos besoins</p>
-        </div>
-        <div className="property-types-grid">
-          <div className="property-type-card">
-            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400" alt="Appartement" />
-            <h3>Appartements</h3>
-            <p>Studios, T2, T3, duplex en centre-ville</p>
-            <Link to="/properties?type=apartment">Voir les appartements →</Link>
+        {/* Services */}
+        <section className="services">
+          <div className="container">
+            <h2 className="section-title">Nos services</h2>
+            <div className="services-grid">
+              <div className="service-card">
+                <div className="service-icon">🔍</div>
+                <h3>Recherche avancée</h3>
+                <p>Trouvez le bien idéal avec nos filtres par ville, prix, type et superficie</p>
+              </div>
+              <div className="service-card">
+                <div className="service-icon">📄</div>
+                <h3>Contrats sécurisés</h3>
+                <p>Génération automatique et gestion simplifiée de vos contrats</p>
+              </div>
+              <div className="service-card">
+                <div className="service-icon">💰</div>
+                <h3>Paiements en ligne</h3>
+                <p>Suivez vos loyers et consultez votre historique financier</p>
+              </div>
+              <div className="service-card">
+                <div className="service-icon">📊</div>
+                <h3>Tableaux de bord</h3>
+                <p>Visualisez vos statistiques et suivez vos performances</p>
+              </div>
+            </div>
           </div>
-          <div className="property-type-card">
-            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400" alt="Maison" />
-            <h3>Maisons</h3>
-            <p>Maisons individuelles, mitoyennes, villas</p>
-            <Link to="/properties?type=house">Voir les maisons →</Link>
-          </div>
-          <div className="property-type-card">
-            <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400" alt="Local commercial" />
-            <h3>Locaux commerciaux</h3>
-            <p>Bureaux, boutiques, locaux d'activité</p>
-            <Link to="/properties?type=commercial">Voir les locaux →</Link>
-          </div>
-          <div className="property-type-card">
-            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400" alt="Terrain" />
-            <h3>Terrains</h3>
-            <p>Terrains nus, constructibles, agricoles</p>
-            <Link to="/properties?type=land">Voir les terrains →</Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Call to Action */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <h2>Prêt à commencer votre projet immobilier ?</h2>
-          <p>Rejoignez notre plateforme et découvrez une nouvelle façon de gérer vos biens immobiliers</p>
-          <div className="cta-buttons">
-            <Link to="/register" className="btn-cta-primary">
-              S'inscrire gratuitement
-            </Link>
-            <Link to="/contact" className="btn-cta-secondary">
-              Contacter un conseiller
-            </Link>
+        {/* Types de biens */}
+        <section className="property-types">
+          <div className="container">
+            <h2 className="section-title">Types de biens</h2>
+            <div className="types-grid">
+              <div className="type-card">
+                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400" alt="Appartement" />
+                <h3>Appartements</h3>
+                <p>Studios, T2, T3, duplex en centre-ville</p>
+                <Link to="/properties?type=apartment">Voir les appartements →</Link>
+              </div>
+              <div className="type-card">
+                <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400" alt="Maison" />
+                <h3>Maisons</h3>
+                <p>Maisons individuelles, mitoyennes avec jardin</p>
+                <Link to="/properties?type=house">Voir les maisons →</Link>
+              </div>
+              <div className="type-card">
+                <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400" alt="Commercial" />
+                <h3>Locaux commerciaux</h3>
+                <p>Bureaux, boutiques, locaux d'activité</p>
+                <Link to="/properties?type=commercial">Voir les locaux →</Link>
+              </div>
+              <div className="type-card">
+                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400" alt="Terrain" />
+                <h3>Terrains</h3>
+                <p>Terrains nus, constructibles, agricoles</p>
+                <Link to="/properties?type=land">Voir les terrains →</Link>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Styles CSS - sans l'attribut jsx */}
+        {/* CTA */}
+        <section className="cta">
+          <div className="cta-content">
+            <h2>Prêt à commencer votre projet immobilier ?</h2>
+            <p>Rejoignez IMMORent et découvrez une nouvelle façon de gérer vos biens</p>
+            <div className="cta-buttons">
+              <Link to="/register" className="btn-cta-primary">S'inscrire gratuitement</Link>
+              <Link to="/contact" className="btn-cta-secondary">Contacter un conseiller</Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <style>{`
-        .hero-section {
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-          color: white;
-          padding: 80px 20px;
-          position: relative;
-          text-align: center;
+        .immorent-home {
+          min-height: calc(100vh - 70px);
         }
 
-        .hero-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920') center/cover;
-          opacity: 0.1;
+        /* Hero Section */
+        .hero {
+          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%);
+          padding: 6rem 1.5rem;
+          text-align: center;
+          color: white;
         }
 
         .hero-content {
-          position: relative;
           max-width: 800px;
           margin: 0 auto;
-          z-index: 1;
         }
 
-        .hero-content h1 {
-          font-size: 48px;
-          font-weight: 800;
-          margin-bottom: 20px;
-          line-height: 1.2;
-        }
-
-        .hero-content p {
-          font-size: 20px;
-          opacity: 0.9;
-          margin-bottom: 40px;
-        }
-
-        .hero-search {
-          display: flex;
-          gap: 10px;
-          max-width: 600px;
-          margin: 0 auto 30px;
-          background: white;
-          padding: 5px;
-          border-radius: 50px;
-        }
-
-        .search-input {
-          flex: 2;
-          padding: 15px 20px;
-          border: none;
-          border-radius: 50px;
-          font-size: 16px;
-          outline: none;
-        }
-
-        .search-select {
-          flex: 1;
-          padding: 15px;
-          border: none;
-          border-left: 1px solid #e5e7eb;
-          font-size: 16px;
-          outline: none;
-          background: white;
-        }
-
-        .search-button {
-          flex: 0.5;
-          background: #2563eb;
+        .hero h1 {
+          font-size: 3rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
           color: white;
-          border: none;
-          border-radius: 50px;
-          padding: 0 20px;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          transition: background-color 0.3s;
         }
 
-        .search-button:hover {
-          background: #1d4ed8;
+        .hero .highlight {
+          color: #d4af37;
+        }
+
+        .hero p {
+          font-size: 1.25rem;
+          opacity: 0.9;
+          margin-bottom: 2rem;
         }
 
         .hero-buttons {
           display: flex;
-          gap: 20px;
+          gap: 1rem;
           justify-content: center;
         }
 
-        .btn-primary-large {
-          padding: 15px 40px;
-          background: white;
-          color: #2563eb;
-          text-decoration: none;
-          border-radius: 50px;
+        .btn-hero-primary {
+          display: inline-block;
+          padding: 0.875rem 2.5rem;
+          background-color: #d4af37;
+          color: #0f2b4d;
+          border-radius: 0.5rem;
           font-weight: 600;
-          transition: transform 0.3s;
+          text-decoration: none;
+          transition: all 0.3s ease;
         }
 
-        .btn-primary-large:hover {
+        .btn-hero-primary:hover {
+          background-color: #c4a52e;
           transform: translateY(-2px);
         }
 
-        .btn-secondary-large {
-          padding: 15px 40px;
-          background: transparent;
-          color: white;
-          text-decoration: none;
-          border-radius: 50px;
-          font-weight: 600;
+        .btn-hero-secondary {
+          display: inline-block;
+          padding: 0.875rem 2.5rem;
+          background-color: transparent;
           border: 2px solid white;
-          transition: background-color 0.3s;
+          color: white;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s ease;
         }
 
-        .btn-secondary-large:hover {
-          background: rgba(255, 255, 255, 0.1);
+        .btn-hero-secondary:hover {
+          background-color: rgba(255, 255, 255, 0.1);
         }
 
-        .stats-section {
-          background: white;
-          padding: 60px 20px;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        /* Stats Section */
+        .stats {
+          padding: 4rem 1.5rem;
+          background-color: white;
         }
 
         .stats-grid {
-          max-width: 1200px;
-          margin: 0 auto;
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 30px;
+          gap: 2rem;
+          max-width: 1200px;
+          margin: 0 auto;
           text-align: center;
         }
 
-        .stat-card h3 {
-          font-size: 36px;
-          font-weight: 800;
-          color: #2563eb;
-          margin-bottom: 10px;
+        .stat-number {
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #d4af37;
+          margin-bottom: 0.5rem;
         }
 
-        .stat-card p {
+        .stat-label {
           color: #6b7280;
-          font-size: 16px;
+          font-size: 0.875rem;
+          font-weight: 500;
         }
 
-        .features-section {
-          padding: 80px 20px;
-          background: #f9fafb;
+        /* Services Section */
+        .services {
+          padding: 4rem 1.5rem;
+          background-color: #f8f9fa;
         }
 
-        .section-header {
-          text-align: center;
-          max-width: 600px;
-          margin: 0 auto 60px;
-        }
-
-        .section-header h2 {
-          font-size: 36px;
-          color: #1f2937;
-          margin-bottom: 20px;
-        }
-
-        .section-header p {
-          color: #6b7280;
-          font-size: 18px;
-        }
-
-        .features-grid {
+        .container {
           max-width: 1200px;
           margin: 0 auto;
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 30px;
         }
 
-        .feature-card {
+        .section-title {
+          text-align: center;
+          font-size: 2rem;
+          margin-bottom: 3rem;
+          color: #0f2b4d;
+          position: relative;
+          padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80px;
+          height: 3px;
+          background: #d4af37;
+        }
+
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 2rem;
+        }
+
+        .service-card {
           background: white;
-          padding: 30px;
-          border-radius: 10px;
+          padding: 2rem;
+          border-radius: 0.5rem;
           text-align: center;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          transition: transform 0.3s;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
         }
 
-        .feature-card:hover {
+        .service-card:hover {
           transform: translateY(-5px);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
-        .feature-icon {
-          width: 60px;
-          height: 60px;
-          background: #e5e7eb;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 20px;
-          color: #2563eb;
+        .service-icon {
+          font-size: 2.5rem;
+          margin-bottom: 1rem;
         }
 
-        .feature-card h3 {
-          font-size: 18px;
-          color: #1f2937;
-          margin-bottom: 15px;
+        .service-card h3 {
+          font-size: 1.25rem;
+          margin-bottom: 0.5rem;
+          color: #0f2b4d;
         }
 
-        .feature-card p {
+        .service-card p {
           color: #6b7280;
+          font-size: 0.875rem;
           line-height: 1.6;
-          font-size: 14px;
         }
 
-        .property-types-section {
-          padding: 80px 20px;
-          background: white;
+        /* Property Types Section */
+        .property-types {
+          padding: 4rem 1.5rem;
+          background-color: white;
         }
 
-        .property-types-grid {
-          max-width: 1200px;
-          margin: 0 auto;
+        .types-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 30px;
+          gap: 2rem;
         }
 
-        .property-type-card {
-          border-radius: 10px;
+        .type-card {
+          background: white;
+          border-radius: 0.5rem;
           overflow: hidden;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          transition: transform 0.3s;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
         }
 
-        .property-type-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .type-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
-        .property-type-card img {
+        .type-card img {
           width: 100%;
           height: 200px;
           object-fit: cover;
         }
 
-        .property-type-card h3 {
-          padding: 20px 20px 10px;
-          color: #1f2937;
+        .type-card h3 {
+          padding: 1rem 1rem 0.5rem;
+          font-size: 1.125rem;
+          color: #0f2b4d;
         }
 
-        .property-type-card p {
-          padding: 0 20px;
+        .type-card p {
+          padding: 0 1rem;
           color: #6b7280;
-          font-size: 14px;
+          font-size: 0.875rem;
+          margin-bottom: 1rem;
         }
 
-        .property-type-card a {
+        .type-card a {
           display: block;
-          padding: 20px;
-          color: #2563eb;
+          padding: 0.75rem 1rem;
+          color: #d4af37;
           text-decoration: none;
           font-weight: 500;
+          border-top: 1px solid #e5e7eb;
+          transition: background-color 0.3s ease;
         }
 
-        .property-type-card a:hover {
-          background: #f9fafb;
+        .type-card a:hover {
+          background-color: #f8f9fa;
         }
 
-        .cta-section {
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-          padding: 80px 20px;
+        /* CTA Section */
+        .cta {
+          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%);
+          padding: 4rem 1.5rem;
           text-align: center;
           color: white;
         }
@@ -465,91 +360,89 @@ const Home = () => {
           margin: 0 auto;
         }
 
-        .cta-content h2 {
-          font-size: 36px;
-          margin-bottom: 20px;
+        .cta h2 {
+          font-size: 2rem;
+          margin-bottom: 1rem;
+          color: white;
         }
 
-        .cta-content p {
-          font-size: 18px;
+        .cta p {
           opacity: 0.9;
-          margin-bottom: 30px;
+          margin-bottom: 2rem;
         }
 
         .cta-buttons {
           display: flex;
-          gap: 20px;
+          gap: 1rem;
           justify-content: center;
         }
 
         .btn-cta-primary {
-          padding: 15px 40px;
-          background: white;
-          color: #2563eb;
-          text-decoration: none;
-          border-radius: 50px;
+          padding: 0.875rem 2rem;
+          background-color: #d4af37;
+          color: #0f2b4d;
+          border-radius: 0.5rem;
           font-weight: 600;
-          transition: transform 0.3s;
+          text-decoration: none;
+          transition: all 0.3s ease;
         }
 
         .btn-cta-primary:hover {
+          background-color: #c4a52e;
           transform: translateY(-2px);
         }
 
         .btn-cta-secondary {
-          padding: 15px 40px;
-          background: transparent;
-          color: white;
-          text-decoration: none;
-          border-radius: 50px;
-          font-weight: 600;
+          padding: 0.875rem 2rem;
+          background-color: transparent;
           border: 2px solid white;
-          transition: background-color 0.3s;
+          color: white;
+          border-radius: 0.5rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s ease;
         }
 
         .btn-cta-secondary:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background-color: rgba(255, 255, 255, 0.1);
         }
 
-        @media (max-width: 768px) {
-          .hero-content h1 {
-            font-size: 36px;
-          }
-
-          .hero-search {
-            flex-direction: column;
-            border-radius: 10px;
-            background: transparent;
-          }
-
-          .search-input, .search-select, .search-button {
-            border-radius: 10px;
-          }
-
-          .hero-buttons {
-            flex-direction: column;
-          }
-
-          .stats-grid,
-          .features-grid,
-          .property-types-grid {
+        /* Responsive */
+        @media (max-width: 1024px) {
+          .services-grid,
+          .types-grid {
             grid-template-columns: repeat(2, 1fr);
           }
         }
 
-        @media (max-width: 480px) {
-          .stats-grid,
-          .features-grid,
-          .property-types-grid {
+        @media (max-width: 768px) {
+          .hero h1 {
+            font-size: 2rem;
+          }
+          
+          .hero p {
+            font-size: 1rem;
+          }
+          
+          .hero-buttons {
+            flex-direction: column;
+          }
+          
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .services-grid,
+          .types-grid {
             grid-template-columns: 1fr;
           }
-
+          
           .cta-buttons {
             flex-direction: column;
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

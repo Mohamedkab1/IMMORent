@@ -2,15 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './App.css';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
 
 // Components
 import PrivateRoute from './components/auth/PrivateRoute';
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
+import Header from './components/Common/Header';
+import Footer from './components/Common/Footer';
 
 // Pages publiques
 import Home from './pages/Home';
@@ -27,7 +26,6 @@ import NotFound from './pages/NotFound';
 
 // Pages protégées (biens)
 import AddProperty from './pages/AddProperty';
-import EditProperty from './pages/EditProperty';
 
 // Pages protégées (demandes)
 import NewRequest from './pages/NewRequest';
@@ -42,14 +40,6 @@ import AdminDashboard from './pages/AdminDashboard';
 import AgentDashboard from './pages/AgentDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 
-// Sous-pages Admin
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminProperties from './pages/admin/AdminProperties';
-import AdminContracts from './pages/admin/AdminContracts';
-import AdminPayments from './pages/admin/AdminPayments';
-import AdminRequests from './pages/admin/AdminRequests';
-import AdminSettings from './pages/admin/AdminSettings';
-
 // Pages protégées (profil)
 import Profile from './pages/Profile';
 
@@ -61,7 +51,7 @@ function App() {
           <Header />
           <main className="main-content">
             <Routes>
-              {/* ==================== ROUTES PUBLIQUES ==================== */}
+              {/* Routes publiques */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -73,7 +63,7 @@ function App() {
               <Route path="/confidentialite" element={<Privacy />} />
               <Route path="/about" element={<About />} />
 
-              {/* ==================== ROUTES PROTÉGÉES - BIENS ==================== */}
+              {/* Routes protégées - Biens */}
               <Route 
                 path="/properties/new" 
                 element={
@@ -82,16 +72,8 @@ function App() {
                   </PrivateRoute>
                 } 
               />
-              <Route 
-                path="/properties/edit/:id" 
-                element={
-                  <PrivateRoute requiredRole="agent">
-                    <EditProperty />
-                  </PrivateRoute>
-                } 
-              />
 
-              {/* ==================== ROUTES PROTÉGÉES - DEMANDES ==================== */}
+              {/* Routes protégées - Demandes */}
               <Route 
                 path="/requests/new" 
                 element={
@@ -101,7 +83,7 @@ function App() {
                 } 
               />
 
-              {/* ==================== ROUTES PROTÉGÉES - CONTRATS ==================== */}
+              {/* Routes protégées - Contrats */}
               <Route 
                 path="/contracts/new" 
                 element={
@@ -119,121 +101,21 @@ function App() {
                 } 
               />
 
-              {/* ==================== ROUTES PROTÉGÉES - DASHBOARD ==================== */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                } 
-              />
-              
-              {/* Dashboard Admin et ses sous-routes */}
-              <Route 
-                path="/dashboard/admin" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminDashboard />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/users" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminUsers />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/properties" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminProperties />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/contracts" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminContracts />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/payments" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminPayments />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/requests" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminRequests />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin/settings" 
-                element={
-                  <PrivateRoute requiredRole="admin">
-                    <AdminSettings />
-                  </PrivateRoute>
-                } 
-              />
-              
-              {/* Dashboard Agent */}
-              <Route 
-                path="/dashboard/agent" 
-                element={
-                  <PrivateRoute requiredRole="agent">
-                    <AgentDashboard />
-                  </PrivateRoute>
-                } 
-              />
-              
-              {/* Dashboard Client */}
-              <Route 
-                path="/dashboard/client" 
-                element={
-                  <PrivateRoute requiredRole="client">
-                    <ClientDashboard />
-                  </PrivateRoute>
-                } 
-              />
+              {/* Routes protégées - Dashboard */}
+              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/dashboard/admin" element={<PrivateRoute requiredRole="admin"><AdminDashboard /></PrivateRoute>} />
+              <Route path="/dashboard/agent" element={<PrivateRoute requiredRole="agent"><AgentDashboard /></PrivateRoute>} />
+              <Route path="/dashboard/client" element={<PrivateRoute requiredRole="client"><ClientDashboard /></PrivateRoute>} />
 
-              {/* ==================== ROUTES PROTÉGÉES - PROFIL ==================== */}
-              <Route 
-                path="/profile" 
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                } 
-              />
+              {/* Routes protégées - Profil */}
+              <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
-              {/* ==================== ROUTE 404 ==================== */}
+              {/* Route 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
-          <ToastContainer 
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       </AuthProvider>
     </Router>

@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contractService } from '../services/contracts';
 import { toast } from 'react-toastify';
-import {
-  ArrowLeftIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  CurrencyEuroIcon,
-  UserIcon,
-  HomeIcon,
-  MapPinIcon,
-  BuildingOfficeIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ArrowDownTrayIcon  // Ajouter cette icône
-} from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, HomeIcon, CalendarIcon, CurrencyEuroIcon, UserIcon, MapPinIcon, BuildingOfficeIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
 const ContractDetail = () => {
   const { id } = useParams();
@@ -26,576 +14,101 @@ const ContractDetail = () => {
   const [updating, setUpdating] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  useEffect(() => {
-    fetchContract();
-  }, [id]);
+  useEffect(() => { fetchContract(); }, [id]);
 
   const fetchContract = async () => {
     try {
-      const response = await contractService.getById(id);
-      if (response.success && response.data) {
-        setContract(response.data);
-      } else {
-        toast.error('Contrat non trouvé');
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur lors du chargement du contrat');
-      navigate('/dashboard');
-    } finally {
-      setLoading(false);
-    }
+      const res = await contractService.getById(id);
+      if (res.success && res.data) setContract(res.data);
+      else { toast.error('Contrat non trouvé'); navigate('/dashboard'); }
+    } catch (error) { toast.error('Erreur'); navigate('/dashboard'); }
+    finally { setLoading(false); }
   };
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
       await contractService.download(id);
-      toast.success('Téléchargement du contrat en cours...');
-    } catch (error) {
-      toast.error('Erreur lors du téléchargement');
-    } finally {
-      setDownloading(false);
-    }
+      toast.success('Téléchargement...');
+    } catch (error) { toast.error('Erreur téléchargement'); }
+    finally { setDownloading(false); }
   };
 
   const handleStatusChange = async (newStatus) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${newStatus === 'terminated' ? 'résilier' : 'marquer comme expiré'} ce contrat ?`)) {
-      return;
-    }
-
+    if (!window.confirm(`Êtes-vous sûr de vouloir ${newStatus === 'terminated' ? 'résilier' : 'marquer comme expiré'} ce contrat ?`)) return;
     setUpdating(true);
     try {
-      const response = await contractService.updateStatus(id, newStatus);
-      if (response.success) {
-        toast.success('Statut du contrat mis à jour');
-        fetchContract();
-      } else {
-        toast.error(response.message || 'Erreur lors de la mise à jour');
-      }
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour du statut');
-    } finally {
-      setUpdating(false);
-    }
+      const res = await contractService.updateStatus(id, newStatus);
+      if (res.success) { toast.success('Statut mis à jour'); fetchContract(); }
+      else toast.error(res.message);
+    } catch (error) { toast.error('Erreur'); }
+    finally { setUpdating(false); }
   };
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      active: { color: '#10b981', text: 'Actif', icon: CheckCircleIcon },
-      terminated: { color: '#ef4444', text: 'Résilié', icon: ExclamationTriangleIcon },
-      expired: { color: '#6b7280', text: 'Expiré', icon: ExclamationTriangleIcon }
-    };
-    const config = statusConfig[status] || statusConfig.active;
-    const Icon = config.icon;
-    
-    return (
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '5px',
-        padding: '5px 12px',
-        background: config.color + '20',
-        color: config.color,
-        borderRadius: '20px',
-        fontSize: '14px',
-        fontWeight: '500'
-      }}>
-        <Icon className="h-4 w-4" />
-        {config.text}
-      </span>
-    );
+    const config = { active: { bg: '#dcfce7', color: '#059669', text: 'Actif' }, terminated: { bg: '#fee2e2', color: '#dc2626', text: 'Résilié' }, expired: { bg: '#f3f4f6', color: '#6b7280', text: 'Expiré' } };
+    const c = config[status] || config.active;
+    return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.75rem', borderRadius: '2rem', fontSize: '0.75rem', fontWeight: 500 }}>{c.text}</span>;
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Chargement du contrat...</p>
-      </div>
-    );
-  }
-
-  if (!contract) {
-    return null;
-  }
+  if (loading) return <div className="loading"><div className="spinner"></div></div>;
+  if (!contract) return null;
 
   return (
-    <div className="contract-detail-page">
-      <div className="contract-detail-container">
-        <div className="page-header">
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowLeftIcon className="h-5 w-5" />
-            Retour
-          </button>
-          <div className="header-info">
-            <h1>Contrat de location</h1>
-            <p className="contract-number">N° {contract.contract_number}</p>
-            {getStatusBadge(contract.status)}
-          </div>
-        </div>
+    <>
+      <div className="contract-detail-page">
+        <div className="detail-container">
+          <button onClick={() => navigate(-1)} className="back-btn"><ArrowLeftIcon /> Retour</button>
+          <div className="header"><h1>Contrat de location</h1><p>N° {contract.contract_number}</p>{getStatusBadge(contract.status)}</div>
 
-        <div className="contract-detail-content">
-          {/* Informations du bien */}
-          <div className="info-section">
-            <h2>
-              <HomeIcon className="section-icon" />
-              Informations du bien
-            </h2>
-            <div className="info-card">
-              <h3>{contract.property?.title}</h3>
-              <div className="property-address">
-                <MapPinIcon className="h-4 w-4" />
-                <span>{contract.property?.address}, {contract.property?.city} {contract.property?.postal_code}</span>
-              </div>
-              <div className="property-features">
-                <span><BuildingOfficeIcon className="h-4 w-4" /> {contract.property?.surface} m²</span>
-                <span><HomeIcon className="h-4 w-4" /> {contract.property?.rooms} pièces</span>
-              </div>
-            </div>
-          </div>
+          <div className="content">
+            <div className="info-card"><h2><HomeIcon /> Informations du bien</h2><h3>{contract.property?.title}</h3><p><MapPinIcon /> {contract.property?.address}, {contract.property?.city} {contract.property?.postal_code}</p><p><BuildingOfficeIcon /> {contract.property?.surface} m² - {contract.property?.rooms} pièces</p></div>
 
-          {/* Parties prenantes */}
-          <div className="info-section">
-            <h2>Parties prenantes</h2>
-            <div className="parties-grid">
-              <div className="party-card">
-                <UserIcon className="party-icon" />
-                <h3>Locataire</h3>
-                <p className="party-name">{contract.tenant?.name}</p>
-                <p className="party-contact">{contract.tenant?.email}</p>
-                <p className="party-contact">{contract.tenant?.phone}</p>
-              </div>
-              <div className="party-card">
-                <UserIcon className="party-icon" />
-                <h3>Propriétaire</h3>
-                <p className="party-name">{contract.owner?.name}</p>
-                <p className="party-contact">{contract.owner?.email}</p>
-                <p className="party-contact">{contract.owner?.phone}</p>
-              </div>
-              <div className="party-card">
-                <UserIcon className="party-icon" />
-                <h3>Agent immobilier</h3>
-                <p className="party-name">{contract.agent?.name}</p>
-                <p className="party-contact">{contract.agent?.email}</p>
-                <p className="party-contact">{contract.agent?.phone}</p>
-              </div>
-            </div>
-          </div>
+            <div className="info-card"><h2><UserIcon /> Parties prenantes</h2><div className="parties"><div><h4>Locataire</h4><p>{contract.tenant?.name}</p><p>{contract.tenant?.email}</p><p>{contract.tenant?.phone}</p></div><div><h4>Propriétaire</h4><p>{contract.owner?.name}</p><p>{contract.owner?.email}</p><p>{contract.owner?.phone}</p></div><div><h4>Agent</h4><p>{contract.agent?.name}</p><p>{contract.agent?.email}</p><p>{contract.agent?.phone}</p></div></div></div>
 
-          {/* Conditions financières */}
-          <div className="info-section">
-            <h2>
-              <CurrencyEuroIcon className="section-icon" />
-              Conditions financières
-            </h2>
-            <div className="financial-grid">
-              <div className="financial-item">
-                <span className="financial-label">Loyer mensuel</span>
-                <span className="financial-value">{contract.monthly_rent?.toLocaleString('fr-FR')} €</span>
-              </div>
-              <div className="financial-item">
-                <span className="financial-label">Charges mensuelles</span>
-                <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} €</span>
-              </div>
-              <div className="financial-item">
-                <span className="financial-label">Total mensuel</span>
-                <span className="financial-value total">{(contract.monthly_rent + contract.charges).toLocaleString('fr-FR')} €</span>
-              </div>
-              <div className="financial-item">
-                <span className="financial-label">Dépôt de garantie</span>
-                <span className="financial-value">{contract.security_deposit?.toLocaleString('fr-FR')} €</span>
-              </div>
-            </div>
-          </div>
+            <div className="info-card"><h2><CurrencyEuroIcon /> Conditions financières</h2><div><span>Loyer mensuel</span><span>{contract.monthly_rent?.toLocaleString()} €</span></div><div><span>Charges</span><span>{contract.charges?.toLocaleString()} €</span></div><div className="total"><span>Total mensuel</span><span>{(contract.monthly_rent + contract.charges).toLocaleString()} €</span></div><div><span>Dépôt de garantie</span><span>{contract.security_deposit?.toLocaleString()} €</span></div></div>
 
-          {/* Dates */}
-          <div className="info-section">
-            <h2>
-              <CalendarIcon className="section-icon" />
-              Période de location
-            </h2>
-            <div className="dates-grid">
-              <div className="date-item">
-                <span className="date-label">Date de début</span>
-                <span className="date-value">{new Date(contract.start_date).toLocaleDateString('fr-FR')}</span>
-              </div>
-              <div className="date-item">
-                <span className="date-label">Date de fin</span>
-                <span className="date-value">{new Date(contract.end_date).toLocaleDateString('fr-FR')}</span>
-              </div>
-              <div className="date-item">
-                <span className="date-label">Date de signature</span>
-                <span className="date-value">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
-              </div>
-            </div>
-          </div>
+            <div className="info-card"><h2><CalendarIcon /> Période de location</h2><div><span>Début</span><span>{new Date(contract.start_date).toLocaleDateString()}</span></div><div><span>Fin</span><span>{new Date(contract.end_date).toLocaleDateString()}</span></div><div><span>Signature</span><span>{new Date(contract.signed_at).toLocaleDateString()}</span></div></div>
 
-          {/* Actions */}
-          <div className="actions-section">
-            <h2>Actions</h2>
-            <div className="action-buttons">
-              <button 
-                onClick={handleDownload}
-                className="btn-download"
-                disabled={downloading}
-              >
-                <ArrowDownTrayIcon className="h-5 w-5" />
-                {downloading ? 'Téléchargement...' : 'Télécharger le contrat (PDF)'}
-              </button>
-              
-              {(isAgent || isAdmin) && contract.status === 'active' && (
-                <>
-                  <button 
-                    onClick={() => handleStatusChange('terminated')}
-                    className="btn-terminate"
-                    disabled={updating}
-                  >
-                    Résilier le contrat
-                  </button>
-                  <button 
-                    onClick={() => handleStatusChange('expired')}
-                    className="btn-expire"
-                    disabled={updating}
-                  >
-                    Marquer comme expiré
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+            <div className="actions-card"><h2>Actions</h2><button onClick={handleDownload} className="btn-download" disabled={downloading}><ArrowDownTrayIcon /> {downloading ? 'Téléchargement...' : 'Télécharger le contrat (PDF)'}</button>
+              {(isAgent || isAdmin) && contract.status === 'active' && <><button onClick={() => handleStatusChange('terminated')} className="btn-terminate">Résilier</button><button onClick={() => handleStatusChange('expired')} className="btn-expire">Expirer</button></>}</div>
 
-          {/* Note */}
-          <div className="note-section">
-            <p>
-              Ce contrat a été généré automatiquement par la plateforme ImmoGest.
-              Pour toute question, veuillez contacter votre agent immobilier.
-            </p>
+            <div className="note">Ce contrat a été généré automatiquement par IMMORent.</div>
           </div>
         </div>
       </div>
 
       <style>{`
-        .contract-detail-page {
-          min-height: calc(100vh - 70px);
-          background: #f8fafc;
-          padding: 40px 20px;
-        }
-
-        .contract-detail-container {
-          max-width: 900px;
-          margin: 0 auto;
-        }
-
-        .page-header {
-          margin-bottom: 30px;
-        }
-
-        .back-button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          margin-bottom: 20px;
-          font-size: 14px;
-        }
-
-        .back-button:hover {
-          color: #2563eb;
-        }
-
-        .header-info {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 15px;
-        }
-
-        .header-info h1 {
-          color: #1f2937;
-          font-size: 28px;
-          margin: 0;
-        }
-
-        .contract-number {
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        .contract-detail-content {
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
-
-        .info-section {
-          background: white;
-          border-radius: 10px;
-          padding: 25px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .info-section h2 {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: #1f2937;
-          font-size: 18px;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .section-icon {
-          width: 20px;
-          height: 20px;
-          color: #2563eb;
-        }
-
-        .info-card h3 {
-          color: #1f2937;
-          font-size: 18px;
-          margin-bottom: 10px;
-        }
-
-        .property-address {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          color: #6b7280;
-          margin-bottom: 15px;
-        }
-
-        .property-features {
-          display: flex;
-          gap: 20px;
-          color: #4b5563;
-        }
-
-        .property-features span {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
-        .parties-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-        }
-
-        .party-card {
-          background: #f9fafb;
-          padding: 20px;
-          border-radius: 8px;
-          text-align: center;
-        }
-
-        .party-icon {
-          width: 40px;
-          height: 40px;
-          margin: 0 auto 15px;
-          color: #2563eb;
-        }
-
-        .party-card h3 {
-          color: #1f2937;
-          font-size: 16px;
-          margin-bottom: 10px;
-        }
-
-        .party-name {
-          color: #1f2937;
-          font-weight: 500;
-          margin-bottom: 5px;
-        }
-
-        .party-contact {
-          color: #6b7280;
-          font-size: 13px;
-          margin: 5px 0;
-        }
-
-        .financial-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
-        }
-
-        .financial-item {
-          display: flex;
-          justify-content: space-between;
-          padding: 12px;
-          background: #f9fafb;
-          border-radius: 5px;
-        }
-
-        .financial-label {
-          color: #6b7280;
-        }
-
-        .financial-value {
-          color: #1f2937;
-          font-weight: 500;
-        }
-
-        .financial-value.total {
-          color: #2563eb;
-          font-size: 18px;
-        }
-
-        .dates-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-        }
-
-        .date-item {
-          text-align: center;
-          padding: 15px;
-          background: #f9fafb;
-          border-radius: 5px;
-        }
-
-        .date-label {
-          display: block;
-          color: #6b7280;
-          font-size: 13px;
-          margin-bottom: 5px;
-        }
-
-        .date-value {
-          display: block;
-          color: #1f2937;
-          font-weight: 500;
-        }
-
-        .actions-section {
-          background: white;
-          border-radius: 10px;
-          padding: 25px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .actions-section h2 {
-          color: #1f2937;
-          font-size: 18px;
-          margin-bottom: 20px;
-        }
-
-        .action-buttons {
-          display: flex;
-          gap: 15px;
-          flex-wrap: wrap;
-        }
-
-        .btn-download {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 24px;
-          background: #10b981;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .btn-download:hover:not(:disabled) {
-          background: #059669;
-        }
-
-        .btn-terminate {
-          padding: 12px 24px;
-          background: #fee2e2;
-          color: #dc2626;
-          border: none;
-          border-radius: 5px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .btn-terminate:hover:not(:disabled) {
-          background: #fecaca;
-        }
-
-        .btn-expire {
-          padding: 12px 24px;
-          background: #f3f4f6;
-          color: #6b7280;
-          border: none;
-          border-radius: 5px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .btn-expire:hover:not(:disabled) {
-          background: #e5e7eb;
-        }
-
-        button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .note-section {
-          text-align: center;
-          padding: 20px;
-          color: #9ca3af;
-          font-size: 12px;
-        }
-
-        .loading-container {
-          min-height: calc(100vh - 70px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #f8fafc;
-        }
-
-        .spinner {
-          width: 50px;
-          height: 50px;
-          border: 5px solid #e5e7eb;
-          border-top-color: #2563eb;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-          .parties-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .financial-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .dates-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .action-buttons {
-            flex-direction: column;
-          }
-        }
+        .contract-detail-page { min-height: calc(100vh - 70px); background: #f8f9fa; padding: 2rem 1rem; }
+        .detail-container { max-width: 900px; margin: 0 auto; }
+        .back-btn { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; color: #6b7280; cursor: pointer; margin-bottom: 1rem; }
+        .back-btn:hover { color: #d4af37; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; color: #0f2b4d; margin: 0; }
+        .header p { color: #6b7280; }
+        .content { display: flex; flex-direction: column; gap: 1rem; }
+        .info-card, .actions-card { background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .info-card h2, .actions-card h2 { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; color: #0f2b4d; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .info-card h2 svg { width: 1.25rem; height: 1.25rem; color: #d4af37; }
+        .info-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .info-card p { display: flex; align-items: center; gap: 0.25rem; color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .parties h4 { font-size: 0.875rem; color: #0f2b4d; margin-bottom: 0.5rem; }
+        .parties p { margin-bottom: 0.25rem; font-size: 0.75rem; }
+        .info-card > div { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6; }
+        .info-card > div:last-child { border-bottom: none; }
+        .total { font-weight: 600; color: #d4af37; }
+        .actions-card { display: flex; flex-direction: column; gap: 1rem; }
+        .btn-download, .btn-terminate, .btn-expire { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; }
+        .btn-download { background: #10b981; color: white; }
+        .btn-terminate { background: #fee2e2; color: #dc2626; }
+        .btn-expire { background: #f3f4f6; color: #6b7280; }
+        .note { text-align: center; font-size: 0.75rem; color: #9ca3af; }
+        .loading { display: flex; justify-content: center; align-items: center; height: 50vh; }
+        .spinner { width: 2rem; height: 2rem; border: 2px solid #e5e7eb; border-top-color: #d4af37; border-radius: 50%; animation: spin 1s linear infinite; }
+        @media (max-width: 768px) { .parties { grid-template-columns: 1fr; } }
       `}</style>
-    </div>
+    </>
   );
 };
 
