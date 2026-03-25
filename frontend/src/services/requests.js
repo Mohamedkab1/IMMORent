@@ -1,15 +1,15 @@
 import api from './api';
 
 export const requestService = {
-  async getAll(params = {}) {
-    try {
-      const response = await api.get('/requests', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Erreur requestService.getAll:', error);
-      throw error;
-    }
-  },
+    async getAll() {
+        try {
+            const response = await api.get('/requests');
+            return response.data;
+        } catch (error) {
+            console.error('Erreur requestService.getAll:', error);
+            throw error;
+        }
+    },
 
   async getById(id) {
     try {

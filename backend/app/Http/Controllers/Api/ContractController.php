@@ -51,68 +51,96 @@ class ContractController extends Controller
     /**
      * Créer un contrat à partir d'une demande validée
      */
-    public function store(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'rental_request_id' => 'required|exists:rental_requests,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
-                'monthly_rent' => 'required|numeric|min:0',
-                'security_deposit' => 'required|numeric|min:0',
-                'charges' => 'nullable|numeric|min:0',
-            ]);
+/**
+ * Créer un contrat (Location ou Vente)
+ */
+public function store(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'rental_request_id' => 'required|exists:rental_requests,id',
+            'contract_type' => 'required|in:rent,sale',
+            'start_date' => 'required_if:contract_type,rent|nullable|date',
+            'end_date' => 'required_if:contract_type,rent|nullable|date|after:start_date',
+            'sale_date' => 'required_if:contract_type,sale|nullable|date',
+            'monthly_rent' => 'required_if:contract_type,rent|nullable|numeric|min:0',
+            'sale_price' => 'required_if:contract_type,sale|nullable|numeric|min:0',
+            'security_deposit' => 'nullable|numeric|min:0',
+            'charges' => 'nullable|numeric|min:0',
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $rentalRequest = RentalRequest::with(['user', 'property', 'property.user'])->find($request->rental_request_id);
-            
-            if (!$rentalRequest || $rentalRequest->status !== 'approved') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cette demande ne peut pas être transformée en contrat'
-                ], 400);
-            }
-
-            $contract = Contract::create([
-                'rental_request_id' => $rentalRequest->id,
-                'property_id' => $rentalRequest->property_id,
-                'tenant_id' => $rentalRequest->user_id,
-                'owner_id' => $rentalRequest->property->owner_id,
-                'agent_id' => $rentalRequest->property->user_id,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-                'monthly_rent' => $request->monthly_rent,
-                'security_deposit' => $request->security_deposit,
-                'charges' => $request->charges ?? 0,
-                'status' => 'active',
-                'signed_at' => now(),
-            ]);
-
-            // Mettre à jour le statut du bien
-            $property = Property::find($rentalRequest->property_id);
-            $property->update(['status' => 'rented']);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Contrat créé avec succès',
-                'data' => $contract->load(['property', 'tenant', 'owner'])
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('Erreur création contrat: ' . $e->getMessage());
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la création du contrat'
-            ], 500);
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $rentalRequest = RentalRequest::with(['user', 'property'])->find($request->rental_request_id);
+        
+        if (!$rentalRequest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Demande non trouvée'
+            ], 404);
+        }
+
+        $property = $rentalRequest->property;
+        
+        // Vérifier le type de transaction
+        if ($request->contract_type !== $property->transaction_type) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Le type de contrat ne correspond pas au type de bien'
+            ], 400);
+        }
+
+        $contractData = [
+            'contract_type' => $request->contract_type,
+            'rental_request_id' => $rentalRequest->id,
+            'property_id' => $property->id,
+            'agent_id' => $property->user_id,
+            'security_deposit' => $request->security_deposit,
+            'charges' => $request->charges,
+            'status' => 'active',
+            'signed_at' => now(),
+        ];
+
+        // Remplir selon le type de contrat
+        if ($request->contract_type === 'rent') {
+            $contractData['tenant_id'] = $rentalRequest->user_id;
+            $contractData['owner_id'] = $property->owner_id;
+            $contractData['start_date'] = $request->start_date;
+            $contractData['end_date'] = $request->end_date;
+            $contractData['monthly_rent'] = $request->monthly_rent;
+        } else {
+            $contractData['buyer_id'] = $rentalRequest->user_id;
+            $contractData['seller_id'] = $property->owner_id;
+            $contractData['sale_date'] = $request->sale_date;
+            $contractData['sale_price'] = $request->sale_price;
+        }
+
+        $contract = Contract::create($contractData);
+
+        // Mettre à jour le statut du bien
+        $property->update(['status' => $request->contract_type === 'rent' ? 'rented' : 'sold']);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->contract_type === 'rent' ? 'Contrat de location créé' : 'Contrat de vente créé',
+            'data' => $contract->load(['property', 'tenant', 'buyer', 'owner', 'seller', 'agent'])
+        ], 201);
+
+    } catch (\Exception $e) {
+        Log::error('Erreur store contract: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la création du contrat',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Détails d'un contrat

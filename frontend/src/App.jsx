@@ -26,6 +26,7 @@ import NotFound from './pages/NotFound';
 
 // Pages protégées (biens)
 import AddProperty from './pages/AddProperty';
+import EditProperty from './pages/EditProperty';
 
 // Pages protégées (demandes)
 import NewRequest from './pages/NewRequest';
@@ -40,6 +41,14 @@ import AdminDashboard from './pages/AdminDashboard';
 import AgentDashboard from './pages/AgentDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 
+// Sous-pages Admin
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProperties from './pages/admin/AdminProperties';
+import AdminContracts from './pages/admin/AdminContracts';
+import AdminPayments from './pages/admin/AdminPayments';
+import AdminRequests from './pages/admin/AdminRequests';
+import AdminSettings from './pages/admin/AdminSettings';
+
 // Pages protégées (profil)
 import Profile from './pages/Profile';
 
@@ -51,7 +60,7 @@ function App() {
           <Header />
           <main className="main-content">
             <Routes>
-              {/* Routes publiques */}
+              {/* ==================== ROUTES PUBLIQUES ==================== */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -63,7 +72,7 @@ function App() {
               <Route path="/confidentialite" element={<Privacy />} />
               <Route path="/about" element={<About />} />
 
-              {/* Routes protégées - Biens */}
+              {/* ==================== ROUTES PROTÉGÉES - BIENS ==================== */}
               <Route 
                 path="/properties/new" 
                 element={
@@ -72,8 +81,16 @@ function App() {
                   </PrivateRoute>
                 } 
               />
+              <Route 
+                path="/properties/edit/:id" 
+                element={
+                  <PrivateRoute requiredRole="agent">
+                    <EditProperty />
+                  </PrivateRoute>
+                } 
+              />
 
-              {/* Routes protégées - Demandes */}
+              {/* ==================== ROUTES PROTÉGÉES - DEMANDES ==================== */}
               <Route 
                 path="/requests/new" 
                 element={
@@ -83,7 +100,7 @@ function App() {
                 } 
               />
 
-              {/* Routes protégées - Contrats */}
+              {/* ==================== ROUTES PROTÉGÉES - CONTRATS ==================== */}
               <Route 
                 path="/contracts/new" 
                 element={
@@ -101,16 +118,28 @@ function App() {
                 } 
               />
 
-              {/* Routes protégées - Dashboard */}
+              {/* ==================== ROUTES PROTÉGÉES - DASHBOARD ==================== */}
               <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              
+              {/* Dashboard Admin */}
               <Route path="/dashboard/admin" element={<PrivateRoute requiredRole="admin"><AdminDashboard /></PrivateRoute>} />
+              <Route path="/dashboard/admin/users" element={<PrivateRoute requiredRole="admin"><AdminUsers /></PrivateRoute>} />
+              <Route path="/dashboard/admin/properties" element={<PrivateRoute requiredRole="admin"><AdminProperties /></PrivateRoute>} />
+              <Route path="/dashboard/admin/contracts" element={<PrivateRoute requiredRole="admin"><AdminContracts /></PrivateRoute>} />
+              <Route path="/dashboard/admin/payments" element={<PrivateRoute requiredRole="admin"><AdminPayments /></PrivateRoute>} />
+              <Route path="/dashboard/admin/requests" element={<PrivateRoute requiredRole="admin"><AdminRequests /></PrivateRoute>} />
+              <Route path="/dashboard/admin/settings" element={<PrivateRoute requiredRole="admin"><AdminSettings /></PrivateRoute>} />
+              
+              {/* Dashboard Agent */}
               <Route path="/dashboard/agent" element={<PrivateRoute requiredRole="agent"><AgentDashboard /></PrivateRoute>} />
+              
+              {/* Dashboard Client */}
               <Route path="/dashboard/client" element={<PrivateRoute requiredRole="client"><ClientDashboard /></PrivateRoute>} />
 
-              {/* Routes protégées - Profil */}
+              {/* ==================== ROUTES PROTÉGÉES - PROFIL ==================== */}
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
-              {/* Route 404 */}
+              {/* ==================== ROUTE 404 ==================== */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

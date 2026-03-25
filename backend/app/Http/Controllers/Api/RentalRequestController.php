@@ -18,28 +18,14 @@ class RentalRequestController extends Controller
         try {
             $user = $request->user();
             
-            // Si l'utilisateur est agent, voir les demandes de ses biens
             if ($user->isAgent()) {
-                $requests = RentalRequest::with(['user', 'property', 'property.user'])
+                $requests = RentalRequest::with(['user', 'property'])
                     ->whereHas('property', function($q) use ($user) {
                         $q->where('user_id', $user->id);
                     })
                     ->orderBy('created_at', 'desc')
-                    ->get(); // Utiliser get() au lieu de paginate() pour simplifier
-                    
-                Log::info('Demandes pour agent', [
-                    'agent_id' => $user->id,
-                    'count' => $requests->count()
-                ]);
-            } 
-            // Si admin, voir toutes les demandes
-            elseif ($user->isAdmin()) {
-                $requests = RentalRequest::with(['user', 'property'])
-                    ->orderBy('created_at', 'desc')
                     ->get();
-            } 
-            // Sinon, voir uniquement ses propres demandes
-            else {
+            } else {
                 $requests = RentalRequest::with(['property'])
                     ->where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
@@ -50,13 +36,10 @@ class RentalRequestController extends Controller
                 'success' => true,
                 'data' => $requests
             ]);
-            
         } catch (\Exception $e) {
-            Log::error('Erreur index requests: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement des demandes',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors du chargement des demandes'
             ], 500);
         }
     }
@@ -64,85 +47,72 @@ class RentalRequestController extends Controller
     /**
      * Créer une demande de location (Client)
      */
-    public function store(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'property_id' => 'required|exists:properties,id',
-                'start_date' => 'required|date|after_or_equal:today',
-                'end_date' => 'required|date|after:start_date',
-                'message' => 'nullable|string|max:1000',
-            ]);
+public function store(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'property_id' => 'required|exists:properties,id',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after:start_date',
+            'message' => 'nullable|string|max:1000',
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $property = Property::find($request->property_id);
-            
-            if (!$property) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bien non trouvé'
-                ], 404);
-            }
-            
-            if ($property->status !== 'available') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ce bien n\'est plus disponible à la location'
-                ], 400);
-            }
-
-            // Vérifier si une demande existe déjà pour cette période
-            $existingRequest = RentalRequest::where('property_id', $request->property_id)
-                ->where('status', 'pending')
-                ->where(function($query) use ($request) {
-                    $query->whereBetween('start_date', [$request->start_date, $request->end_date])
-                          ->orWhereBetween('end_date', [$request->start_date, $request->end_date]);
-                })->first();
-
-            if ($existingRequest) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Une demande existe déjà pour cette période'
-                ], 400);
-            }
-
-            $rentalRequest = RentalRequest::create([
-                'user_id' => $request->user()->id,
-                'property_id' => $request->property_id,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-                'message' => $request->message,
-                'status' => 'pending'
-            ]);
-
-            Log::info('Nouvelle demande créée', [
-                'request_id' => $rentalRequest->id,
-                'property_id' => $rentalRequest->property_id,
-                'user_id' => $rentalRequest->user_id
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Demande envoyée avec succès',
-                'data' => $rentalRequest->load(['property', 'user'])
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('Erreur store request: ' . $e->getMessage());
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'envoi de la demande',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $property = Property::find($request->property_id);
+        
+        if (!$property) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bien non trouvé'
+            ], 404);
+        }
+        
+        // Vérifier le type de transaction
+        if ($property->transaction_type !== 'rent') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ce bien n\'est pas à louer. Les demandes de location ne sont pas acceptées.'
+            ], 400);
+        }
+        
+        if ($property->status !== 'available') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ce bien n\'est plus disponible'
+            ], 400);
+        }
+
+        $rentalRequest = RentalRequest::create([
+            'user_id' => $request->user()->id,
+            'property_id' => $request->property_id,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'message' => $request->message,
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Demande envoyée avec succès',
+            'data' => $rentalRequest->load(['property', 'user'])
+        ], 201);
+
+    } catch (\Exception $e) {
+        Log::error('Erreur store request: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de l\'envoi de la demande',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Détails d'une demande
