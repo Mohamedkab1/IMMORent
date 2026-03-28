@@ -25,7 +25,13 @@ class RentalRequestController extends Controller
                     })
                     ->orderBy('created_at', 'desc')
                     ->get();
-            } else {
+            } 
+            elseif ($user->isAdmin()) {
+                $requests = RentalRequest::with(['user', 'property'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } 
+            else {
                 $requests = RentalRequest::with(['property'])
                     ->where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
@@ -36,83 +42,88 @@ class RentalRequestController extends Controller
                 'success' => true,
                 'data' => $requests
             ]);
+            
         } catch (\Exception $e) {
+            Log::error('Erreur index requests: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement des demandes'
+                'message' => 'Erreur lors du chargement des demandes',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Créer une demande de location (Client)
+     * Créer une demande (Location ou Achat)
      */
-public function store(Request $request)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'property_id' => 'required|exists:properties,id',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date',
-            'message' => 'nullable|string|max:1000',
-        ]);
+    public function store(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'property_id' => 'required|exists:properties,id',
+                'type' => 'required|in:rent,sale',
+                'start_date' => 'required_if:type,rent|nullable|date|after_or_equal:today',
+                'end_date' => 'required_if:type,rent|nullable|date|after:start_date',
+                'message' => 'nullable|string|max:1000',
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur de validation',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $property = Property::find($request->property_id);
+            
+            if (!$property) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bien non trouvé'
+                ], 404);
+            }
+            
+            // Vérifier que le type de demande correspond au type de bien
+            if ($request->type !== $property->transaction_type) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le type de demande ne correspond pas au type de bien'
+                ], 400);
+            }
+            
+            if ($property->status !== 'available') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce bien n\'est plus disponible'
+                ], 400);
+            }
+
+            $rentalRequest = RentalRequest::create([
+                'type' => $request->type,
+                'user_id' => $request->user()->id,
+                'property_id' => $request->property_id,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'message' => $request->message,
+                'status' => 'pending'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $request->type === 'rent' ? 'Demande de location envoyée' : 'Demande d\'achat envoyée',
+                'data' => $rentalRequest->load(['property', 'user'])
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur store request: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur de validation',
-                'errors' => $validator->errors()
-            ], 422);
+                'message' => 'Erreur lors de l\'envoi de la demande',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $property = Property::find($request->property_id);
-        
-        if (!$property) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bien non trouvé'
-            ], 404);
-        }
-        
-        // Vérifier le type de transaction
-        if ($property->transaction_type !== 'rent') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ce bien n\'est pas à louer. Les demandes de location ne sont pas acceptées.'
-            ], 400);
-        }
-        
-        if ($property->status !== 'available') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ce bien n\'est plus disponible'
-            ], 400);
-        }
-
-        $rentalRequest = RentalRequest::create([
-            'user_id' => $request->user()->id,
-            'property_id' => $request->property_id,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'message' => $request->message,
-            'status' => 'pending'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Demande envoyée avec succès',
-            'data' => $rentalRequest->load(['property', 'user'])
-        ], 201);
-
-    } catch (\Exception $e) {
-        Log::error('Erreur store request: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreur lors de l\'envoi de la demande',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     /**
      * Détails d'une demande

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../../assets/IMMORent.jpeg';  // ← Chemin corrigé
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,15 +11,23 @@ const Footer = () => {
         <div className="footer-container">
           <div className="footer-grid">
             <div className="footer-section">
-              <h3 className="footer-title">IMMORent</h3>
+              <div className="footer-logo">
+                <img 
+                  src={logo} 
+                  alt="IMMORent Logo" 
+                  className="footer-logo-image"
+                />
+                <h3 className="footer-title">IMMORent</h3>
+              </div>
               <p className="footer-description">
-                Plateforme de gestion immobilière et location en ligne.
-                Trouvez votre prochain logement ou gérez vos biens en toute simplicité.
+                Plateforme de gestion immobilière et location en ligne au Maroc.
+                Trouvez votre prochain logement à Marrakech ou gérez vos biens en toute simplicité.
               </p>
               <div className="footer-social">
                 <a href="#" className="social-link" aria-label="Facebook">📘</a>
                 <a href="#" className="social-link" aria-label="Twitter">🐦</a>
                 <a href="#" className="social-link" aria-label="LinkedIn">💼</a>
+                <a href="#" className="social-link" aria-label="Instagram">📷</a>
               </div>
             </div>
 
@@ -36,7 +45,7 @@ const Footer = () => {
               <h3 className="footer-title">Services</h3>
               <ul className="footer-links">
                 <li><Link to="/properties?type=apartment">Appartements</Link></li>
-                <li><Link to="/properties?type=house">Maisons</Link></li>
+                <li><Link to="/properties?type=house">Maisons / Riads</Link></li>
                 <li><Link to="/properties?type=commercial">Locaux commerciaux</Link></li>
                 <li><Link to="/properties?type=land">Terrains</Link></li>
               </ul>
@@ -53,17 +62,20 @@ const Footer = () => {
           </div>
 
           <div className="footer-contact">
-            <div className="contact-item">📍 123 rue de l'Immobilier, 75001 Paris</div>
-            <div className="contact-item">📞 +33 1 23 45 67 89</div>
-            <div className="contact-item">✉️ contact@immorent.com</div>
+            <div className="contact-item">📍 Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc</div>
+            <div className="contact-item">📞 +212 5 24 12 34 56</div>
+            <div className="contact-item">✉️ contact@immorent.ma</div>
+            <div className="contact-item">🕒 Lun-Ven: 9h-18h | Sam: 9h-13h</div>
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; {currentYear} IMMORent. Tous droits réservés.</p>
+            <p>&copy; {currentYear} IMMORent Maroc. Tous droits réservés.</p>
             <div className="footer-bottom-links">
               <Link to="/plan-du-site">Plan du site</Link>
               <span className="separator">•</span>
               <Link to="/mentions-legales">Mentions légales</Link>
+              <span className="separator">•</span>
+              <Link to="/contact">Nous contacter</Link>
             </div>
           </div>
         </div>
@@ -90,6 +102,21 @@ const Footer = () => {
           margin-bottom: 2rem;
         }
 
+        .footer-logo {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+        }
+
+        .footer-logo-image {
+          width: 40px;
+          height: 40px;
+          object-fit: cover;
+          border-radius: 10px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
         .footer-title {
           color: white;
           font-size: 1.125rem;
@@ -97,6 +124,15 @@ const Footer = () => {
           margin-bottom: 1rem;
           position: relative;
           padding-bottom: 0.5rem;
+        }
+
+        .footer-logo .footer-title {
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+
+        .footer-logo .footer-title::after {
+          display: none;
         }
 
         .footer-title::after {
@@ -118,6 +154,7 @@ const Footer = () => {
         .footer-social {
           display: flex;
           gap: 1rem;
+          flex-wrap: wrap;
         }
 
         .social-link {
@@ -137,6 +174,7 @@ const Footer = () => {
         .social-link:hover {
           background-color: #d4af37;
           color: #0f2b4d;
+          transform: translateY(-2px);
         }
 
         .footer-links {
@@ -157,11 +195,14 @@ const Footer = () => {
 
         .footer-links a:hover {
           color: white;
+          padding-left: 0.25rem;
         }
 
         .footer-contact {
           display: flex;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 1rem;
           padding: 1.5rem 0;
           border-top: 1px solid #1e4a6e;
           border-bottom: 1px solid #1e4a6e;
@@ -173,6 +214,11 @@ const Footer = () => {
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          transition: color 0.3s ease;
+        }
+
+        .contact-item:hover {
+          color: #d4af37;
         }
 
         .footer-bottom {
@@ -180,17 +226,21 @@ const Footer = () => {
           justify-content: space-between;
           align-items: center;
           font-size: 0.75rem;
+          flex-wrap: wrap;
+          gap: 1rem;
         }
 
         .footer-bottom-links {
           display: flex;
           gap: 0.5rem;
           align-items: center;
+          flex-wrap: wrap;
         }
 
         .footer-bottom-links a {
           color: #9ca3af;
           text-decoration: none;
+          transition: color 0.3s ease;
         }
 
         .footer-bottom-links a:hover {
@@ -204,24 +254,38 @@ const Footer = () => {
         @media (max-width: 768px) {
           .footer-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
           }
 
           .footer-contact {
             flex-direction: column;
             gap: 0.75rem;
-            align-items: center;
+            align-items: flex-start;
           }
 
           .footer-bottom {
             flex-direction: column;
-            gap: 0.5rem;
             text-align: center;
+          }
+
+          .footer-bottom-links {
+            justify-content: center;
+          }
+
+          .footer-logo-image {
+            width: 35px;
+            height: 35px;
           }
         }
 
         @media (max-width: 480px) {
           .footer-grid {
             grid-template-columns: 1fr;
+          }
+          
+          .footer-contact {
+            align-items: center;
+            text-align: center;
           }
         }
       `}</style>

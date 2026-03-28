@@ -104,12 +104,12 @@ const Properties = () => {
         <div className="properties-hero">
           <div className="hero-content">
             <h1>Nos biens immobiliers</h1>
-            <p>Découvrez notre sélection de biens à louer partout en France</p>
+            <p>Découvrez notre sélection de biens à louer ou à vendre partout en France</p>
             <button 
               className="filter-toggle"
               onClick={() => setShowFilters(!showFilters)}
             >
-              <FunnelIcon className="h-5 w-5" />
+              <FunnelIcon className="filter-icon" />
               {showFilters ? 'Masquer les filtres' : 'Afficher les filtres'}
             </button>
           </div>
@@ -120,7 +120,7 @@ const Properties = () => {
             <div className="filters-header">
               <h2>Filtres</h2>
               <button onClick={() => setShowFilters(false)}>
-                <XMarkIcon className="h-6 w-6" />
+                <XMarkIcon className="close-icon" />
               </button>
             </div>
 
@@ -152,7 +152,7 @@ const Properties = () => {
               </div>
 
               <div className="filter-group">
-                <label>Prix (€ / mois)</label>
+                <label>Prix (DH / mois)</label>
                 <div className="price-inputs">
                   <input
                     type="number"
@@ -240,21 +240,33 @@ const Properties = () => {
                               alt={property.title}
                             />
                             <span className="property-type">{property.type_label}</span>
+                            {property.transaction_type === 'sale' && (
+                              <span className="property-sale-badge">À vendre</span>
+                            )}
                           </div>
                           
                           <div className="property-content">
                             <h3>{property.title}</h3>
                             <div className="property-location">
-                              <MapPinIcon className="h-4 w-4" />
+                              <MapPinIcon className="location-icon" />
                               <span>{property.city}</span>
                             </div>
                             <div className="property-features">
-                              <span>{property.surface} m²</span>
-                              <span>{property.rooms} pièces</span>
+                              <span className="feature-item">
+                                <HomeIcon className="feature-icon" />
+                                {property.surface} m²
+                              </span>
+                              <span className="feature-item">
+                                <BuildingOfficeIcon className="feature-icon" />
+                                {property.rooms} pièces
+                              </span>
                             </div>
                             <div className="property-price">
-                              <strong>{property.price?.toLocaleString('fr-FR')}€</strong>
-                              <span>/mois</span>
+                              <strong>{property.price?.toLocaleString('fr-FR')}DH</strong>
+                              <span>{property.transaction_type === 'rent' ? '/mois' : ''}</span>
+                              {property.transaction_type === 'sale' && (
+                                <span className="sale-label">Vente</span>
+                              )}
                             </div>
                             <Link to={`/properties/${property.id}`} className="btn-details">
                               Voir détails
@@ -327,6 +339,11 @@ const Properties = () => {
           transition: all 0.3s;
         }
 
+        .filter-toggle .filter-icon {
+          width: 1rem;
+          height: 1rem;
+        }
+
         .filter-toggle:hover {
           background: #c4a52e;
         }
@@ -360,7 +377,7 @@ const Properties = () => {
         }
 
         .filters-header h2 {
-          font-size: 1.25rem;
+          font-size: 1.125rem;
           color: #0f2b4d;
         }
 
@@ -369,6 +386,12 @@ const Properties = () => {
           border: none;
           cursor: pointer;
           display: none;
+        }
+
+        .filters-header button .close-icon {
+          width: 1rem;
+          height: 1rem;
+          color: #6b7280;
         }
 
         .filter-group {
@@ -502,6 +525,18 @@ const Properties = () => {
           font-weight: 600;
         }
 
+        .property-sale-badge {
+          position: absolute;
+          top: 0.75rem;
+          left: 0.75rem;
+          background: #dc2626;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 2rem;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
         .property-content {
           padding: 1rem;
         }
@@ -512,6 +547,7 @@ const Properties = () => {
           color: #0f2b4d;
         }
 
+        /* Styles pour la localisation */
         .property-location {
           display: flex;
           align-items: center;
@@ -521,12 +557,33 @@ const Properties = () => {
           margin-bottom: 0.5rem;
         }
 
+        .location-icon {
+          width: 0.75rem !important;
+          height: 0.75rem !important;
+          min-width: 0.75rem;
+          color: #9ca3af;
+        }
+
+        /* Styles pour les caractéristiques */
         .property-features {
           display: flex;
           gap: 1rem;
-          color: #6b7280;
-          font-size: 0.75rem;
           margin-bottom: 0.75rem;
+        }
+
+        .feature-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          color: #6b7280;
+          font-size: 0.7rem;
+        }
+
+        .feature-icon {
+          width: 0.7rem !important;
+          height: 0.7rem !important;
+          min-width: 0.7rem;
+          color: #9ca3af;
         }
 
         .property-price {
@@ -534,13 +591,24 @@ const Properties = () => {
         }
 
         .property-price strong {
-          font-size: 1.125rem;
+          font-size: 1rem;
           color: #d4af37;
         }
 
         .property-price span {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
           color: #6b7280;
+        }
+
+        .sale-label {
+          display: inline-block;
+          margin-left: 0.5rem;
+          padding: 0.125rem 0.375rem;
+          background: #fee2e2;
+          color: #dc2626;
+          border-radius: 0.25rem;
+          font-size: 0.6rem;
+          font-weight: 500;
         }
 
         .btn-details {

@@ -5,36 +5,37 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->text('description');
             $table->decimal('price', 10, 2);
-            $table->enum('transaction_type', ['rent', 'sale'])->default('rent');
             $table->string('address');
             $table->string('city');
-            $table->string('postal_code', 10);
+            $table->string('postal_code');
             $table->decimal('surface', 8, 2);
             $table->integer('rooms')->nullable();
             $table->integer('bedrooms')->nullable();
             $table->integer('bathrooms')->nullable();
-            $table->enum('status', ['available', 'rented', 'reserved', 'unavailable', 'sold'])->default('available');
+            
+            // Modifier l'enum pour ajouter 'for_sale' et 'for_rent'
+            $table->enum('listing_type', ['for_rent', 'for_sale'])->default('for_rent');
+            $table->enum('status', ['available', 'sold', 'reserved', 'unavailable'])->default('available');
             $table->enum('type', ['apartment', 'house', 'commercial', 'land', 'studio']);
+            
             $table->json('features')->nullable();
             $table->json('images')->nullable();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('user_id')->constrained(); // Agent qui gère
             $table->foreignId('category_id')->constrained();
-            $table->foreignId('owner_id')->nullable()->constrained('users');
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
+            $table->foreignId('owner_id')->nullable()->constrained('users'); // Propriétaire
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('properties');
     }

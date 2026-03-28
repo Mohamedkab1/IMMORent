@@ -154,7 +154,7 @@ const AdminProperties = () => {
                   <td><strong>{p.title}</strong></td>
                   <td><MapPinIcon className="inline-icon" /> {p.city}</td>
                   <td>{getTypeLabel(p.type)}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {p.price.toLocaleString()}€{p.type === 'rent' ? '/mois' : ''}</td>
+                  <td><CurrencyEuroIcon className="inline-icon" /> {p.price.toLocaleString()}DH{p.type === 'rent' ? '/mois' : ''}</td>
                   <td>{getStatusBadge(p.status)}</td>
                   <td>{p.user.name}</td>
                   <td>{p.verified ? <CheckCircleIcon className="text-success" /> : <XCircleIcon className="text-warning" />}</td>

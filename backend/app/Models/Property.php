@@ -2,8 +2,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Property extends Model
@@ -11,10 +9,9 @@ class Property extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'price', 'transaction_type', 'address', 'city', 'postal_code',
+        'title', 'description', 'price', 'address', 'city', 'postal_code',
         'surface', 'rooms', 'bedrooms', 'bathrooms', 'status', 'type',
-        'features', 'images', 'user_id', 'category_id', 'owner_id',
-        'latitude', 'longitude'
+        'listing_type', 'features', 'images', 'user_id', 'category_id', 'owner_id'
     ];
 
     protected $casts = [
@@ -22,8 +19,6 @@ class Property extends Model
         'surface' => 'decimal:2',
         'features' => 'array',
         'images' => 'array',
-        'latitude' => 'decimal:8',
-        'longitude' => 'decimal:8',
     ];
 
     // Relations
@@ -47,11 +42,15 @@ class Property extends Model
         return $this->hasMany(RentalRequest::class);
     }
 
+    public function purchaseRequests()
+    {
+        return $this->hasMany(PurchaseRequest::class);
+    }
+
     public function contracts()
     {
         return $this->hasMany(Contract::class);
     }
-
 
     // Scopes
     public function scopeAvailable($query)
@@ -61,12 +60,22 @@ class Property extends Model
 
     public function scopeForRent($query)
     {
-        return $query->where('transaction_type', 'rent');
+        return $query->where('listing_type', 'for_rent');
     }
 
     public function scopeForSale($query)
     {
-        return $query->where('transaction_type', 'sale');
+        return $query->where('listing_type', 'for_sale');
+    }
+
+    public function scopeInCity($query, $city)
+    {
+        return $query->where('city', 'like', "%{$city}%");
+    }
+
+    public function scopePriceRange($query, $min, $max)
+    {
+        return $query->whereBetween('price', [$min, $max]);
     }
 
     // Accesseurs
@@ -77,47 +86,17 @@ class Property extends Model
 
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        $labels = [
             'available' => 'Disponible',
-            'rented' => 'Loué',
-            'reserved' => 'Réservé',
-            'unavailable' => 'Indisponible',
             'sold' => 'Vendu',
-            default => $this->status,
-        };
+            'reserved' => 'Réservé',
+            'unavailable' => 'Indisponible'
+        ];
+        return $labels[$this->status] ?? $this->status;
     }
 
-    public function getTransactionTypeLabelAttribute()
+    public function getListingTypeLabelAttribute()
     {
-        return match($this->transaction_type) {
-            'rent' => 'Location',
-            'sale' => 'Vente',
-            default => $this->transaction_type,
-        };
-    }
-
-    public function getTypeLabelAttribute()
-    {
-        return match($this->type) {
-            'apartment' => 'Appartement',
-            'house' => 'Maison',
-            'commercial' => 'Local commercial',
-            'land' => 'Terrain',
-            'studio' => 'Studio',
-            default => $this->type,
-        };
-    }
-
-    public function getMainImageAttribute()
-    {
-        return $this->images[0] ?? null;
-    }
-
-    public function getPriceDisplayAttribute()
-    {
-        if ($this->transaction_type === 'rent') {
-            return number_format($this->price, 0, ',', ' ') . ' € / mois';
-        }
-        return number_format($this->price, 0, ',', ' ') . ' €';
+        return $this->listing_type === 'for_rent' ? 'À louer' : 'À vendre';
     }
 }

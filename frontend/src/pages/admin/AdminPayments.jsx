@@ -97,15 +97,15 @@ const AdminPayments = () => {
         <div className="stats-cards">
           <div className="stat-card">
             <div className="stat-icon"><CurrencyEuroIcon /></div>
-            <div><span>Total encaissé</span><strong>{stats.paidAmount.toLocaleString()}€</strong></div>
+            <div><span>Total encaissé</span><strong>{stats.paidAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ClockIcon /></div>
-            <div><span>En attente</span><strong>{stats.pendingAmount.toLocaleString()}€</strong></div>
+            <div><span>En attente</span><strong>{stats.pendingAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ExclamationTriangleIcon /></div>
-            <div><span>En retard</span><strong>{stats.lateAmount.toLocaleString()}€</strong></div>
+            <div><span>En retard</span><strong>{stats.lateAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><DocumentTextIcon /></div>
@@ -149,7 +149,7 @@ const AdminPayments = () => {
                   <td><Link to={`/contracts/${p.contract.contract_number}`} className="link">{p.contract.contract_number}</Link></td>
                   <td>{p.contract.property.title}</td>
                   <td><strong>{p.tenant.name}</strong></td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {p.amount.toLocaleString()}€</td>
+                  <td><CurrencyEuroIcon className="inline-icon" /> {p.amount.toLocaleString()}DH</td>
                   <td>{p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '-'}</td>
                   <td className={new Date(p.due_date) < new Date() && p.status !== 'paid' ? 'late-date' : ''}>{new Date(p.due_date).toLocaleDateString()}</td>
                   <td>{getStatusBadge(p.status)}</td>

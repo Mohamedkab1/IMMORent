@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
@@ -26,6 +26,7 @@ import {
 const AgentDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -106,14 +107,29 @@ const AgentDashboard = () => {
     try {
       const response = await contractService.getAgentContracts();
       if (response.success) {
-        const data = response.data.data || [];
+        let data = response.data.data || [];
+        
+        // S'assurer que monthly_rent est un nombre pour chaque contrat
+        data = data.map(contract => ({
+          ...contract,
+          monthly_rent: parseFloat(contract.monthly_rent) || 0,
+          charges: parseFloat(contract.charges) || 0
+        }));
+        
         setContracts(data);
+        
+        // Filtrer les contrats actifs
+        const activeContracts = data.filter(c => c.status === 'active');
+        
+        // Calculer la somme des loyers (addition numérique)
+        const totalRevenue = activeContracts.reduce((sum, c) => {
+          return sum + c.monthly_rent;
+        }, 0);
+        
         setStats(prev => ({ 
           ...prev, 
-          activeContracts: data.filter(c => c.status === 'active').length,
-          monthlyRevenue: data
-            .filter(c => c.status === 'active')
-            .reduce((sum, c) => sum + (c.monthly_rent || 0), 0)
+          activeContracts: activeContracts.length,
+          monthlyRevenue: totalRevenue
         }));
       }
     } catch (error) {
@@ -247,7 +263,8 @@ const AgentDashboard = () => {
           </nav>
           <div className="sidebar-footer">
             <Link to="/properties/new" className="btn-add">
-              <PlusIcon /> Ajouter un bien
+              <PlusIcon className="add-icon" />
+              Ajouter un bien
             </Link>
           </div>
         </div>
@@ -261,30 +278,34 @@ const AgentDashboard = () => {
                 🔄 {refreshing ? 'Actualisation...' : 'Actualiser'}
               </button>
               <button className="btn-notification">
-                <BellIcon />
+                <BellIcon className="bell-icon" />
                 <span className="badge">{stats.pendingRequests}</span>
               </button>
-              <Link to="/profile"><UserIcon /></Link>
+              <Link to="/profile"><UserIcon className="profile-icon" /></Link>
             </div>
           </div>
 
           {/* Stats Cards */}
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon properties"><BuildingOfficeIcon /></div>
+              <div className="stat-icon properties"><BuildingOfficeIcon className="stat-icon-svg" /></div>
               <div><h3>{stats.totalProperties}</h3><p>Biens gérés</p></div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon available"><HomeIcon /></div>
+              <div className="stat-icon available"><HomeIcon className="stat-icon-svg" /></div>
               <div><h3>{stats.availableProperties}</h3><p>Biens disponibles</p></div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon requests"><DocumentTextIcon /></div>
+              <div className="stat-icon requests"><DocumentTextIcon className="stat-icon-svg" /></div>
               <div><h3>{stats.pendingRequests}</h3><p>Demandes en attente</p></div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon revenue"><CurrencyEuroIcon /></div>
-              <div><h3>{stats.monthlyRevenue.toLocaleString()}€</h3><p>Revenus mensuels</p></div>
+              <div className="stat-icon revenue"><CurrencyEuroIcon className="stat-icon-svg" /></div>
+              <div>
+                <h3>{stats.monthlyRevenue.toLocaleString()}DH</h3>
+                <p>Revenus mensuels</p>
+                <small className="revenue-note">(loyers des contrats actifs)</small>
+              </div>
             </div>
           </div>
 
@@ -304,19 +325,19 @@ const AgentDashboard = () => {
                       <div className="property-info">
                         <h4>{property.title}</h4>
                         <p className="property-location">
-                          <MapPinIcon className="inline-icon" /> {property.city} • {property.price}€/mois
+                          <MapPinIcon className="inline-icon" /> {property.city} • {property.price}DH/mois
                         </p>
                       </div>
                       {getStatusBadge(property.status)}
                       <div className="property-actions">
                         <Link to={`/properties/${property.id}`} className="action-btn" title="Voir">
-                          <EyeIcon />
+                          <EyeIcon className="action-icon" />
                         </Link>
                         <Link to={`/properties/edit/${property.id}`} className="action-btn" title="Modifier">
-                          <PencilIcon />
+                          <PencilIcon className="action-icon" />
                         </Link>
                         <button onClick={() => handleDeleteProperty(property.id)} className="action-btn delete" title="Supprimer">
-                          <TrashIcon />
+                          <TrashIcon className="action-icon" />
                         </button>
                       </div>
                     </div>
@@ -353,14 +374,14 @@ const AgentDashboard = () => {
                           className="action-btn approve" 
                           title="Approuver"
                         >
-                          <CheckCircleIcon />
+                          <CheckCircleIcon className="action-icon" />
                         </button>
                         <button 
                           onClick={() => handleProcessRequest(request.id, 'rejected')} 
                           className="action-btn reject" 
                           title="Refuser"
                         >
-                          <XCircleIcon />
+                          <XCircleIcon className="action-icon" />
                         </button>
                       </div>
                     </div>
@@ -391,7 +412,7 @@ const AgentDashboard = () => {
                         </span>
                       </div>
                       <div className="contract-amount">
-                        {contract.monthly_rent}€<span>/mois</span>
+                        {contract.monthly_rent}DH<span>/mois</span>
                       </div>
                     </Link>
                   ))}
@@ -411,7 +432,7 @@ const AgentDashboard = () => {
               <div className="section-header">
                 <h2>Mes biens</h2>
                 <Link to="/properties/new" className="btn-add-small">
-                  <PlusIcon /> Ajouter un bien
+                  <PlusIcon className="add-icon-small" /> Ajouter un bien
                 </Link>
               </div>
               <div className="table-container">
@@ -424,25 +445,25 @@ const AgentDashboard = () => {
                       <th>Surface</th>
                       <th>Statut</th>
                       <th>Actions</th>
-                    </tr>
+                     </tr>
                   </thead>
                   <tbody>
                     {properties.map(property => (
                       <tr key={property.id}>
                         <td><strong>{property.title}</strong></td>
                         <td><MapPinIcon className="inline-icon" /> {property.city}</td>
-                        <td>{property.price}€</td>
+                        <td>{property.price}DH</td>
                         <td>{property.surface} m²</td>
                         <td>{getStatusBadge(property.status)}</td>
                         <td className="actions-cell">
                           <Link to={`/properties/${property.id}`} className="action-btn" title="Voir">
-                            <EyeIcon />
+                            <EyeIcon className="action-icon" />
                           </Link>
                           <Link to={`/properties/edit/${property.id}`} className="action-btn" title="Modifier">
-                            <PencilIcon />
+                            <PencilIcon className="action-icon" />
                           </Link>
                           <button onClick={() => handleDeleteProperty(property.id)} className="action-btn delete" title="Supprimer">
-                            <TrashIcon />
+                            <TrashIcon className="action-icon" />
                           </button>
                         </td>
                       </tr>
@@ -480,7 +501,7 @@ const AgentDashboard = () => {
                       <th>Date demande</th>
                       <th>Statut</th>
                       <th>Actions</th>
-                    </tr>
+                     </tr>
                   </thead>
                   <tbody>
                     {requests.map(request => (
@@ -506,14 +527,14 @@ const AgentDashboard = () => {
                                 className="action-btn approve" 
                                 title="Approuver"
                               >
-                                <CheckCircleIcon />
+                                <CheckCircleIcon className="action-icon" />
                               </button>
                               <button 
                                 onClick={() => handleProcessRequest(request.id, 'rejected')} 
                                 className="action-btn reject" 
                                 title="Refuser"
                               >
-                                <XCircleIcon />
+                                <XCircleIcon className="action-icon" />
                               </button>
                             </>
                           )}
@@ -558,7 +579,7 @@ const AgentDashboard = () => {
                       <th>Loyer</th>
                       <th>Statut</th>
                       <th>Actions</th>
-                    </tr>
+                     </tr>
                   </thead>
                   <tbody>
                     {contracts.map(contract => (
@@ -573,11 +594,11 @@ const AgentDashboard = () => {
                         <td>
                           {new Date(contract.start_date).toLocaleDateString()} - {new Date(contract.end_date).toLocaleDateString()}
                         </td>
-                        <td>{contract.monthly_rent}€ / mois</td>
+                        <td>{contract.monthly_rent}DH / mois</td>
                         <td>{getStatusBadge(contract.status)}</td>
                         <td className="actions-cell">
                           <Link to={`/contracts/${contract.id}`} className="action-btn" title="Voir">
-                            <EyeIcon />
+                            <EyeIcon className="action-icon" />
                           </Link>
                         </td>
                       </tr>
@@ -604,12 +625,11 @@ const AgentDashboard = () => {
           background: #f8f9fa;
         }
 
-        /* Sidebar */
         .dashboard-sidebar {
           width: 280px;
           background: white;
           box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-          position: fixed;
+          position: ;
           top: 70px;
           left: 0;
           bottom: 0;
@@ -682,8 +702,8 @@ const AgentDashboard = () => {
         }
 
         .nav-icon {
-          width: 1.25rem;
-          height: 1.25rem;
+          width: 1rem !important;
+          height: 1rem !important;
         }
 
         .badge {
@@ -718,13 +738,18 @@ const AgentDashboard = () => {
           border-radius: 0.5rem;
           font-weight: 600;
           transition: all 0.3s;
+          font-size: 0.875rem;
+        }
+
+        .add-icon {
+          width: 1rem !important;
+          height: 1rem !important;
         }
 
         .btn-add:hover {
           background: #c4a52e;
         }
 
-        /* Main Content */
         .dashboard-main {
           flex: 1;
           margin-left: 280px;
@@ -765,9 +790,23 @@ const AgentDashboard = () => {
           padding: 0.5rem;
           border-radius: 50%;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        /* Stats Cards */
+        .bell-icon {
+          width: 1rem;
+          height: 1rem;
+          color: #6b7280;
+        }
+
+        .profile-icon {
+          width: 1rem;
+          height: 1rem;
+          color: #6b7280;
+        }
+
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -786,8 +825,8 @@ const AgentDashboard = () => {
         }
 
         .stat-icon {
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 2rem;
+          height: 2rem;
           border-radius: 0.5rem;
           display: flex;
           align-items: center;
@@ -814,9 +853,9 @@ const AgentDashboard = () => {
           color: #7c3aed;
         }
 
-        .stat-icon svg {
-          width: 1.25rem;
-          height: 1.25rem;
+        .stat-icon-svg {
+          width: 1rem !important;
+          height: 1rem !important;
         }
 
         .stat-card h3 {
@@ -829,7 +868,13 @@ const AgentDashboard = () => {
           color: #6b7280;
         }
 
-        /* Content Sections */
+        .revenue-note {
+          font-size: 0.6rem;
+          color: #9ca3af;
+          display: block;
+          margin-top: 0.25rem;
+        }
+
         .content-section {
           background: white;
           border-radius: 0.75rem;
@@ -874,6 +919,11 @@ const AgentDashboard = () => {
           font-size: 0.75rem;
         }
 
+        .add-icon-small {
+          width: 0.875rem !important;
+          height: 0.875rem !important;
+        }
+
         .btn-refresh-small {
           padding: 0.25rem 0.5rem;
           background: #f3f4f6;
@@ -883,7 +933,6 @@ const AgentDashboard = () => {
           font-size: 0.75rem;
         }
 
-        /* Lists */
         .properties-list,
         .requests-list,
         .contracts-list {
@@ -951,7 +1000,6 @@ const AgentDashboard = () => {
           color: #6b7280;
         }
 
-        /* Action Buttons */
         .property-actions,
         .request-actions {
           display: flex;
@@ -970,13 +1018,13 @@ const AgentDashboard = () => {
           align-items: center;
           justify-content: center;
           transition: all 0.3s;
-          width: 2rem;
-          height: 2rem;
+          width: 1.75rem;
+          height: 1.75rem;
         }
 
-        .action-btn svg {
-          width: 1rem;
-          height: 1rem;
+        .action-icon {
+          width: 0.875rem !important;
+          height: 0.875rem !important;
         }
 
         .action-btn:hover {
@@ -996,7 +1044,14 @@ const AgentDashboard = () => {
           color: #dc2626;
         }
 
-        /* Tables */
+        .inline-icon {
+          width: 0.75rem;
+          height: 0.75rem;
+          display: inline;
+          vertical-align: middle;
+          margin-right: 0.25rem;
+        }
+
         .table-container {
           overflow-x: auto;
         }
@@ -1026,14 +1081,6 @@ const AgentDashboard = () => {
           display: flex;
           gap: 0.5rem;
           align-items: center;
-        }
-
-        .inline-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-          display: inline;
-          vertical-align: middle;
-          margin-right: 0.25rem;
         }
 
         .text-muted {
@@ -1095,7 +1142,9 @@ const AgentDashboard = () => {
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
         @media (max-width: 1024px) {

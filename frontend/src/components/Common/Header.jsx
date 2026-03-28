@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logo from '../../assets/IMMORent.jpeg';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -33,7 +34,11 @@ const Header = () => {
       <header className="immorent-header">
         <div className="header-container">
           <Link to="/" className="logo">
-            <span className="logo-icon">🏢</span>
+            <img 
+              src={logo} 
+              alt="IMMORent Logo" 
+              className="logo-image"
+            />
             <span className="logo-text">IMMORent</span>
           </Link>
 
@@ -121,12 +126,16 @@ const Header = () => {
         .logo {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.75rem;
           text-decoration: none;
         }
 
-        .logo-icon {
-          font-size: 1.75rem;
+        .logo-image {
+          width: 45px;
+          height: 45px;
+          object-fit: cover;
+          border-radius: 10px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .logo-text {
@@ -280,6 +289,15 @@ const Header = () => {
         @media (max-width: 768px) {
           .mobile-menu-btn {
             display: block;
+          }
+
+          .logo-image {
+            width: 35px;
+            height: 35px;
+          }
+
+          .logo-text {
+            font-size: 1.25rem;
           }
 
           .nav {

@@ -20,10 +20,10 @@ const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     site_name: 'IMMORent',
-    site_description: 'Plateforme de gestion immobilière et location en ligne',
-    contact_email: 'contact@immorent.com',
-    contact_phone: '+33 1 23 45 67 89',
-    address: '123 rue de l\'Immobilier, 75001 Paris',
+    site_description: 'Plateforme de gestion immobilière et location en ligne au Maroc',
+    contact_email: 'contact@immorent.ma',
+    contact_phone: '+212 5 24 12 34 56',
+    address: 'Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc',
     maintenance_mode: false,
     registration_enabled: true,
     notifications_enabled: true,
@@ -51,12 +51,12 @@ const AdminSettings = () => {
       <div className="admin-settings">
         <div className="header">
           <h1>Paramètres généraux</h1>
-          <p>Configurez les paramètres de la plateforme IMMORent</p>
+          <p>Configurez les paramètres de la plateforme IMMORent Maroc</p>
         </div>
 
         <form onSubmit={handleSubmit} className="settings-form">
           <div className="settings-section">
-            <h2><GlobeAltIcon /> Informations générales</h2>
+            <h2><GlobeAltIcon className="section-icon" /> Informations générales</h2>
             <div className="form-row">
               <div className="form-group">
                 <label>Nom du site</label>
@@ -70,7 +70,7 @@ const AdminSettings = () => {
           </div>
 
           <div className="settings-section">
-            <h2><CogIcon /> Coordonnées</h2>
+            <h2><CogIcon className="section-icon" /> Coordonnées</h2>
             <div className="form-row">
               <div className="form-group">
                 <label>Email de contact</label>
@@ -88,7 +88,7 @@ const AdminSettings = () => {
           </div>
 
           <div className="settings-section">
-            <h2><ShieldCheckIcon /> Sécurité et inscriptions</h2>
+            <h2><ShieldCheckIcon className="section-icon" /> Sécurité et inscriptions</h2>
             <div className="toggle-group">
               <label>Mode maintenance</label>
               <div>
@@ -113,7 +113,7 @@ const AdminSettings = () => {
           </div>
 
           <div className="settings-section">
-            <h2><BellIcon /> Notifications</h2>
+            <h2><BellIcon className="section-icon" /> Notifications</h2>
             <div className="toggle-group">
               <label>Notifications email</label>
               <div>
@@ -124,7 +124,7 @@ const AdminSettings = () => {
           </div>
 
           <div className="settings-section">
-            <h2><PhotoIcon /> Médias</h2>
+            <h2><PhotoIcon className="section-icon" /> Médias</h2>
             <div className="form-row">
               <div className="form-group">
                 <label>Nombre max d'images par bien</label>
@@ -138,7 +138,7 @@ const AdminSettings = () => {
           </div>
 
           <div className="settings-section">
-            <h2><PaintBrushIcon /> Apparence</h2>
+            <h2><PaintBrushIcon className="section-icon" /> Apparence</h2>
             <div className="form-row">
               <div className="form-group">
                 <label>Couleur principale</label>
@@ -159,7 +159,7 @@ const AdminSettings = () => {
 
           <div className="form-actions">
             <button type="submit" className="btn-save" disabled={saving}>
-              <CheckCircleIcon /> {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+              <CheckCircleIcon className="btn-icon" /> {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </button>
           </div>
         </form>
@@ -184,6 +184,7 @@ const AdminSettings = () => {
 
         .header p {
           color: #6b7280;
+          font-size: 0.875rem;
         }
 
         .settings-form {
@@ -212,11 +213,12 @@ const AdminSettings = () => {
           font-size: 1rem;
           color: #0f2b4d;
           margin-bottom: 1rem;
+          font-weight: 600;
         }
 
-        .settings-section h2 svg {
-          width: 1.25rem;
-          height: 1.25rem;
+        .section-icon {
+          width: 1rem;
+          height: 1rem;
           color: #d4af37;
         }
 
@@ -236,6 +238,7 @@ const AdminSettings = () => {
           font-weight: 500;
           margin-bottom: 0.5rem;
           font-size: 0.875rem;
+          color: #374151;
         }
 
         .form-group input,
@@ -244,6 +247,15 @@ const AdminSettings = () => {
           padding: 0.625rem;
           border: 1px solid #d1d5db;
           border-radius: 0.5rem;
+          font-size: 0.875rem;
+          transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+          outline: none;
+          border-color: #d4af37;
+          box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
         }
 
         .toggle-group {
@@ -255,6 +267,7 @@ const AdminSettings = () => {
           margin-bottom: 0.5rem;
           display: block;
           font-size: 0.875rem;
+          color: #374151;
         }
 
         .toggle-group div {
@@ -266,6 +279,12 @@ const AdminSettings = () => {
         .toggle-group input {
           width: 1rem;
           height: 1rem;
+          cursor: pointer;
+        }
+
+        .toggle-group span {
+          font-size: 0.875rem;
+          color: #6b7280;
         }
 
         .color-preview {
@@ -278,6 +297,13 @@ const AdminSettings = () => {
           width: 2rem;
           height: 2rem;
           border-radius: 0.25rem;
+          border: 1px solid #e5e7eb;
+        }
+
+        .color-preview span {
+          font-size: 0.875rem;
+          color: #6b7280;
+          font-family: monospace;
         }
 
         .form-actions {
@@ -298,10 +324,17 @@ const AdminSettings = () => {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s;
+          font-size: 0.875rem;
+        }
+
+        .btn-icon {
+          width: 1rem;
+          height: 1rem;
         }
 
         .btn-save:hover:not(:disabled) {
           background: #c4a52e;
+          transform: translateY(-1px);
         }
 
         .btn-save:disabled {
@@ -310,6 +343,14 @@ const AdminSettings = () => {
         }
 
         @media (max-width: 768px) {
+          .admin-settings {
+            padding: 1rem;
+          }
+          
+          .settings-form {
+            padding: 1.5rem;
+          }
+          
           .form-row {
             grid-template-columns: 1fr;
           }

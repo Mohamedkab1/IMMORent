@@ -43,7 +43,7 @@ const PropertyCard = ({ property }) => {
         </div>
         
         <div className="property-price">
-          <strong>{property.price?.toLocaleString('fr-FR')}€</strong>
+          <strong>{property.price?.toLocaleString('fr-FR')}DH</strong>
           <span>/mois</span>
         </div>
         

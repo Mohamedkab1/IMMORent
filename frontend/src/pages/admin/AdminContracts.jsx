@@ -104,7 +104,7 @@ const AdminContracts = () => {
           </div>
           <div className="stat-card">
             <div className="stat-icon"><CurrencyEuroIcon /></div>
-            <div><span>CA mensuel</span><strong>{contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0).toLocaleString()}€</strong></div>
+            <div><span>CA mensuel</span><strong>{contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0).toLocaleString()}DH</strong></div>
           </div>
         </div>
 
@@ -142,7 +142,7 @@ const AdminContracts = () => {
                   <td><strong>{c.property.title}</strong><br/>{c.property.city}</td>
                   <td><strong>{c.tenant.name}</strong><br/>{c.tenant.email}</td>
                   <td>{c.owner.name}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {c.monthly_rent}€ / mois</td>
+                  <td><CurrencyEuroIcon className="inline-icon" /> {c.monthly_rent}DH / mois</td>
                   <td><CalendarIcon className="inline-icon" /> {new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}</td>
                   <td>{getStatusBadge(c.status)}</td>
                   <td className="actions">

@@ -270,26 +270,26 @@ const ContractDetail = () => {
                 <div className="financial-grid">
                   <div className="financial-item">
                     <span className="financial-label">Loyer mensuel</span>
-                    <span className="financial-value">{contract.monthly_rent?.toLocaleString('fr-FR')} €</span>
+                    <span className="financial-value">{contract.monthly_rent?.toLocaleString('fr-FR')} DH</span>
                   </div>
                   <div className="financial-item">
                     <span className="financial-label">Charges mensuelles</span>
-                    <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} €</span>
+                    <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} DH</span>
                   </div>
                   <div className="financial-item total">
                     <span className="financial-label">Total mensuel</span>
-                    <span className="financial-value">{(contract.monthly_rent + (contract.charges || 0)).toLocaleString('fr-FR')} €</span>
+                    <span className="financial-value">{(contract.monthly_rent + (contract.charges || 0)).toLocaleString('fr-FR')} DH</span>
                   </div>
                   <div className="financial-item">
                     <span className="financial-label">Dépôt de garantie</span>
-                    <span className="financial-value">{contract.security_deposit?.toLocaleString('fr-FR')} €</span>
+                    <span className="financial-value">{contract.security_deposit?.toLocaleString('fr-FR')} DH</span>
                   </div>
                 </div>
               ) : (
                 <div className="financial-grid">
                   <div className="financial-item">
                     <span className="financial-label">Prix de vente</span>
-                    <span className="financial-value">{contract.sale_price?.toLocaleString('fr-FR')} €</span>
+                    <span className="financial-value">{contract.sale_price?.toLocaleString('fr-FR')} DH</span>
                   </div>
                   <div className="financial-item">
                     <span className="financial-label">Date de vente</span>
@@ -298,7 +298,7 @@ const ContractDetail = () => {
                   {contract.charges > 0 && (
                     <div className="financial-item">
                       <span className="financial-label">Frais annexes</span>
-                      <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} €</span>
+                      <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} DH</span>
                     </div>
                   )}
                 </div>

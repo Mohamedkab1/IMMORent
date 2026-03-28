@@ -137,15 +137,15 @@ const PropertyDetail = () => {
         <div className="detail-nav">
           <div className="nav-container">
             <button onClick={() => navigate(-1)} className="back-button">
-              <ArrowLeftIcon className="h-5 w-5" />
+              <ArrowLeftIcon className="icon-back" />
               Retour
             </button>
             <div className="nav-actions">
               <button onClick={() => setIsFavorite(!isFavorite)} className="nav-action">
-                {isFavorite ? <HeartIconSolid className="h-6 w-6 text-red-500" /> : <HeartIcon className="h-6 w-6" />}
+                {isFavorite ? <HeartIconSolid className="icon-favorite active" /> : <HeartIcon className="icon-favorite" />}
               </button>
               <button onClick={handleShare} className="nav-action">
-                <ShareIcon className="h-6 w-6" />
+                <ShareIcon className="icon-share" />
               </button>
             </div>
           </div>
@@ -173,12 +173,12 @@ const PropertyDetail = () => {
               <div>
                 <h1>{property.title}</h1>
                 <div className="location">
-                  <MapPinIcon className="h-5 w-5" />
+                  <MapPinIcon className="icon-location" />
                   <span>{property.city} {property.postal_code}</span>
                 </div>
               </div>
               <div className="price-tag">
-                <span className="price">{property.price?.toLocaleString('fr-FR')}€</span>
+                <span className="price">{property.price?.toLocaleString('fr-FR')}DH</span>
                 <span className="period">{property.transaction_type === 'rent' ? '/mois' : ''}</span>
                 <span className={`transaction-badge ${property.transaction_type}`}>
                   {property.transaction_type === 'rent' ? 'Location' : 'Vente'}
@@ -187,10 +187,22 @@ const PropertyDetail = () => {
             </div>
 
             <div className="features-grid">
-              <div className="feature-item"><HomeIcon className="feature-icon" /><span>{property.surface} m²</span></div>
-              <div className="feature-item"><BuildingOfficeIcon className="feature-icon" /><span>{property.rooms} pièces</span></div>
-              <div className="feature-item"><HomeIcon className="feature-icon" /><span>{property.bedrooms || 0} chambres</span></div>
-              <div className="feature-item"><HomeIcon className="feature-icon" /><span>{property.bathrooms || 0} sdb</span></div>
+              <div className="feature-item">
+                <HomeIcon className="icon-feature" />
+                <span>{property.surface} m²</span>
+              </div>
+              <div className="feature-item">
+                <BuildingOfficeIcon className="icon-feature" />
+                <span>{property.rooms} pièces</span>
+              </div>
+              <div className="feature-item">
+                <HomeIcon className="icon-feature" />
+                <span>{property.bedrooms || 0} chambres</span>
+              </div>
+              <div className="feature-item">
+                <HomeIcon className="icon-feature" />
+                <span>{property.bathrooms || 0} sdb</span>
+              </div>
             </div>
 
             <div className="description-section">
@@ -202,7 +214,12 @@ const PropertyDetail = () => {
               <div className="features-section">
                 <h2>Équipements</h2>
                 <div className="features-list">
-                  {features.map((f, i) => <div key={i} className="feature-tag"><CheckCircleIcon className="h-4 w-4" />{f}</div>)}
+                  {features.map((f, i) => (
+                    <div key={i} className="feature-tag">
+                      <CheckCircleIcon className="icon-check" />
+                      {f}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -215,8 +232,14 @@ const PropertyDetail = () => {
                   <h3>{agent.name}</h3>
                   <p>Agent immobilier</p>
                   <div className="agent-details">
-                    <div><PhoneIcon className="h-4 w-4" /> {agent.phone}</div>
-                    <div><EnvelopeIcon className="h-4 w-4" /> {agent.email}</div>
+                    <div className="agent-detail">
+                      <PhoneIcon className="icon-contact" />
+                      <span>{agent.phone}</span>
+                    </div>
+                    <div className="agent-detail">
+                      <EnvelopeIcon className="icon-contact" />
+                      <span>{agent.email}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -228,7 +251,10 @@ const PropertyDetail = () => {
                     <button onClick={handleRequestRental} className="btn-request">Faire une demande</button>
                   )}
                   {property.transaction_type === 'sale' && (
-                    <div className="sale-info"><ExclamationTriangleIcon /> Ce bien est à vendre. Contactez l'agent.</div>
+                    <div className="sale-info">
+                      <ExclamationTriangleIcon className="icon-warning" />
+                      <span>Ce bien est à vendre. Contactez l'agent.</span>
+                    </div>
                   )}
                 </div>
               ) : (
@@ -279,10 +305,29 @@ const PropertyDetail = () => {
           font-size: 0.875rem;
         }
 
+        .icon-back {
+          width: 1rem;
+          height: 1rem;
+        }
+
         .back-button:hover { color: #d4af37; }
 
         .nav-actions { display: flex; gap: 1rem; }
         .nav-action { background: none; border: none; cursor: pointer; color: #6b7280; }
+
+        .icon-favorite {
+          width: 1.125rem;
+          height: 1.125rem;
+        }
+
+        .icon-favorite.active {
+          color: #ef4444;
+        }
+
+        .icon-share {
+          width: 1.125rem;
+          height: 1.125rem;
+        }
 
         .detail-container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
 
@@ -307,6 +352,7 @@ const PropertyDetail = () => {
           font-weight: 600;
           background: #10b981;
           color: white;
+          font-size: 0.75rem;
         }
 
         .thumbnail-grid {
@@ -345,7 +391,19 @@ const PropertyDetail = () => {
         }
 
         .info-header h1 { font-size: 1.5rem; color: #0f2b4d; margin-bottom: 0.5rem; }
-        .location { display: flex; align-items: center; gap: 0.25rem; color: #6b7280; }
+        
+        .location { 
+          display: flex; 
+          align-items: center; 
+          gap: 0.25rem; 
+          color: #6b7280;
+          font-size: 0.875rem;
+        }
+
+        .icon-location {
+          width: 0.875rem;
+          height: 0.875rem;
+        }
 
         .price-tag { text-align: right; }
         .price { font-size: 1.75rem; font-weight: 700; color: #d4af37; }
@@ -373,17 +431,37 @@ const PropertyDetail = () => {
           margin-bottom: 2rem;
         }
 
-        .feature-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
-        .feature-icon { width: 1.5rem; height: 1.5rem; color: #d4af37; }
-        .feature-item span { font-weight: 500; color: #0f2b4d; }
+        .feature-item { 
+          display: flex; 
+          flex-direction: column; 
+          align-items: center; 
+          gap: 0.5rem; 
+          text-align: center; 
+        }
+
+        .icon-feature { 
+          width: 1.125rem; 
+          height: 1.125rem; 
+          color: #d4af37; 
+        }
+
+        .feature-item span { 
+          font-weight: 500; 
+          color: #0f2b4d;
+          font-size: 0.875rem;
+        }
 
         .description-section h2, .features-section h2, .contact-section h2 {
-          font-size: 1.25rem;
+          font-size: 1.125rem;
           color: #0f2b4d;
           margin-bottom: 1rem;
         }
 
-        .description-section p { color: #4b5563; line-height: 1.6; }
+        .description-section p { 
+          color: #4b5563; 
+          line-height: 1.6;
+          font-size: 0.875rem;
+        }
 
         .features-list {
           display: grid;
@@ -395,40 +473,85 @@ const PropertyDetail = () => {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.5rem 1rem;
+          padding: 0.5rem 0.75rem;
           background: #f8f9fa;
           border-radius: 0.5rem;
           color: #4b5563;
+          font-size: 0.75rem;
+        }
+
+        .icon-check {
+          width: 0.875rem;
+          height: 0.875rem;
+          color: #d4af37;
         }
 
         .agent-card {
           display: flex;
           gap: 1rem;
-          padding: 1.5rem;
+          padding: 1.25rem;
           background: #f8f9fa;
           border-radius: 0.75rem;
           margin-bottom: 1.5rem;
         }
 
         .agent-avatar {
-          width: 4rem;
-          height: 4rem;
+          width: 3rem;
+          height: 3rem;
           background: #d4af37;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #0f2b4d;
-          font-size: 1.5rem;
+          font-size: 1.125rem;
           font-weight: 700;
         }
 
-        .agent-info h3 { color: #0f2b4d; margin-bottom: 0.25rem; }
-        .agent-info p { color: #6b7280; font-size: 0.875rem; margin-bottom: 0.75rem; }
-        .agent-details div { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #4b5563; }
+        .agent-info h3 { 
+          color: #0f2b4d; 
+          margin-bottom: 0.25rem;
+          font-size: 1rem;
+        }
+        
+        .agent-info p { 
+          color: #6b7280; 
+          font-size: 0.75rem; 
+          margin-bottom: 0.75rem; 
+        }
+        
+        .agent-details { 
+          display: flex;
+          flex-direction: column;
+          gap: 0.375rem;
+        }
+
+        .agent-detail { 
+          display: flex; 
+          align-items: center; 
+          gap: 0.5rem; 
+          font-size: 0.75rem; 
+          color: #4b5563;
+        }
+
+        .icon-contact {
+          width: 0.875rem;
+          height: 0.875rem;
+          color: #6b7280;
+        }
 
         .contact-actions { display: flex; flex-direction: column; gap: 1rem; }
-        .btn-contact, .btn-request { padding: 0.75rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        
+        .btn-contact, .btn-request { 
+          padding: 0.75rem; 
+          border: none; 
+          border-radius: 0.5rem; 
+          font-weight: 600; 
+          cursor: pointer; 
+          transition: all 0.3s;
+          font-size: 0.875rem;
+        }
+        
         .btn-contact { background: #d4af37; color: #0f2b4d; }
         .btn-contact:hover { background: #c4a52e; }
         .btn-request { background: #0f2b4d; color: white; }
@@ -438,10 +561,16 @@ const PropertyDetail = () => {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 1rem;
+          padding: 0.75rem;
           background: #fef3c7;
           border-radius: 0.5rem;
           color: #d97706;
+          font-size: 0.75rem;
+        }
+
+        .icon-warning {
+          width: 1rem;
+          height: 1rem;
         }
 
         .contact-form textarea {
@@ -451,16 +580,28 @@ const PropertyDetail = () => {
           border-radius: 0.5rem;
           margin-bottom: 1rem;
           resize: vertical;
+          font-size: 0.875rem;
         }
 
         .form-actions { display: flex; gap: 1rem; }
-        .btn-send, .btn-cancel { flex: 1; padding: 0.75rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; }
+        
+        .btn-send, .btn-cancel { 
+          flex: 1; 
+          padding: 0.75rem; 
+          border: none; 
+          border-radius: 0.5rem; 
+          font-weight: 600; 
+          cursor: pointer;
+          font-size: 0.875rem;
+        }
+        
         .btn-send { background: #d4af37; color: #0f2b4d; }
         .btn-cancel { background: #f3f4f6; color: #374151; }
 
         .loading-container, .error-container {
           min-height: calc(100vh - 70px);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
         }
@@ -472,6 +613,7 @@ const PropertyDetail = () => {
           border-top-color: #d4af37;
           border-radius: 50%;
           animation: spin 1s linear infinite;
+          margin-bottom: 1rem;
         }
 
         .error-card {
@@ -482,7 +624,16 @@ const PropertyDetail = () => {
           max-width: 400px;
         }
 
-        .error-icon { width: 3rem; height: 3rem; color: #dc2626; margin: 0 auto 1rem; }
+        .error-icon { 
+          width: 2.5rem; 
+          height: 2.5rem; 
+          color: #dc2626; 
+          margin: 0 auto 1rem; 
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
 
         @media (max-width: 768px) {
           .main-image { height: 300px; }

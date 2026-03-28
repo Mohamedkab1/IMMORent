@@ -9,7 +9,7 @@ class RentalRequest extends Model
     protected $table = 'rental_requests';
     
     protected $fillable = [
-        'request_number', 'user_id', 'property_id', 'start_date', 'end_date',
+        'request_number','user_id', 'property_id', 'start_date', 'end_date',
         'status', 'message', 'rejection_reason', 'processed_at', 'processed_by'
     ];
 
@@ -24,7 +24,8 @@ class RentalRequest extends Model
         parent::boot();
         
         static::creating(function ($request) {
-            $request->request_number = 'REQ-' . strtoupper(uniqid());
+            $prefix = $request->type === 'sale' ? 'SALE' : 'RENT';
+            $request->request_number = $prefix . '-' . strtoupper(uniqid());
         });
     }
 
@@ -43,9 +44,14 @@ class RentalRequest extends Model
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    public function scopePending($query)
+    public function contract(): BelongsTo
     {
-        return $query->where('status', 'pending');
+        return $this->belongsTo(Contract::class);
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return $this->type === 'sale' ? 'Achat' : 'Location';
     }
 
     public function getStatusLabelAttribute(): string
@@ -56,17 +62,6 @@ class RentalRequest extends Model
             'rejected' => 'Refusée',
             'cancelled' => 'Annulée',
             default => $this->status,
-        };
-    }
-
-    public function getStatusColorAttribute(): string
-    {
-        return match($this->status) {
-            'pending' => 'orange',
-            'approved' => 'green',
-            'rejected' => 'red',
-            'cancelled' => 'gray',
-            default => 'blue',
         };
     }
 }
