@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { HomeIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -148,7 +149,7 @@ const Register = () => {
                     className={`role-card ${selectedRole === 'client' ? 'selected' : ''}`}
                     onClick={() => handleRoleSelect('client')}
                   >
-                    <div className="role-icon client">🏠</div>
+                    <HomeIcon className="role-icon" />
                     <h3>Client / Locataire</h3>
                     <p>Je recherche un logement à louer</p>
                     <ul className="role-features">
@@ -163,7 +164,7 @@ const Register = () => {
                     className={`role-card ${selectedRole === 'agent' ? 'selected' : ''}`}
                     onClick={() => handleRoleSelect('agent')}
                   >
-                    <div className="role-icon agent">🏢</div>
+                    <BuildingOfficeIcon className="role-icon" />
                     <h3>Agent immobilier</h3>
                     <p>Je gère des biens immobiliers</p>
                     <ul className="role-features">
@@ -458,9 +459,11 @@ const Register = () => {
         }
 
         .role-icon {
-          font-size: 2rem;
+          width: 2rem;
+          height: 2rem;
           text-align: center;
           margin-bottom: 1rem;
+          color: #d4af37;
         }
 
         .role-card h3 {

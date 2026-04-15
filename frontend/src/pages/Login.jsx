@@ -47,9 +47,9 @@ const Login = () => {
 
   // CORRIGEZ CES EMAILS AVEC CEUX DE VOTRE BASE DE DONNÉES
   const demoAccounts = [
-    { email: 'admin@immorent.com', password: 'password', role: 'Admin' },
-    { email: 'agent@immorent.com', password: 'password', role: 'Agent' },
-    { email: 'client@immorent.com', password: 'password', role: 'Client' }
+    { email: 'admin@immorent.ma', password: 'password', role: 'Admin' },
+    { email: 'yassine@agent.ma', password: 'password', role: 'Agent' },
+    { email: 'mehdi@client.ma', password: 'password', role: 'Client' }
   ];
 
   const fillDemoAccount = (email, password) => {

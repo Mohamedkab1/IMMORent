@@ -1,295 +1,126 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/IMMORent.jpeg';  // ← Chemin corrigé
+import { useLanguage } from '../../context/LanguageContext';
+import logo from '../../assets/IMMORent.jpeg';
+import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const Footer = () => {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
-    <>
-      <footer className="immorent-footer">
-        <div className="footer-container">
-          <div className="footer-grid">
-            <div className="footer-section">
-              <div className="footer-logo">
-                <img 
-                  src={logo} 
-                  alt="IMMORent Logo" 
-                  className="footer-logo-image"
-                />
-                <h3 className="footer-title">IMMORent</h3>
-              </div>
-              <p className="footer-description">
-                Plateforme de gestion immobilière et location en ligne au Maroc.
-                Trouvez votre prochain logement à Marrakech ou gérez vos biens en toute simplicité.
-              </p>
-              <div className="footer-social">
-                <a href="#" className="social-link" aria-label="Facebook">📘</a>
-                <a href="#" className="social-link" aria-label="Twitter">🐦</a>
-                <a href="#" className="social-link" aria-label="LinkedIn">💼</a>
-                <a href="#" className="social-link" aria-label="Instagram">📷</a>
-              </div>
+    <footer className="bg-primary dark:bg-slate-900 border-t border-slate-800 text-slate-300 pt-16 pb-8 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Top Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          
+          {/* Brand */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="IMMORent Logo" className="w-10 h-10 object-cover rounded-xl shadow-sm" />
+              <h3 className="text-xl font-bold text-white tracking-tight">IMMORent</h3>
             </div>
-
-            <div className="footer-section">
-              <h3 className="footer-title">Liens rapides</h3>
-              <ul className="footer-links">
-                <li><Link to="/">Accueil</Link></li>
-                <li><Link to="/properties">Biens immobiliers</Link></li>
-                <li><Link to="/about">À propos</Link></li>
-                <li><Link to="/contact">Contact</Link></li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h3 className="footer-title">Services</h3>
-              <ul className="footer-links">
-                <li><Link to="/properties?type=apartment">Appartements</Link></li>
-                <li><Link to="/properties?type=house">Maisons / Riads</Link></li>
-                <li><Link to="/properties?type=commercial">Locaux commerciaux</Link></li>
-                <li><Link to="/properties?type=land">Terrains</Link></li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h3 className="footer-title">Informations légales</h3>
-              <ul className="footer-links">
-                <li><Link to="/mentions-legales">Mentions légales</Link></li>
-                <li><Link to="/confidentialite">Confidentialité</Link></li>
-                <li><Link to="/cgv">CGV</Link></li>
-              </ul>
+            <p className="text-sm leading-relaxed text-slate-400">
+              {t('footer.description')}
+            </p>
+            <div className="flex gap-4 rtl:gap-reverse">
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
+                <span className="sr-only">Facebook</span>
+                📘
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
+                <span className="sr-only">Twitter</span>
+                🐦
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
+                <span className="sr-only">LinkedIn</span>
+                <BuildingOfficeIcon className="w-5 h-5" />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
+                <span className="sr-only">Instagram</span>
+                📷
+              </a>
             </div>
           </div>
 
-          <div className="footer-contact">
-            <div className="contact-item">📍 Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc</div>
-            <div className="contact-item">📞 +212 5 24 12 34 56</div>
-            <div className="contact-item">✉️ contact@immorent.ma</div>
-            <div className="contact-item">🕒 Lun-Ven: 9h-18h | Sam: 9h-13h</div>
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-white font-bold mb-6 relative inline-block">
+              {t('footer.quickLinks')}
+              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
+            </h3>
+            <ul className="space-y-3">
+              <li><Link to="/" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.home')}</Link></li>
+              <li><Link to="/properties" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.properties')}</Link></li>
+              <li><Link to="/about" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.about')}</Link></li>
+              <li><Link to="/contact" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.contact')}</Link></li>
+            </ul>
           </div>
 
-          <div className="footer-bottom">
-            <p>&copy; {currentYear} IMMORent Maroc. Tous droits réservés.</p>
-            <div className="footer-bottom-links">
-              <Link to="/plan-du-site">Plan du site</Link>
-              <span className="separator">•</span>
-              <Link to="/mentions-legales">Mentions légales</Link>
-              <span className="separator">•</span>
-              <Link to="/contact">Nous contacter</Link>
-            </div>
+          {/* Services */}
+          <div>
+             <h3 className="text-white font-bold mb-6 relative inline-block">
+              {t('footer.services')}
+              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
+            </h3>
+            <ul className="space-y-3">
+              <li><Link to="/properties?type=apartment" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.apartments')}</Link></li>
+              <li><Link to="/properties?type=house" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.houses')}</Link></li>
+              <li><Link to="/properties?type=commercial" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.commercial')}</Link></li>
+              <li><Link to="/properties?type=land" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.lands')}</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+             <h3 className="text-white font-bold mb-6 relative inline-block">
+              {t('footer.legal')}
+              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
+            </h3>
+            <ul className="space-y-3">
+              <li><Link to="/mentions-legales" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.legalMentions')}</Link></li>
+              <li><Link to="/confidentialite" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.privacy')}</Link></li>
+              <li><Link to="/cgv" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.terms')}</Link></li>
+            </ul>
+          </div>
+          
+        </div>
+
+        {/* Contact Info Bar */}
+        <div className="py-8 border-y border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center gap-3 text-sm group">
+            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><MapPinIcon className="w-5 h-5" /></div>
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.address')}</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm group">
+            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><PhoneIcon className="w-5 h-5" /></div>
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.phone')}</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm group">
+            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><EnvelopeIcon className="w-5 h-5" /></div>
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.email')}</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm group">
+            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><ClockIcon className="w-5 h-5" /></div>
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.hours')}</span>
           </div>
         </div>
-      </footer>
 
-      <style>{`
-        .immorent-footer {
-          background-color: #0f2b4d;
-          color: #9ca3af;
-          padding: 3rem 0 1.5rem;
-          margin-top: 3rem;
-        }
+        {/* Bottom Bar */}
+        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <p>&copy; {currentYear} IMMORent Maroc. {t('footer.rights')}</p>
+          <div className="flex flex-wrap items-center gap-4 rtl:gap-reverse">
+            <Link to="/plan-du-site" className="hover:text-white transition-colors">{t('footer.siteMap')}</Link>
+            <span className="w-1 h-1 rounded-full bg-slate-700 block"></span>
+            <Link to="/mentions-legales" className="hover:text-white transition-colors">{t('footer.legalMentions')}</Link>
+            <span className="w-1 h-1 rounded-full bg-slate-700 block"></span>
+            <Link to="/contact" className="hover:text-white transition-colors">{t('footer.contactUs')}</Link>
+          </div>
+        </div>
 
-        .footer-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 1.5rem;
-        }
-
-        .footer-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 2rem;
-          margin-bottom: 2rem;
-        }
-
-        .footer-logo {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          margin-bottom: 1rem;
-        }
-
-        .footer-logo-image {
-          width: 40px;
-          height: 40px;
-          object-fit: cover;
-          border-radius: 10px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .footer-title {
-          color: white;
-          font-size: 1.125rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          position: relative;
-          padding-bottom: 0.5rem;
-        }
-
-        .footer-logo .footer-title {
-          margin-bottom: 0;
-          padding-bottom: 0;
-        }
-
-        .footer-logo .footer-title::after {
-          display: none;
-        }
-
-        .footer-title::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 40px;
-          height: 2px;
-          background: #d4af37;
-        }
-
-        .footer-description {
-          font-size: 0.875rem;
-          line-height: 1.6;
-          margin-bottom: 1rem;
-        }
-
-        .footer-social {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .social-link {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 2rem;
-          height: 2rem;
-          background-color: #1e4a6e;
-          border-radius: 0.5rem;
-          color: #9ca3af;
-          text-decoration: none;
-          transition: all 0.3s ease;
-          font-size: 1rem;
-        }
-
-        .social-link:hover {
-          background-color: #d4af37;
-          color: #0f2b4d;
-          transform: translateY(-2px);
-        }
-
-        .footer-links {
-          list-style: none;
-          padding: 0;
-        }
-
-        .footer-links li {
-          margin-bottom: 0.5rem;
-        }
-
-        .footer-links a {
-          color: #9ca3af;
-          text-decoration: none;
-          font-size: 0.875rem;
-          transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-          color: white;
-          padding-left: 0.25rem;
-        }
-
-        .footer-contact {
-          display: flex;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 1rem;
-          padding: 1.5rem 0;
-          border-top: 1px solid #1e4a6e;
-          border-bottom: 1px solid #1e4a6e;
-          margin-bottom: 1.5rem;
-        }
-
-        .contact-item {
-          font-size: 0.875rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          transition: color 0.3s ease;
-        }
-
-        .contact-item:hover {
-          color: #d4af37;
-        }
-
-        .footer-bottom {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.75rem;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .footer-bottom-links {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        .footer-bottom-links a {
-          color: #9ca3af;
-          text-decoration: none;
-          transition: color 0.3s ease;
-        }
-
-        .footer-bottom-links a:hover {
-          color: white;
-        }
-
-        .separator {
-          color: #4b5563;
-        }
-
-        @media (max-width: 768px) {
-          .footer-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-          }
-
-          .footer-contact {
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: flex-start;
-          }
-
-          .footer-bottom {
-            flex-direction: column;
-            text-align: center;
-          }
-
-          .footer-bottom-links {
-            justify-content: center;
-          }
-
-          .footer-logo-image {
-            width: 35px;
-            height: 35px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .footer-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .footer-contact {
-            align-items: center;
-            text-align: center;
-          }
-        }
-      `}</style>
-    </>
+      </div>
+    </footer>
   );
 };
 

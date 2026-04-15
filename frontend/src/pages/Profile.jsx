@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, PencilIcon, CheckIcon, XMarkIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -91,7 +91,7 @@ const Profile = () => {
                       </div>
                     </div>
                     <div className="info-item">
-                      <span className="info-icon-emoji">📅</span>
+                      <CalendarIcon className="info-icon" />
                       <div>
                         <span className="label">Membre depuis</span>
                         <span className="value">{new Date(user?.created_at).toLocaleDateString('fr-FR')}</span>

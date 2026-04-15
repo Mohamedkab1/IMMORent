@@ -87,16 +87,42 @@ class Property extends Model
     public function getStatusLabelAttribute()
     {
         $labels = [
-            'available' => 'Disponible',
-            'sold' => 'Vendu',
-            'reserved' => 'Réservé',
-            'unavailable' => 'Indisponible'
+            'available'   => 'Disponible',
+            'rented'      => 'Loué',
+            'sold'        => 'Vendu',
+            'reserved'    => 'Réservé',
+            'unavailable' => 'Indisponible',
         ];
-        return $labels[$this->status] ?? $this->status;
+        return $labels[$this->status] ?? ucfirst($this->status ?? '');
+    }
+
+    public function getTransactionTypeAttribute()
+    {
+        return $this->listing_type === 'for_sale' ? 'sale' : 'rent';
     }
 
     public function getListingTypeLabelAttribute()
     {
-        return $this->listing_type === 'for_rent' ? 'À louer' : 'À vendre';
+        return $this->listing_type === 'for_sale' ? 'À vendre' : 'À louer';
+    }
+
+    public function getTypeLabelAttribute()
+    {
+        $labels = [
+            'apartment'  => 'Appartement',
+            'house'      => 'Maison',
+            'commercial' => 'Local commercial',
+            'land'       => 'Terrain',
+            'studio'     => 'Studio',
+        ];
+        return $labels[$this->type] ?? ucfirst($this->type ?? '');
+    }
+
+    public function getPriceDisplayAttribute()
+    {
+        $formatted = number_format((float) $this->price, 0, ',', ' ');
+        return $this->listing_type === 'for_rent' 
+            ? $formatted . ' DH/mois' 
+            : $formatted . ' DH';
     }
 }

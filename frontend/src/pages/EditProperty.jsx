@@ -3,7 +3,23 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { propertyService } from '../services/properties';
 import { toast } from 'react-toastify';
-import { ArrowLeftIcon, PlusIcon, XMarkIcon, PhotoIcon, MapPinIcon, HomeIcon, CurrencyEuroIcon, BuildingOfficeIcon, DocumentTextIcon, CheckCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { 
+  ArrowLeftIcon, 
+  PlusIcon, 
+  XMarkIcon, 
+  PhotoIcon, 
+  MapPinIcon, 
+  HomeIcon,
+  CurrencyDollarIcon,
+  BuildingOfficeIcon,
+  DocumentTextIcon,
+  CheckCircleIcon,
+  KeyIcon,
+  TagIcon,
+  InformationCircleIcon,
+  StarIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
 
 const EditProperty = () => {
   const { id } = useParams();
@@ -18,7 +34,14 @@ const EditProperty = () => {
   const [featuresList, setFeaturesList] = useState([]);
   const [newFeature, setNewFeature] = useState('');
   const [categories, setCategories] = useState([]);
-  const [formData, setFormData] = useState({ title: '', description: '', price: '', transaction_type: 'rent', address: '', city: '', postal_code: '', surface: '', rooms: '', bedrooms: '', bathrooms: '', type: 'apartment', category_id: '', status: 'available' });
+  const [validationErrors, setValidationErrors] = useState({});
+  const [formData, setFormData] = useState({ 
+    title: '', description: '', price: '', 
+    transaction_type: 'rent', address: '', city: '', 
+    postal_code: '', surface: '', rooms: '', 
+    bedrooms: '', bathrooms: '', type: 'apartment', 
+    category_id: '', status: 'available' 
+  });
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/login');
@@ -28,477 +51,475 @@ const EditProperty = () => {
 
   const fetchData = async () => {
     try {
-      const [propRes, catRes] = await Promise.all([propertyService.getById(id), fetch('http://localhost:8000/api/categories').then(r => r.json())]);
+      const [propRes, catRes] = await Promise.all([
+        propertyService.getById(id), 
+        fetch('/api/categories').then(r => r.json())
+      ]);
+      
       if (propRes.success && propRes.data) {
         const p = propRes.data;
         setProperty(p);
-        setFormData({ title: p.title, description: p.description, price: p.price, transaction_type: p.transaction_type, address: p.address, city: p.city, postal_code: p.postal_code, surface: p.surface, rooms: p.rooms, bedrooms: p.bedrooms || '', bathrooms: p.bathrooms || '', type: p.type, category_id: p.category_id, status: p.status });
+        setFormData({ 
+          title: p.title, description: p.description, 
+          price: p.price, transaction_type: p.transaction_type, 
+          address: p.address, city: p.city, postal_code: p.postal_code, 
+          surface: p.surface, rooms: p.rooms, bedrooms: p.bedrooms || '', 
+          bathrooms: p.bathrooms || '', type: p.type, 
+          category_id: p.category_id, status: p.status 
+        });
         setExistingImages(p.images || []);
         let features = p.features;
         if (typeof features === 'string') try { features = JSON.parse(features); } catch(e) { features = []; }
         setFeaturesList(Array.isArray(features) ? features : []);
-      } else toast.error('Bien non trouvé');
-      if (catRes.success) setCategories(catRes.data);
-    } catch (error) { toast.error('Erreur chargement'); navigate('/dashboard/agent'); }
-    finally { setLoading(false); }
+      } else {
+        toast.error('Bien non trouvé');
+        navigate('/dashboard/agent');
+      }
+      
+      if (catRes.success) {
+        setCategories(catRes.data);
+      } else {
+        setCategories([
+          { id: 1, name: 'Appartement' }, { id: 2, name: 'Maison' }, 
+          { id: 3, name: 'Local commercial' }, { id: 4, name: 'Terrain' }, { id: 5, name: 'Studio' }
+        ]);
+      }
+    } catch (error) { 
+      toast.error('Erreur lors du chargement des données'); 
+      navigate('/dashboard/agent'); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
-  const propertyTypes = [{ value: 'apartment', label: 'Appartement' }, { value: 'house', label: 'Maison' }, { value: 'studio', label: 'Studio' }, { value: 'commercial', label: 'Local commercial' }, { value: 'land', label: 'Terrain' }];
-  const statusOptions = [{ value: 'available', label: 'Disponible' }, { value: 'rented', label: 'Loué' }, { value: 'reserved', label: 'Réservé' }, { value: 'unavailable', label: 'Indisponible' }];
+  const propertyTypes = [
+    { value: 'apartment', label: 'Appartement' }, { value: 'house', label: 'Maison' }, 
+    { value: 'studio', label: 'Studio' }, { value: 'commercial', label: 'Local commercial' }, { value: 'land', label: 'Terrain' }
+  ];
+  const statusOptions = [
+    { value: 'available', label: 'Disponible' }, { value: 'rented', label: 'Loué' }, 
+    { value: 'reserved', label: 'Réservé' }, { value: 'unavailable', label: 'Indisponible' }
+  ];
+  const transactionTypes = [
+    { value: 'rent', label: 'Location', icon: KeyIcon },
+    { value: 'sale', label: 'Vente', icon: TagIcon }
+  ];
 
-  const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  const handleImageChange = (e) => { const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/')); setImages(prev => [...prev, ...files]); files.forEach(f => { const reader = new FileReader(); reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result]); reader.readAsDataURL(f); }); };
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (validationErrors[e.target.name]) setValidationErrors(prev => ({ ...prev, [e.target.name]: null }));
+  };
+
+  const handleTransactionTypeSelect = (type) => {
+    setFormData(prev => ({ ...prev, transaction_type: type }));
+  };
+
+  const handleImageChange = (e) => { 
+    const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/')); 
+    if (existingImages.length + images.length + files.length > 10) {
+      toast.warning('Maximum 10 photos autorisées au total.');
+      return;
+    }
+    setImages(prev => [...prev, ...files]);
+    files.forEach(f => { 
+      const reader = new FileReader(); 
+      reader.onloadend = () => setImagePreviews(prev => [...prev, reader.result]); 
+      reader.readAsDataURL(f); 
+    }); 
+  };
+
   const removeExistingImage = (index) => setExistingImages(prev => prev.filter((_, i) => i !== index));
-  const removeNewImage = (index) => { setImages(prev => prev.filter((_, i) => i !== index)); setImagePreviews(prev => prev.filter((_, i) => i !== index)); };
-  const addFeature = () => { if (newFeature.trim()) { setFeaturesList([...featuresList, newFeature.trim()]); setNewFeature(''); } };
+  
+  const removeNewImage = (index) => { 
+    setImages(prev => prev.filter((_, i) => i !== index)); 
+    setImagePreviews(prev => prev.filter((_, i) => i !== index)); 
+  };
+  
+  const addFeature = () => { 
+    if (newFeature.trim() && !featuresList.includes(newFeature.trim())) { 
+      setFeaturesList([...featuresList, newFeature.trim()]); 
+      setNewFeature(''); 
+    } 
+  };
+  
   const removeFeature = (index) => setFeaturesList(featuresList.filter((_, i) => i !== index));
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.title.trim()) errors.title = 'Le titre est requis';
+    if (!formData.description.trim()) errors.description = 'La description est requise';
+    if (!formData.price || formData.price <= 0) errors.price = 'Le prix doit être valide';
+    if (!formData.address.trim()) errors.address = 'L\'adresse est requise';
+    if (!formData.city.trim()) errors.city = 'La ville est requise';
+    if (!formData.postal_code.trim()) errors.postal_code = 'Le code postal est requis';
+    if (!formData.surface || formData.surface <= 0) errors.surface = 'La surface est requise';
+    if (!formData.rooms || formData.rooms <= 0) errors.rooms = 'Le nombre de pièces est requis';
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error('Veuillez corriger les erreurs dans le formulaire.');
+      return;
+    }
     setSubmitting(true);
+    
     try {
-      const updateData = { ...formData, price: parseFloat(formData.price), surface: parseFloat(formData.surface), rooms: parseInt(formData.rooms), bedrooms: parseInt(formData.bedrooms) || 0, bathrooms: parseInt(formData.bathrooms) || 0, category_id: parseInt(formData.category_id), features: JSON.stringify(featuresList), images: existingImages };
+      const updateData = { 
+        ...formData, 
+        price: parseFloat(formData.price), 
+        surface: parseFloat(formData.surface), 
+        rooms: parseInt(formData.rooms), 
+        bedrooms: parseInt(formData.bedrooms) || 0, 
+        bathrooms: parseInt(formData.bathrooms) || 0, 
+        category_id: parseInt(formData.category_id), 
+        features: JSON.stringify(featuresList), 
+        existing_images: existingImages,
+        new_images: images
+      };
+
+      // Depending on API implementation, file uploads on PUT might be tricky without FormData. 
+      // If we use FormData for update:
+      const data = new FormData();
+      Object.keys(updateData).forEach(key => {
+         if (key === 'images') {
+             updateData.images.forEach(img => data.append('existing_images[]', img));
+         } else {
+             data.append(key, updateData[key]);
+         }
+      });
+      images.forEach(img => data.append('new_images[]', img));
+      data.append('_method', 'PUT'); // Laravel requirement for form-data PUT
+      
+      // Let's use the standard update mechanism, assuming the backend supports it.
       const res = await propertyService.update(id, updateData);
-      if (res.success) { toast.success('Bien modifié'); navigate('/dashboard/agent?refresh=true'); }
-      else toast.error(res.message);
-    } catch (error) { toast.error('Erreur modification'); }
-    finally { setSubmitting(false); }
+      
+      if (res.success) { 
+        toast.success('Bien modifié avec succès'); 
+        navigate('/dashboard/agent?refresh=true'); 
+      } else {
+        toast.error(res.message || 'Erreur lors de la modification');
+      }
+    } catch (error) { 
+      toast.error('Erreur lors de la communication aver le serveur'); 
+    } finally { 
+      setSubmitting(false); 
+    }
   };
 
-  if (loading) return <div className="loading"><div className="spinner"></div></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col justify-center items-center">
+        <div className="w-16 h-16 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500 font-medium">Chargement des détails...</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="edit-property-page">
-        <div className="edit-container">
-          <button onClick={() => navigate(-1)} className="back-btn">
-            <ArrowLeftIcon className="icon-back" /> Retour
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-slate-700">
+          <button onClick={() => navigate(-1)} className="p-2 text-slate-400 hover:text-amber-500 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors shadow-sm">
+            <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
           </button>
-          <h1>Modifier le bien</h1>
-          <form onSubmit={handleSubmit}>
-            <div className="form-section">
-              <h2><DocumentTextIcon className="section-icon" /> Informations générales</h2>
-              <div className="form-group"><label>Titre *</label><input name="title" value={formData.title} onChange={handleChange} /></div>
-              <div className="form-group"><label>Description *</label><textarea name="description" rows="4" value={formData.description} onChange={handleChange} /></div>
-              <div className="form-row">
-                <div className="form-group"><label>Type *</label><select name="type" value={formData.type} onChange={handleChange}>{propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}</select></div>
-                <div className="form-group"><label>Catégorie *</label><select name="category_id" value={formData.category_id} onChange={handleChange}>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Modifier le bien</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Mettez à jour les informations de l'annonce #{id}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Section: Informations générales */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                 <DocumentTextIcon className="w-6 h-6" />
               </div>
-              <div className="form-row">
-                <div className="form-group"><label>Prix *</label><input type="number" name="price" value={formData.price} onChange={handleChange} /></div>
-                <div className="form-group"><label>Statut *</label><select name="status" value={formData.status} onChange={handleChange}>{statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}</select></div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Informations générales</h2>
+            </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  Titre de l'annonce <span className="text-rose-500">*</span>
+                </label>
+                <input 
+                  type="text" name="title" value={formData.title} onChange={handleChange} 
+                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.title ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500'}`}
+                />
+                {validationErrors.title && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.title}</p>}
               </div>
-              <div className="form-group"><label>Type transaction *</label>
-                <div className="transaction-selector">
-                  <button type="button" className={`transaction-btn ${formData.transaction_type === 'rent' ? 'active' : ''}`} onClick={() => setFormData(prev => ({ ...prev, transaction_type: 'rent' }))}>📍 Location</button>
-                  <button type="button" className={`transaction-btn ${formData.transaction_type === 'sale' ? 'active' : ''}`} onClick={() => setFormData(prev => ({ ...prev, transaction_type: 'sale' }))}>💰 Vente</button>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  Description <span className="text-rose-500">*</span>
+                </label>
+                <textarea 
+                  name="description" rows="5" value={formData.description} onChange={handleChange} 
+                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all resize-y ${validationErrors.description ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500'}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Type <span className="text-rose-500">*</span></label>
+                  <select 
+                    name="type" value={formData.type} onChange={handleChange} 
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all appearance-none cursor-pointer focus:border-amber-500"
+                  >
+                    {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Catégorie <span className="text-rose-500">*</span></label>
+                  <select 
+                    name="category_id" value={formData.category_id} onChange={handleChange} 
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all appearance-none cursor-pointer focus:border-amber-500"
+                  >
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Statut <span className="text-rose-500">*</span></label>
+                  <select 
+                    name="status" value={formData.status} onChange={handleChange} 
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all appearance-none cursor-pointer focus:border-amber-500"
+                  >
+                    {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div className="form-section">
-              <h2><MapPinIcon className="section-icon" /> Localisation</h2>
-              <div className="form-group"><label>Adresse *</label><input name="address" value={formData.address} onChange={handleChange} /></div>
-              <div className="form-row">
-                <div className="form-group"><label>Ville *</label><input name="city" value={formData.city} onChange={handleChange} /></div>
-                <div className="form-group"><label>Code postal *</label><input name="postal_code" value={formData.postal_code} onChange={handleChange} /></div>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2><HomeIcon className="section-icon" /> Caractéristiques</h2>
-              <div className="form-row">
-                <div className="form-group"><label>Surface (m²) *</label><input type="number" name="surface" value={formData.surface} onChange={handleChange} /></div>
-                <div className="form-group"><label>Pièces *</label><input type="number" name="rooms" value={formData.rooms} onChange={handleChange} /></div>
-              </div>
-              <div className="form-row">
-                <div className="form-group"><label>Chambres</label><input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} /></div>
-                <div className="form-group"><label>Salles de bain</label><input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} /></div>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2><CheckCircleIcon className="section-icon" /> Équipements</h2>
-              <div className="features-input">
-                <input value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => e.key === 'Enter' && addFeature()} placeholder="Ajouter un équipement..." />
-                <button type="button" onClick={addFeature}><PlusIcon className="icon-plus" /> Ajouter</button>
-              </div>
-              <div className="features-list">
-                {featuresList.map((f, i) => (
-                  <div key={i} className="feature-tag">
-                    <span>{f}</span>
-                    <button onClick={() => removeFeature(i)}><XMarkIcon className="icon-remove" /></button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h2><PhotoIcon className="section-icon" /> Photos</h2>
-              {existingImages.length > 0 && (
-                <div>
-                  <h3>Photos actuelles</h3>
-                  <div className="image-previews">
-                    {existingImages.map((img, i) => (
-                      <div key={i} className="image-preview">
-                        <img src={`http://localhost:8000/storage/${img}`} alt="" />
-                        <button onClick={() => removeExistingImage(i)}><TrashIcon className="icon-trash" /></button>
-                      </div>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Type de transaction <span className="text-rose-500">*</span></label>
+                  <div className="flex gap-4">
+                    {transactionTypes.map(type => (
+                      <button
+                        key={type.value} type="button" onClick={() => handleTransactionTypeSelect(type.value)}
+                        className={`flex-1 flex flex-col justify-center items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.transaction_type === type.value ? 'border-amber-500 bg-amber-500/10 shadow-md shadow-amber-500/10' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}`}
+                      >
+                        <type.icon className={`w-6 h-6 ${formData.transaction_type === type.value ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`} />
+                        <span className={`font-bold text-sm ${formData.transaction_type === type.value ? 'text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400'}`}>{type.label}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
-              )}
-              <div>
-                <h3>Ajouter des photos</h3>
-                <label className="image-upload">
-                  <PhotoIcon className="icon-upload" />
-                  <span>Cliquez pour ajouter</span>
-                  <input type="file" accept="image/*" multiple onChange={handleImageChange} style={{ display: 'none' }} />
-                </label>
-              </div>
-              {imagePreviews.length > 0 && (
-                <div className="image-previews">
-                  {imagePreviews.map((p, i) => (
-                    <div key={i} className="image-preview">
-                      <img src={p} alt="" />
-                      <button onClick={() => removeNewImage(i)}><XMarkIcon className="icon-remove" /></button>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                    <CurrencyDollarIcon className="w-4 h-4 text-slate-400" /> Prix <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="number" name="price" value={formData.price} onChange={handleChange} 
+                      className={`w-full ps-4 pe-20 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.price ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500'}`}
+                    />
+                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-slate-500 font-bold text-sm">
+                       DH {formData.transaction_type === 'rent' ? '/ ms' : ''}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
+          </div>
 
-            <div className="form-actions">
-              <button type="button" onClick={() => navigate(-1)} className="btn-cancel">Annuler</button>
-              <button type="submit" className="btn-submit" disabled={submitting}>{submitting ? 'Enregistrement...' : 'Enregistrer'}</button>
+          {/* Section: Localisation */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+              <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
+                 <MapPinIcon className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Localisation</h2>
             </div>
-          </form>
-        </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Adresse complète <span className="text-rose-500">*</span></label>
+                <input 
+                  type="text" name="address" value={formData.address} onChange={handleChange} 
+                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'}`}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Ville <span className="text-rose-500">*</span></label>
+                  <input type="text" name="city" value={formData.city} onChange={handleChange} className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'}`} />
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">Code postal <span className="text-rose-500">*</span></label>
+                  <input type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'}`} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Caractéristiques */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
+                 <HomeIcon className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Caractéristiques du bien</h2>
+            </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Surface <span className="text-rose-500">*</span></label>
+                  <div className="relative">
+                    <input type="number" name="surface" value={formData.surface} onChange={handleChange} className="w-full ps-4 pe-10 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium focus:border-amber-500" />
+                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-slate-400 font-bold text-sm">m²</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Pièces <span className="text-rose-500">*</span></label>
+                  <input type="number" name="rooms" value={formData.rooms} onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium focus:border-amber-500" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Chambres</label>
+                  <input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium focus:border-amber-500" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Salles de bain</label>
+                  <input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none rounded-xl text-slate-700 dark:text-white font-medium focus:border-amber-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Équipements */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                 <StarIcon className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Équipements & Prestations</h2>
+            </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+               <div className="flex flex-col sm:flex-row gap-3">
+                 <input 
+                   type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => {if(e.key === 'Enter') { e.preventDefault(); addFeature(); }}} 
+                   placeholder="Ajouter un équipement (ex: Ascenseur)..." 
+                   className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium focus:border-amber-500"
+                 />
+                 <button 
+                   type="button" onClick={addFeature} 
+                   className="px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                 >
+                   <PlusIcon className="w-5 h-5"/> Ajouter
+                 </button>
+               </div>
+               
+               {featuresList.length > 0 && (
+                 <div className="flex flex-wrap gap-3 mt-4">
+                   {featuresList.map((f, i) => (
+                     <span key={i} className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg text-sm font-bold border border-amber-200 dark:border-amber-800/50 shadow-sm animate-fade-in-up">
+                       {f}
+                       <button type="button" onClick={() => removeFeature(i)} className="text-amber-600/70 hover:text-rose-500 transition-colors p-0.5">
+                         <XMarkIcon className="w-4 h-4" />
+                       </button>
+                     </span>
+                   ))}
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* Section: Photos */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
+                 <PhotoIcon className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Galerie Photos</h2>
+            </div>
+            
+            <div className="p-6 md:p-8 space-y-6">
+               
+               {/* Photos existantes */}
+               {existingImages.length > 0 && (
+                 <div>
+                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Photos actuelles</h3>
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {existingImages.map((img, i) => (
+                       <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm group">
+                         <img src={`/storage/${img}`} alt="Existant" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                         <button 
+                           type="button" onClick={() => removeExistingImage(i)}
+                           className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
+                         >
+                           <TrashIcon className="w-4 h-4"/>
+                         </button>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
+               <div className="w-full mt-6">
+                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Ajouter de nouvelles photos</h3>
+                 <input 
+                   type="file" multiple accept="image/*" id="images-upload" 
+                   onChange={handleImageChange} className="hidden" 
+                 />
+                 <label htmlFor="images-upload" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-amber-500 bg-slate-50 hover:bg-amber-50 dark:bg-slate-900/50 dark:hover:bg-slate-800 rounded-2xl cursor-pointer transition-all group">
+                   <div className="w-12 h-12 bg-white dark:bg-slate-800 shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                     <PlusIcon className="w-6 h-6 text-amber-500" />
+                   </div>
+                   <span className="text-slate-800 dark:text-white font-bold mb-1">Cliquer pour importer</span>
+                   <span className="text-slate-500 dark:text-slate-400 text-xs font-medium text-center">PNG, JPG...</span>
+                 </label>
+               </div>
+
+               {imagePreviews.length > 0 && (
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                   {imagePreviews.map((preview, i) => (
+                     <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-amber-200 dark:border-amber-900 shadow-sm group">
+                       <div className="absolute top-0 left-0 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10">Nouveau</div>
+                       <img src={preview} alt="Prévisualisation" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                       <button 
+                         type="button" onClick={() => removeNewImage(i)}
+                         className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
+                       >
+                         <XMarkIcon className="w-5 h-5"/>
+                       </button>
+                     </div>
+                   ))}
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* Floating Actions Line */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
+            <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl font-bold shadow-sm transition-all text-center">
+              Annuler les modifications
+            </button>
+            <button type="submit" disabled={submitting} className="px-10 py-4 bg-amber-500 text-white hover:bg-amber-600 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-amber-500/30 transition-all flex items-center justify-center gap-3">
+              {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+              {submitting ? 'Validation...' : 'Enregistrer les modifications'}
+            </button>
+          </div>
+          
+        </form>
       </div>
-
-      <style>{`
-        .edit-property-page {
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-          padding: 2rem 1rem;
-        }
-
-        .edit-container {
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .back-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          margin-bottom: 1rem;
-          font-size: 0.875rem;
-        }
-
-        .icon-back {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .back-btn:hover {
-          color: #d4af37;
-        }
-
-        h1 {
-          font-size: 1.75rem;
-          color: #0f2b4d;
-          margin-bottom: 2rem;
-        }
-
-        form {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 2rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .form-section {
-          margin-bottom: 2rem;
-          padding-bottom: 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .form-section:last-child {
-          border-bottom: none;
-          margin-bottom: 0;
-          padding-bottom: 0;
-        }
-
-        .form-section h2 {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1.125rem;
-          color: #0f2b4d;
-          margin-bottom: 1rem;
-        }
-
-        .section-icon {
-          width: 1rem;
-          height: 1rem;
-          color: #d4af37;
-        }
-
-        .form-section h3 {
-          font-size: 0.875rem;
-          color: #374151;
-          margin: 1rem 0 0.5rem;
-        }
-
-        .form-group {
-          margin-bottom: 1rem;
-        }
-
-        .form-group label {
-          display: block;
-          font-weight: 500;
-          margin-bottom: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-          width: 100%;
-          padding: 0.625rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-        }
-
-        .transaction-selector {
-          display: flex;
-          gap: 1rem;
-        }
-
-        .transaction-btn {
-          flex: 1;
-          padding: 0.5rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          background: white;
-          cursor: pointer;
-          font-size: 0.875rem;
-        }
-
-        .transaction-btn.active {
-          background: #d4af37;
-          border-color: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .features-input {
-          display: flex;
-          gap: 0.5rem;
-          margin-bottom: 1rem;
-        }
-
-        .features-input input {
-          flex: 1;
-          padding: 0.5rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .features-input button {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          padding: 0.5rem 1rem;
-          background: #f3f4f6;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-size: 0.875rem;
-        }
-
-        .icon-plus {
-          width: 0.875rem;
-          height: 0.875rem;
-        }
-
-        .features-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-
-        .feature-tag {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.375rem 0.75rem;
-          background: #f3f4f6;
-          border-radius: 2rem;
-          font-size: 0.75rem;
-        }
-
-        .icon-remove {
-          width: 0.75rem;
-          height: 0.75rem;
-          cursor: pointer;
-          color: #6b7280;
-        }
-
-        .icon-remove:hover {
-          color: #dc2626;
-        }
-
-        .image-previews {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-top: 1rem;
-        }
-
-        .image-preview {
-          position: relative;
-          aspect-ratio: 1;
-          border-radius: 0.5rem;
-          overflow: hidden;
-          background: #f3f4f6;
-        }
-
-        .image-preview img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .image-preview button {
-          position: absolute;
-          top: 0.25rem;
-          right: 0.25rem;
-          background: rgba(0, 0, 0, 0.6);
-          border: none;
-          border-radius: 50%;
-          width: 1.5rem;
-          height: 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: white;
-        }
-
-        .icon-trash {
-          width: 0.75rem;
-          height: 0.75rem;
-        }
-
-        .image-upload {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 1.5rem;
-          border: 2px dashed #d1d5db;
-          border-radius: 0.75rem;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .image-upload:hover {
-          border-color: #d4af37;
-          background: #fef9e6;
-        }
-
-        .icon-upload {
-          width: 1.5rem;
-          height: 1.5rem;
-          color: #9ca3af;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 1rem;
-          margin-top: 2rem;
-        }
-
-        .btn-cancel,
-        .btn-submit {
-          flex: 1;
-          padding: 0.75rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          cursor: pointer;
-          font-size: 0.875rem;
-        }
-
-        .btn-cancel {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .btn-cancel:hover {
-          background: #e5e7eb;
-        }
-
-        .btn-submit {
-          background: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .btn-submit:hover:not(:disabled) {
-          background: #c4a52e;
-        }
-
-        .btn-submit:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .loading {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-
-          .image-previews {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

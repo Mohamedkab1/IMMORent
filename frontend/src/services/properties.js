@@ -90,9 +90,20 @@ export const propertyService = {
       formData.append('status', data.status || 'available');
       formData.append('features', JSON.stringify(data.features || []));
       
-      if (data.images && data.images.length > 0) {
-        data.images.forEach(image => {
-          formData.append('images[]', image);
+      // Images déjà existantes à conserver
+      if (data.existing_images && data.existing_images.length > 0) {
+        data.existing_images.forEach(img => {
+          formData.append('existing_images[]', img);
+        });
+      }
+
+      // Nouvelles images à uploader
+      const newImages = data.new_images || data.images;
+      if (newImages && newImages.length > 0) {
+        newImages.forEach(image => {
+          if (image instanceof File) {
+            formData.append('images[]', image);
+          }
         });
       }
       

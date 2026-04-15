@@ -20,10 +20,10 @@ return new class extends Migration
             $table->integer('bedrooms')->nullable();
             $table->integer('bathrooms')->nullable();
             
-            // Modifier l'enum pour ajouter 'for_sale' et 'for_rent'
-            $table->enum('listing_type', ['for_rent', 'for_sale'])->default('for_rent');
+            // Type de transaction (location ou vente)
+            $table->enum('transaction_type', ['rent', 'sale'])->default('rent');
             $table->enum('status', ['available', 'sold', 'reserved', 'unavailable'])->default('available');
-            $table->enum('type', ['apartment', 'house', 'commercial', 'land', 'studio']);
+            $table->enum('type', ['apartment', 'house', 'villa', 'office', 'commercial', 'land', 'studio']);
             
             $table->json('features')->nullable();
             $table->json('images')->nullable();
@@ -32,6 +32,11 @@ return new class extends Migration
             $table->foreignId('owner_id')->nullable()->constrained('users'); // Propriétaire
             $table->timestamps();
             $table->softDeletes();
+ 
+            // Index pour la performance SaaS
+            $table->index(['city', 'status']);
+            $table->index('price');
+            $table->index('transaction_type');
         });
     }
 

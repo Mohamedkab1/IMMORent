@@ -9,11 +9,12 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'Appartement', 'slug' => 'apartment', 'description' => 'Appartements en ville ou en résidence'],
-            ['name' => 'Maison', 'slug' => 'house', 'description' => 'Maisons individuelles ou mitoyennes'],
-            ['name' => 'Local commercial', 'slug' => 'commercial', 'description' => 'Boutiques, bureaux, locaux d\'activité'],
-            ['name' => 'Terrain', 'slug' => 'land', 'description' => 'Terrains nus ou constructibles'],
-            ['name' => 'Studio', 'slug' => 'studio', 'description' => 'Studios et petits appartements'],
+            ['name' => 'Appartement', 'slug' => 'apartment', 'description' => 'Appartements modernes en centre-ville ou en résidence.'],
+            ['name' => 'Villa', 'slug' => 'house', 'description' => 'Villas de luxe, maisons avec jardin et propriétés spacieuses.'],
+            ['name' => 'Bureau', 'slug' => 'office', 'description' => 'Espaces de travail et plateaux de bureaux professionnels.'],
+            ['name' => 'Commerce', 'slug' => 'commercial', 'description' => 'Magasins, boutiques et locaux commerciaux.'],
+            ['name' => 'Terrain', 'slug' => 'land', 'description' => 'Terrains constructibles, agricoles ou industriels.'],
+            ['name' => 'Studio', 'slug' => 'studio', 'description' => 'Studios meublés ou vides pour célibataires ou étudiants.'],
         ];
 
         foreach ($categories as $category) {

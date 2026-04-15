@@ -10,7 +10,7 @@ class RentalRequest extends Model
     
     protected $fillable = [
         'request_number','user_id', 'property_id', 'start_date', 'end_date',
-        'status', 'message', 'rejection_reason', 'processed_at', 'processed_by'
+        'status', 'message', 'rejection_reason', 'processed_at', 'processed_by', 'type'
     ];
 
     protected $casts = [

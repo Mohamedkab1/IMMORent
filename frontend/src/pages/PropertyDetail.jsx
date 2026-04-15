@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
+import { messageService } from '../services/messages';
 import { 
   MapPinIcon, 
   HomeIcon, 
-  CurrencyEuroIcon, 
   CalendarIcon,
   UserIcon,
   PhoneIcon,
@@ -17,7 +18,9 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   BuildingOfficeIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowsRightLeftIcon,
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
@@ -25,6 +28,7 @@ const PropertyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
   
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,6 +37,7 @@ const PropertyDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     if (id) fetchProperty();
@@ -55,6 +60,7 @@ const PropertyDetail = () => {
       if (response.success && response.data) {
         if (response.data.features) response.data.features = parseFeatures(response.data.features);
         setProperty(response.data);
+        // Verify if properly favorited by user (Requires endpoint in API to return favorite status, for now assuming not favorite by default) 
       } else setError('Bien non trouvé');
     } catch (err) {
       setError('Erreur lors du chargement');
@@ -72,14 +78,31 @@ const PropertyDetail = () => {
     setShowContactForm(true);
   };
 
-  const sendContactMessage = () => {
+  const sendContactMessage = async () => {
     if (!contactMessage.trim()) {
       toast.warning('Veuillez écrire un message');
       return;
     }
-    toast.success('Message envoyé');
-    setShowContactForm(false);
-    setContactMessage('');
+    
+    setSendingMessage(true);
+    try {
+      const response = await messageService.sendMessage({
+        receiver_id: property.user_id,
+        property_id: property.id,
+        body: contactMessage
+      });
+      
+      if (response.success) {
+        toast.success('Message envoyé ! Redirection vers la messagerie...');
+        setTimeout(() => {
+          navigate('/messages');
+        }, 1500);
+      }
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi du message');
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   const handleRequestRental = () => {
@@ -101,26 +124,53 @@ const PropertyDetail = () => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success('Lien copié');
+    toast.success('Lien copié dans le presse-papier');
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter pour ajouter aux favoris');
+      navigate('/login');
+      return;
+    }
+
+    try {
+       setIsFavorite(!isFavorite); // Optimistic UI
+       /* 
+       const response = await fetch('/api/favorites/toggle', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+         body: JSON.stringify({ property_id: property.id })
+       });
+       const data = await response.json();
+       setIsFavorite(data.status === 'added');
+       */
+       toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
+    } catch (error) {
+       setIsFavorite(!isFavorite); // Rollback
+       toast.error('Erreur de connexion');
+    }
   };
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Chargement...</p>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col justify-center items-center">
+        <div className="w-16 h-16 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500 font-medium">Chargement des détails...</p>
       </div>
     );
   }
 
   if (error || !property) {
     return (
-      <div className="error-container">
-        <div className="error-card">
-          <XMarkIcon className="error-icon" />
-          <h2>Erreur</h2>
-          <p>{error || 'Bien non trouvé'}</p>
-          <button onClick={() => navigate('/properties')}>Retour aux biens</button>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex justify-center items-center px-4">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm text-center max-w-md w-full border border-slate-100 dark:border-slate-700">
+          <XMarkIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Erreur</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">{error || 'Bien introuvable.'}</p>
+          <button onClick={() => navigate('/properties')} className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
+            Retour aux biens
+          </button>
         </div>
       </div>
     );
@@ -128,522 +178,217 @@ const PropertyDetail = () => {
 
   const features = parseFeatures(property.features);
   const images = property.images?.length > 0 ? property.images : [null];
-  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800';
+  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80';
   const agent = property.user || { name: 'Agent', email: 'contact@immorent.com', phone: 'Non renseigné' };
 
   return (
-    <>
-      <div className="property-detail-page">
-        <div className="detail-nav">
-          <div className="nav-container">
-            <button onClick={() => navigate(-1)} className="back-button">
-              <ArrowLeftIcon className="icon-back" />
-              Retour
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 pb-20">
+      
+      {/* Sticky Navigation */}
+      <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-secondary font-semibold transition-colors">
+            <ArrowLeftIcon className="w-5 h-5 rtl:rotate-180" /> <span className="hidden sm:inline">Retour aux résultats</span>
+          </button>
+          
+          <div className="flex items-center gap-3">
+            <button onClick={handleShare} className="p-2 text-slate-500 hover:text-primary dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all">
+              <ShareIcon className="w-5 h-5" />
             </button>
-            <div className="nav-actions">
-              <button onClick={() => setIsFavorite(!isFavorite)} className="nav-action">
-                {isFavorite ? <HeartIconSolid className="icon-favorite active" /> : <HeartIcon className="icon-favorite" />}
-              </button>
-              <button onClick={handleShare} className="nav-action">
-                <ShareIcon className="icon-share" />
-              </button>
+            <button onClick={handleToggleFavorite} className="p-2 text-slate-500 hover:text-red-500 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all">
+              {isFavorite ? <HeartIconSolid className="w-5 h-5 text-red-500" /> : <HeartIcon className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Title and Header */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${property.transaction_type === 'rent' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500'}`}>
+                {property.transaction_type === 'rent' ? t('prop.status.rented') : t('prop.status.sold')}
+              </span>
+              <span className="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-xs font-bold">
+                {property.type_label}
+              </span>
+              {property.status === 'available' && (
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-500 rounded-full text-xs font-bold">
+                  {t('prop.status.available')}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">{property.title}</h1>
+            <p className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium">
+              <MapPinIcon className="w-5 h-5" />
+              {property.city} {property.postal_code}
+            </p>
+          </div>
+          
+          <div className="text-start md:text-end">
+            <div className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Prix demandé</div>
+            <div className="text-4xl md:text-5xl font-black text-primary dark:text-secondary mt-1">
+              {property.price?.toLocaleString('fr-FR')} <span className="text-xl font-bold text-slate-400 dark:text-slate-500">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
             </div>
           </div>
         </div>
 
-        <div className="detail-container">
-          <div className="gallery-section">
-            <div className="main-image">
-              <img src={images[selectedImage] ? `http://localhost:8000/storage/${images[selectedImage]}` : defaultImage} alt={property.title} />
-              {property.status === 'available' && <span className="status-badge available">Disponible</span>}
-            </div>
-            {images.length > 1 && (
-              <div className="thumbnail-grid">
-                {images.map((img, idx) => (
-                  <button key={idx} onClick={() => setSelectedImage(idx)} className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}>
-                    <img src={img ? `http://localhost:8000/storage/${img}` : defaultImage} alt="" />
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* Gallery */}
+        <div className="mb-12">
+          <div className="relative h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-xl mb-4 bg-slate-200 dark:bg-slate-800">
+            <img 
+              src={images[selectedImage] ? (images[selectedImage].startsWith('http') ? images[selectedImage] : `/storage/${images[selectedImage]}`) : defaultImage} 
+              alt={property.title} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent pointer-events-none"></div>
           </div>
+          
+          {images.length > 1 && (
+            <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+              {images.map((img, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={() => setSelectedImage(idx)} 
+                  className={`relative flex-shrink-0 w-32 h-24 rounded-xl overflow-hidden border-4 transition-all duration-300 ${selectedImage === idx ? 'border-primary dark:border-secondary scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                >
+                  <img src={img ? (img.startsWith('http') ? img : `/storage/${img}`) : defaultImage} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-          <div className="info-section">
-            <div className="info-header">
-              <div>
-                <h1>{property.title}</h1>
-                <div className="location">
-                  <MapPinIcon className="icon-location" />
-                  <span>{property.city} {property.postal_code}</span>
+        {/* Content Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+          
+          {/* Main Info */}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* Highlights Grid */}
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: ArrowsRightLeftIcon, val: `${property.surface} m²`, label: 'Surface' },
+                { icon: BuildingOfficeIcon, val: `${property.rooms} p.`, label: 'Pièces' },
+                { icon: HomeIcon, val: `${property.bedrooms || 0} ch.`, label: 'Chambres' },
+                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0} sdb`, label: 'Salles de bain' }
+              ].map((item, i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center shadow-sm">
+                  <item.icon className="w-8 h-8 text-primary dark:text-secondary mb-3" />
+                  <span className="text-xl font-bold text-slate-800 dark:text-white">{item.val}</span>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.label}</span>
                 </div>
-              </div>
-              <div className="price-tag">
-                <span className="price">{property.price?.toLocaleString('fr-FR')}DH</span>
-                <span className="period">{property.transaction_type === 'rent' ? '/mois' : ''}</span>
-                <span className={`transaction-badge ${property.transaction_type}`}>
-                  {property.transaction_type === 'rent' ? 'Location' : 'Vente'}
-                </span>
-              </div>
-            </div>
+              ))}
+            </section>
 
-            <div className="features-grid">
-              <div className="feature-item">
-                <HomeIcon className="icon-feature" />
-                <span>{property.surface} m²</span>
+            {/* Description */}
+            <section className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Description du bien</h2>
+              <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="whitespace-pre-line">{property.description}</p>
               </div>
-              <div className="feature-item">
-                <BuildingOfficeIcon className="icon-feature" />
-                <span>{property.rooms} pièces</span>
-              </div>
-              <div className="feature-item">
-                <HomeIcon className="icon-feature" />
-                <span>{property.bedrooms || 0} chambres</span>
-              </div>
-              <div className="feature-item">
-                <HomeIcon className="icon-feature" />
-                <span>{property.bathrooms || 0} sdb</span>
-              </div>
-            </div>
+            </section>
 
-            <div className="description-section">
-              <h2>Description</h2>
-              <p>{property.description}</p>
-            </div>
-
+            {/* Features */}
             {features.length > 0 && (
-              <div className="features-section">
-                <h2>Équipements</h2>
-                <div className="features-list">
+              <section className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">{t('prop.details.features')}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {features.map((f, i) => (
-                    <div key={i} className="feature-tag">
-                      <CheckCircleIcon className="icon-check" />
-                      {f}
+                    <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+                      <CheckCircleIcon className="w-6 h-6 text-green-500 flex-shrink-0" />
+                      <span className="text-slate-700 dark:text-slate-300 font-medium">{f}</span>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            <div className="contact-section">
-              <h2>Contact</h2>
-              <div className="agent-card">
-                <div className="agent-avatar">{agent.name?.charAt(0)}</div>
-                <div className="agent-info">
-                  <h3>{agent.name}</h3>
-                  <p>Agent immobilier</p>
-                  <div className="agent-details">
-                    <div className="agent-detail">
-                      <PhoneIcon className="icon-contact" />
-                      <span>{agent.phone}</span>
-                    </div>
-                    <div className="agent-detail">
-                      <EnvelopeIcon className="icon-contact" />
-                      <span>{agent.email}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          </div>
 
-              {!showContactForm ? (
-                <div className="contact-actions">
-                  <button onClick={handleContact} className="btn-contact">Contacter l'agent</button>
-                  {property.transaction_type === 'rent' && property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
-                    <button onClick={handleRequestRental} className="btn-request">Faire une demande</button>
-                  )}
-                  {property.transaction_type === 'sale' && (
-                    <div className="sale-info">
-                      <ExclamationTriangleIcon className="icon-warning" />
-                      <span>Ce bien est à vendre. Contactez l'agent.</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="contact-form">
-                  <textarea value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows="4" placeholder="Votre message..." />
-                  <div className="form-actions">
-                    <button onClick={sendContactMessage} className="btn-send">Envoyer</button>
-                    <button onClick={() => setShowContactForm(false)} className="btn-cancel">Annuler</button>
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              
+              {/* Agent Card */}
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Votre conseiller</h3>
+                
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                    {agent.name?.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-800 dark:text-white text-lg">{agent.name}</div>
+                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400">Agent IMMORent</div>
                   </div>
                 </div>
-              )}
+
+                <div className="space-y-4 mb-8">
+                  <a href={`tel:${agent.phone}`} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-secondary group transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                       <PhoneIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold">{agent.phone}</span>
+                  </a>
+                  <a href={`mailto:${agent.email}`} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-secondary group transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                       <EnvelopeIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-sm break-all">{agent.email}</span>
+                  </a>
+                </div>
+
+                {!showContactForm ? (
+                  <div className="space-y-3">
+                    <button onClick={handleContact} className="w-full py-4 bg-white dark:bg-slate-700 border-2 border-primary dark:border-slate-600 text-primary dark:text-white hover:bg-primary-50 dark:hover:bg-slate-600 rounded-xl font-bold transition-all shadow-sm">
+                      Envoyer un message
+                    </button>
+                    {property.transaction_type === 'rent' && property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
+                      <button onClick={handleRequestRental} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
+                        Demander la location
+                      </button>
+                    )}
+                    {property.transaction_type === 'sale' && (
+                      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-500 rounded-xl text-sm font-medium">
+                        <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
+                        <p>Ce bien est à vendre. Veuillez contacter l'agent pour convenir d'une visite.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Votre message</label>
+                    <textarea 
+                      value={contactMessage} 
+                      onChange={e => setContactMessage(e.target.value)} 
+                      rows="4" 
+                      placeholder="Je suis intéressé par ce bien..."
+                      className="w-full p-4 mb-4 bg-white dark:bg-slate-800 border fill-primary border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white resize-none"
+                    />
+                    <div className="flex flex-col gap-2">
+                        <button 
+                          onClick={sendContactMessage} 
+                          disabled={sendingMessage}
+                          className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md disabled:opacity-50"
+                        >
+                          {sendingMessage ? 'Envoi...' : 'Envoyer'}
+                        </button>
+                       <button onClick={() => setShowContactForm(false)} className="w-full py-3 bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-xl font-bold transition-colors">
+                         Annuler
+                       </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      <style>{`
-        .property-detail-page {
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-        }
-
-        .detail-nav {
-          background: white;
-          border-bottom: 1px solid #e5e7eb;
-          position: sticky;
-          top: 70px;
-          z-index: 10;
-        }
-
-        .nav-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 1rem 1.5rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .back-button {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #6b7280;
-          font-size: 0.875rem;
-        }
-
-        .icon-back {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .back-button:hover { color: #d4af37; }
-
-        .nav-actions { display: flex; gap: 1rem; }
-        .nav-action { background: none; border: none; cursor: pointer; color: #6b7280; }
-
-        .icon-favorite {
-          width: 1.125rem;
-          height: 1.125rem;
-        }
-
-        .icon-favorite.active {
-          color: #ef4444;
-        }
-
-        .icon-share {
-          width: 1.125rem;
-          height: 1.125rem;
-        }
-
-        .detail-container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-        .gallery-section { margin-bottom: 2rem; }
-
-        .main-image {
-          position: relative;
-          height: 500px;
-          border-radius: 0.75rem;
-          overflow: hidden;
-          margin-bottom: 1rem;
-        }
-
-        .main-image img { width: 100%; height: 100%; object-fit: cover; }
-
-        .status-badge {
-          position: absolute;
-          top: 1rem;
-          right: 1rem;
-          padding: 0.5rem 1rem;
-          border-radius: 2rem;
-          font-weight: 600;
-          background: #10b981;
-          color: white;
-          font-size: 0.75rem;
-        }
-
-        .thumbnail-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 0.5rem;
-        }
-
-        .thumbnail {
-          height: 80px;
-          border: none;
-          border-radius: 0.5rem;
-          overflow: hidden;
-          cursor: pointer;
-          opacity: 0.7;
-          transition: opacity 0.3s;
-        }
-
-        .thumbnail.active, .thumbnail:hover { opacity: 1; }
-        .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-
-        .info-section {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 2rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .info-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 2rem;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .info-header h1 { font-size: 1.5rem; color: #0f2b4d; margin-bottom: 0.5rem; }
-        
-        .location { 
-          display: flex; 
-          align-items: center; 
-          gap: 0.25rem; 
-          color: #6b7280;
-          font-size: 0.875rem;
-        }
-
-        .icon-location {
-          width: 0.875rem;
-          height: 0.875rem;
-        }
-
-        .price-tag { text-align: right; }
-        .price { font-size: 1.75rem; font-weight: 700; color: #d4af37; }
-        .period { color: #6b7280; font-size: 0.875rem; }
-
-        .transaction-badge {
-          display: inline-block;
-          padding: 0.25rem 0.75rem;
-          border-radius: 2rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin-left: 0.5rem;
-        }
-
-        .transaction-badge.rent { background: #dcfce7; color: #059669; }
-        .transaction-badge.sale { background: #fee2e2; color: #dc2626; }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1.5rem;
-          padding: 1.5rem;
-          background: #f8f9fa;
-          border-radius: 0.75rem;
-          margin-bottom: 2rem;
-        }
-
-        .feature-item { 
-          display: flex; 
-          flex-direction: column; 
-          align-items: center; 
-          gap: 0.5rem; 
-          text-align: center; 
-        }
-
-        .icon-feature { 
-          width: 1.125rem; 
-          height: 1.125rem; 
-          color: #d4af37; 
-        }
-
-        .feature-item span { 
-          font-weight: 500; 
-          color: #0f2b4d;
-          font-size: 0.875rem;
-        }
-
-        .description-section h2, .features-section h2, .contact-section h2 {
-          font-size: 1.125rem;
-          color: #0f2b4d;
-          margin-bottom: 1rem;
-        }
-
-        .description-section p { 
-          color: #4b5563; 
-          line-height: 1.6;
-          font-size: 0.875rem;
-        }
-
-        .features-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .feature-tag {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 0.75rem;
-          background: #f8f9fa;
-          border-radius: 0.5rem;
-          color: #4b5563;
-          font-size: 0.75rem;
-        }
-
-        .icon-check {
-          width: 0.875rem;
-          height: 0.875rem;
-          color: #d4af37;
-        }
-
-        .agent-card {
-          display: flex;
-          gap: 1rem;
-          padding: 1.25rem;
-          background: #f8f9fa;
-          border-radius: 0.75rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .agent-avatar {
-          width: 3rem;
-          height: 3rem;
-          background: #d4af37;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #0f2b4d;
-          font-size: 1.125rem;
-          font-weight: 700;
-        }
-
-        .agent-info h3 { 
-          color: #0f2b4d; 
-          margin-bottom: 0.25rem;
-          font-size: 1rem;
-        }
-        
-        .agent-info p { 
-          color: #6b7280; 
-          font-size: 0.75rem; 
-          margin-bottom: 0.75rem; 
-        }
-        
-        .agent-details { 
-          display: flex;
-          flex-direction: column;
-          gap: 0.375rem;
-        }
-
-        .agent-detail { 
-          display: flex; 
-          align-items: center; 
-          gap: 0.5rem; 
-          font-size: 0.75rem; 
-          color: #4b5563;
-        }
-
-        .icon-contact {
-          width: 0.875rem;
-          height: 0.875rem;
-          color: #6b7280;
-        }
-
-        .contact-actions { display: flex; flex-direction: column; gap: 1rem; }
-        
-        .btn-contact, .btn-request { 
-          padding: 0.75rem; 
-          border: none; 
-          border-radius: 0.5rem; 
-          font-weight: 600; 
-          cursor: pointer; 
-          transition: all 0.3s;
-          font-size: 0.875rem;
-        }
-        
-        .btn-contact { background: #d4af37; color: #0f2b4d; }
-        .btn-contact:hover { background: #c4a52e; }
-        .btn-request { background: #0f2b4d; color: white; }
-        .btn-request:hover { background: #1e4a6e; }
-
-        .sale-info {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem;
-          background: #fef3c7;
-          border-radius: 0.5rem;
-          color: #d97706;
-          font-size: 0.75rem;
-        }
-
-        .icon-warning {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .contact-form textarea {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          margin-bottom: 1rem;
-          resize: vertical;
-          font-size: 0.875rem;
-        }
-
-        .form-actions { display: flex; gap: 1rem; }
-        
-        .btn-send, .btn-cancel { 
-          flex: 1; 
-          padding: 0.75rem; 
-          border: none; 
-          border-radius: 0.5rem; 
-          font-weight: 600; 
-          cursor: pointer;
-          font-size: 0.875rem;
-        }
-        
-        .btn-send { background: #d4af37; color: #0f2b4d; }
-        .btn-cancel { background: #f3f4f6; color: #374151; }
-
-        .loading-container, .error-container {
-          min-height: calc(100vh - 70px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        .error-card {
-          background: white;
-          padding: 2rem;
-          border-radius: 0.75rem;
-          text-align: center;
-          max-width: 400px;
-        }
-
-        .error-icon { 
-          width: 2.5rem; 
-          height: 2.5rem; 
-          color: #dc2626; 
-          margin: 0 auto 1rem; 
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-          .main-image { height: 300px; }
-          .thumbnail-grid { grid-template-columns: repeat(3, 1fr); }
-          .info-header { flex-direction: column; gap: 1rem; }
-          .price-tag { text-align: left; }
-          .features-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

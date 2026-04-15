@@ -1,24 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon } from '@heroicons/react/24/outline';
 
 const About = () => {
   return (
-    <>
-      <div className="about-page">
-        <div className="about-hero">
-          <div className="hero-content">
-            <h1>À propos d'IMMORent</h1>
-            <p>La plateforme qui révolutionne la gestion immobilière</p>
-          </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 py-20 px-4 text-center border-b border-primary/20 dark:border-slate-800 relative z-10 overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-10">
+           <svg className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="0.5" fill="none" />
+              <circle cx="50" cy="50" r="30" stroke="white" strokeWidth="0.5" fill="none" strokeDasharray="2 2" />
+           </svg>
         </div>
+        
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+            À propos d'<span className="text-secondary">IMMORent</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-sm">
+            La plateforme premium qui révolutionne et simplifie la gestion immobilière partout au Maroc.
+          </p>
+        </div>
+      </div>
 
-        <div className="about-container">
-          <div className="story-section">
-            <div className="story-image">
-              <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600" alt="Notre histoire" />
-            </div>
-            <div className="story-content">
-              <h2>Notre histoire</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 space-y-24">
+        
+        {/* Story Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-primary/20 dark:bg-secondary/20 rounded-3xl transform rotate-3 group-hover:rotate-6 transition-transform duration-500"></div>
+            <img 
+              src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80" 
+              alt="Notre histoire" 
+              className="relative rounded-3xl shadow-xl w-full h-auto object-cover z-10 hover:-translate-y-2 transition-transform duration-500" 
+            />
+          </div>
+          <div className="space-y-6">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Notre histoire</h2>
+            <div className="w-20 h-1.5 bg-secondary rounded-full"></div>
+            <div className="prose dark:prose-invert prose-lg text-slate-600 dark:text-slate-300">
               <p>
                 IMMORent est né d'un constat simple : la gestion immobilière est souvent complexe 
                 et chronophage. En 2020, notre fondateur, fort de 15 ans d'expérience dans l'immobilier, 
@@ -27,94 +50,106 @@ const About = () => {
               </p>
               <p>
                 Aujourd'hui, IMMORent compte plus de 10 000 utilisateurs et 500 biens référencés 
-                à travers la France. Notre équipe de passionnés travaille chaque jour pour améliorer 
+                à travers le Maroc. Notre équipe de passionnés travaille chaque jour pour améliorer 
                 nos services et offrir la meilleure expérience possible.
               </p>
-              <div className="story-stats">
-                <div className="stat"><span className="stat-number">500+</span><span className="stat-label">Biens</span></div>
-                <div className="stat"><span className="stat-number">10k+</span><span className="stat-label">Utilisateurs</span></div>
-                <div className="stat"><span className="stat-number">50+</span><span className="stat-label">Agences</span></div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">500+</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Biens</span>
               </div>
-            </div>
-          </div>
-
-          <div className="values-section">
-            <h2>Nos valeurs</h2>
-            <div className="values-grid">
-              <div className="value-card"><div className="value-icon">🤝</div><h3>Confiance</h3><p>Relations durables basées sur la transparence</p></div>
-              <div className="value-card"><div className="value-icon">💡</div><h3>Innovation</h3><p>Technologies pour simplifier la gestion</p></div>
-              <div className="value-card"><div className="value-icon">⭐</div><h3>Excellence</h3><p>Service de qualité à tous nos utilisateurs</p></div>
-              <div className="value-card"><div className="value-icon">❤️</div><h3>Passion</h3><p>Nous aimons ce que nous faisons</p></div>
-            </div>
-          </div>
-
-          <div className="team-section">
-            <h2>Notre équipe</h2>
-            <div className="team-grid">
-              <div className="team-card"><img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Jean Martin" /><h3>Jean Martin</h3><p>Fondateur & CEO</p></div>
-              <div className="team-card"><img src="https://randomuser.me/api/portraits/women/2.jpg" alt="Sophie Bernard" /><h3>Sophie Bernard</h3><p>Directrice Commerciale</p></div>
-              <div className="team-card"><img src="https://randomuser.me/api/portraits/men/3.jpg" alt="Pierre Dubois" /><h3>Pierre Dubois</h3><p>CTO</p></div>
-              <div className="team-card"><img src="https://randomuser.me/api/portraits/women/4.jpg" alt="Marie Lambert" /><h3>Marie Lambert</h3><p>Responsable Clientèle</p></div>
-            </div>
-          </div>
-
-          <div className="cta-section">
-            <div className="cta-content">
-              <h2>Rejoignez l'aventure IMMORent</h2>
-              <p>Que vous soyez propriétaire, agent ou locataire, notre plateforme est faite pour vous.</p>
-              <div className="cta-buttons">
-                <Link to="/register" className="btn-primary">Créer un compte</Link>
-                <Link to="/contact" className="btn-secondary">Nous contacter</Link>
+              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">10k+</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Clients</span>
+              </div>
+              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">50+</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Agences</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <style>{`
-        .about-page { min-height: calc(100vh - 70px); background: #f8f9fa; }
-        .about-hero { background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%); padding: 4rem 1.5rem; text-align: center; color: white; }
-        .hero-content h1 { font-size: 2.5rem; margin-bottom: 1rem; color: white; }
-        .hero-content p { font-size: 1.125rem; opacity: 0.9; }
-        .about-container { max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem; }
-        .story-section { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-bottom: 4rem; }
-        .story-image img { width: 100%; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .story-content h2 { font-size: 2rem; color: #0f2b4d; margin-bottom: 1rem; }
-        .story-content p { color: #6b7280; line-height: 1.6; margin-bottom: 1rem; }
-        .story-stats { display: flex; gap: 2rem; margin-top: 1.5rem; }
-        .stat { text-align: center; }
-        .stat-number { display: block; font-size: 1.75rem; font-weight: 700; color: #d4af37; }
-        .stat-label { color: #6b7280; font-size: 0.875rem; }
-        .values-section { text-align: center; margin-bottom: 4rem; }
-        .values-section h2 { font-size: 2rem; color: #0f2b4d; margin-bottom: 2rem; position: relative; display: inline-block; padding-bottom: 0.75rem; }
-        .values-section h2::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: #d4af37; }
-        .values-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
-        .value-card { background: white; padding: 2rem; border-radius: 0.75rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .value-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
-        .value-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-        .value-card h3 { font-size: 1.125rem; color: #0f2b4d; margin-bottom: 0.5rem; }
-        .value-card p { color: #6b7280; font-size: 0.875rem; }
-        .team-section { text-align: center; margin-bottom: 4rem; }
-        .team-section h2 { font-size: 2rem; color: #0f2b4d; margin-bottom: 2rem; position: relative; display: inline-block; padding-bottom: 0.75rem; }
-        .team-section h2::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 60px; height: 3px; background: #d4af37; }
-        .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
-        .team-card { background: white; padding: 1.5rem; border-radius: 0.75rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .team-card:hover { transform: translateY(-4px); }
-        .team-card img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; border: 3px solid #d4af37; }
-        .team-card h3 { color: #0f2b4d; margin-bottom: 0.25rem; }
-        .team-card p { color: #6b7280; font-size: 0.875rem; }
-        .cta-section { background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%); padding: 4rem 1.5rem; text-align: center; border-radius: 0.75rem; }
-        .cta-content h2 { color: white; font-size: 2rem; margin-bottom: 1rem; }
-        .cta-content p { color: #e0e7ff; margin-bottom: 2rem; }
-        .cta-buttons { display: flex; gap: 1rem; justify-content: center; }
-        .btn-primary { padding: 0.75rem 2rem; background: #d4af37; color: #0f2b4d; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s; }
-        .btn-primary:hover { background: #c4a52e; transform: translateY(-2px); }
-        .btn-secondary { padding: 0.75rem 2rem; background: transparent; border: 2px solid white; color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-        @media (max-width: 1024px) { .values-grid, .team-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 768px) { .story-section { grid-template-columns: 1fr; } .values-grid, .team-grid { grid-template-columns: 1fr; } .cta-buttons { flex-direction: column; } }
-      `}</style>
-    </>
+        {/* Values Section */}
+        <div className="text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-16">
+            Nos valeurs
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-secondary rounded-full"></div>
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { icon: HandRaisedIcon, title: 'Confiance', desc: 'Relations durables basées sur la transparence et le respect.', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+              { icon: LightBulbIcon, title: 'Innovation', desc: 'Technologies avancées pour simplifier la gestion quotidienne.', color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+              { icon: StarIcon, title: 'Excellence', desc: 'Service de qualité supérieure à tous nos utilisateurs.', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+              { icon: HeartIcon, title: 'Passion', desc: 'Nous aimons profondément ce que nous faisons chaque jour.', color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' }
+            ].map((v, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-slate-100 dark:border-slate-700 transition-all duration-300">
+                <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-6 rotate-3 ${v.bg} ${v.color}`}>
+                  <v.icon className={`w-8 h-8 ${v.color}`} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{v.title}</h3>
+                <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{v.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team Section */}
+        <div className="text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-16">
+            Notre équipe dirigeante
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-secondary rounded-full"></div>
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { img: 'https://randomuser.me/api/portraits/men/1.jpg', name: 'Jean Martin', role: 'Fondateur & CEO' },
+              { img: 'https://randomuser.me/api/portraits/women/2.jpg', name: 'Sophie Bernard', role: 'Directrice Commerciale' },
+              { img: 'https://randomuser.me/api/portraits/men/3.jpg', name: 'Pierre Dubois', role: 'Directeur Technique' },
+              { img: 'https://randomuser.me/api/portraits/women/4.jpg', name: 'Marie Lambert', role: 'Responsable Clientèle' }
+            ].map((member, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-slate-100 dark:border-slate-700 transition-all duration-300 group">
+                <div className="relative w-32 h-32 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-primary/20 dark:bg-secondary/20 rounded-full scale-110 group-hover:scale-125 transition-transform duration-500"></div>
+                  <img 
+                    src={member.img} 
+                    alt={member.name} 
+                    className="relative w-full h-full rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg" 
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{member.name}</h3>
+                <p className="text-sm font-semibold text-primary dark:text-secondary uppercase tracking-wider">{member.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="bg-gradient-to-r from-primary to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-[3rem] p-8 md:p-16 text-center shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12">
+            <svg className="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
+          </div>
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-md">Rejoignez l'aventure IMMORent</h2>
+            <p className="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto opacity-90">
+              Que vous soyez propriétaire, agent immobilier ou locataire, notre plateforme est conçue sur mesure pour répondre à vos besoins.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-xl hover:-translate-y-1">
+                Créer un compte
+              </Link>
+              <Link to="/contact" className="w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-xl font-bold transition-all hover:-translate-y-1">
+                Nous contacter
+              </Link>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   );
 };
 

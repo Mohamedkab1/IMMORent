@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { UserIcon, HomeIcon, ScaleIcon, ExclamationTriangleIcon, ShieldCheckIcon, PhoneIcon, EnvelopeIcon, MapPinIcon, CalendarIcon, DocumentTextIcon, CheckCircleIcon, UserGroupIcon, CreditCardIcon, ClockIcon, HandRaisedIcon, LockClosedIcon, LightBulbIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 
 const CGV = () => {
   const currentYear = new Date().getFullYear();
@@ -17,21 +18,21 @@ const CGV = () => {
             
             {/* Article 1 */}
             <section>
-              <h2>📜 Article 1 : Objet</h2>
+              <h2><DocumentTextIcon className="section-icon" /> Article 1 : Objet</h2>
               <p>Les présentes Conditions Générales de Vente (CGV) régissent l'utilisation de la plateforme <strong>IMMORent.ma</strong> et définissent les droits et obligations des utilisateurs (clients et agents immobiliers) dans le cadre de la mise en relation pour la location et l'achat de biens immobiliers au Maroc.</p>
               <p>Elles s'appliquent sans restriction ni réserve à l'ensemble des services proposés par <strong>IMMORent Maroc SARL</strong>.</p>
             </section>
 
             {/* Article 2 */}
             <section>
-              <h2>✅ Article 2 : Acceptation des CGV</h2>
+              <h2><CheckCircleIcon className="section-icon" /> Article 2 : Acceptation des CGV</h2>
               <p>L'utilisation de la plateforme IMMORent.ma implique l'acceptation pleine et entière des présentes CGV. Tout utilisateur qui ne souhaite pas accepter ces conditions ne doit pas utiliser nos services.</p>
               <p>IMMORent se réserve le droit de modifier les CGV à tout moment. Les modifications entrent en vigueur dès leur publication sur le site. Il est recommandé de consulter régulièrement cette page.</p>
             </section>
 
             {/* Article 3 */}
             <section>
-              <h2>👤 Article 3 : Création de compte</h2>
+              <h2><UserIcon className="section-icon" /> Article 3 : Création de compte</h2>
               <p>Pour utiliser les services de la plateforme, l'utilisateur doit créer un compte en fournissant des informations exactes, complètes et à jour : nom, prénom, adresse email, numéro de téléphone, etc.</p>
               <p>L'utilisateur est responsable de la confidentialité de ses identifiants de connexion. Toute activité réalisée depuis son compte lui est imputable.</p>
               <p>IMMORent se réserve le droit de suspendre ou supprimer tout compte en cas de non-respect des présentes conditions.</p>
@@ -39,7 +40,7 @@ const CGV = () => {
 
             {/* Article 4 */}
             <section>
-              <h2>👥 Article 4 : Types de comptes et tarifs</h2>
+              <h2><UserGroupIcon className="section-icon" /> Article 4 : Types de comptes et tarifs</h2>
               
               <h3>4.1 Compte Client (Gratuit)</h3>
               <ul className="cgv-list">
@@ -74,14 +75,14 @@ const CGV = () => {
               </ul>
               
               <div className="info-box">
-                <span className="info-icon">ℹ️</span>
+                <InformationCircleIcon className="info-icon" />
                 <p>Tous les prix sont exprimés en Dirhams Marocains (DH) hors taxes. La TVA est applicable au taux en vigueur (20%). Les abonnements sont sans engagement et peuvent être résiliés à tout moment.</p>
               </div>
             </section>
 
             {/* Article 5 */}
             <section>
-              <h2>💳 Article 5 : Modalités de paiement</h2>
+              <h2><CreditCardIcon className="section-icon" /> Article 5 : Modalités de paiement</h2>
               <p>Les paiements des abonnements s'effectuent en ligne par :</p>
               <ul className="cgv-list">
                 <li>Carte bancaire (Visa, MasterCard, CMI)</li>
@@ -94,14 +95,14 @@ const CGV = () => {
 
             {/* Article 6 */}
             <section>
-              <h2>⏱️ Article 6 : Durée et résiliation</h2>
+              <h2><ClockIcon className="section-icon" /> Article 6 : Durée et résiliation</h2>
               <p>Les abonnements sont souscrits pour une durée d'un mois renouvelable tacitement. L'utilisateur peut résilier son abonnement à tout moment depuis son espace personnel ou par email. La résiliation prend effet à la fin de la période en cours.</p>
               <p>IMMORent se réserve le droit de résilier un compte en cas de non-respect des CGV ou d'activité frauduleuse.</p>
             </section>
 
             {/* Article 7 */}
             <section>
-              <h2>⚖️ Article 7 : Obligations des utilisateurs</h2>
+              <h2><ScaleIcon className="section-icon" /> Article 7 : Obligations des utilisateurs</h2>
               <p>L'utilisateur s'engage à :</p>
               <ul className="cgv-list">
                 <li>Fournir des informations exactes et à jour</li>
@@ -116,7 +117,7 @@ const CGV = () => {
 
             {/* Article 8 */}
             <section>
-              <h2>🏠 Article 8 : Publication d'annonces</h2>
+              <h2><HomeIcon className="section-icon" /> Article 8 : Publication d'annonces</h2>
               <p>Les agents et propriétaires sont responsables du contenu de leurs annonces. Les annonces doivent être conformes à la réalité du bien (surface, prix, équipements, photos).</p>
               <p>Les annonces comportant des informations trompeuses seront supprimées et le compte pourra être suspendu.</p>
               <p>IMMORent se réserve le droit de vérifier les annonces et de refuser toute publication non conforme.</p>
@@ -124,14 +125,14 @@ const CGV = () => {
 
             {/* Article 9 */}
             <section>
-              <h2>🤝 Article 9 : Mise en relation</h2>
+              <h2><HandRaisedIcon className="section-icon" /> Article 9 : Mise en relation</h2>
               <p>IMMORent agit uniquement comme une plateforme de mise en relation entre les clients et les professionnels de l'immobilier. Nous ne sommes pas partie aux transactions immobilières et n'intervenons pas dans les négociations, la rédaction des actes ou le paiement des loyers.</p>
               <p>Les contrats de location ou de vente sont conclus directement entre le client et l'agent immobilier ou le propriétaire.</p>
             </section>
 
             {/* Article 10 */}
             <section>
-              <h2>⚠️ Article 10 : Responsabilité</h2>
+              <h2><ExclamationTriangleIcon className="section-icon" /> Article 10 : Responsabilité</h2>
               <p>IMMORent ne peut être tenu responsable :</p>
               <ul className="cgv-list">
                 <li>Des litiges entre utilisateurs (clients et agents)</li>
@@ -144,44 +145,44 @@ const CGV = () => {
 
             {/* Article 11 */}
             <section>
-              <h2>🛡️ Article 11 : Assurance</h2>
+              <h2><ShieldCheckIcon className="section-icon" /> Article 11 : Assurance</h2>
               <p>Les agents immobiliers utilisant la plateforme déclarent être couverts par une assurance responsabilité civile professionnelle conforme à la réglementation marocaine. IMMORent ne fournit aucune assurance.</p>
             </section>
 
             {/* Article 12 */}
             <section>
-              <h2>🔒 Article 12 : Données personnelles</h2>
+              <h2><LockClosedIcon className="section-icon" /> Article 12 : Données personnelles</h2>
               <p>Les données personnelles collectées sont traitées conformément à notre <Link to="/confidentialite">Politique de confidentialité</Link> et à la <strong>Loi n° 09-08</strong> relative à la protection des données à caractère personnel.</p>
               <p>Pour plus d'informations sur vos droits (accès, rectification, opposition), consultez notre politique de confidentialité.</p>
             </section>
 
             {/* Article 13 */}
             <section>
-              <h2>💡 Article 13 : Propriété intellectuelle</h2>
+              <h2><LightBulbIcon className="section-icon" /> Article 13 : Propriété intellectuelle</h2>
               <p>Tous les éléments de la plateforme (textes, logos, images, code, base de données) sont la propriété exclusive d'IMMORent Maroc SARL et sont protégés par le droit marocain de la propriété intellectuelle.</p>
               <p>Toute reproduction, représentation, modification ou exploitation non autorisée est interdite.</p>
             </section>
 
             {/* Article 14 */}
             <section>
-              <h2>⚖️ Article 14 : Droit applicable et litiges</h2>
+              <h2><ScaleIcon className="section-icon" /> Article 14 : Droit applicable et litiges</h2>
               <p>Les présentes CGV sont régies par le <strong>droit marocain</strong>. En cas de litige, une solution amiable sera recherchée. À défaut, les tribunaux de <strong>Marrakech</strong> seront seuls compétents.</p>
               <p>Conformément à la loi, vous pouvez recourir à une médiation conventionnelle ou à tout mode alternatif de règlement des différends.</p>
             </section>
 
             {/* Article 15 */}
             <section>
-              <h2>📞 Article 15 : Contact</h2>
+              <h2><PhoneIcon className="section-icon" /> Article 15 : Contact</h2>
               <p>Pour toute question relative aux présentes CGV :</p>
-              <ul className="cgv-list">
-                <li>📧 Email : <a href="mailto:contact@immorent.ma">contact@immorent.ma</a></li>
-                <li>📞 Téléphone : +212 5 24 12 34 56</li>
-                <li>📍 Adresse : Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc</li>
+              <ul className="contact-list">
+                <li><EnvelopeIcon className="list-icon" /> Email : <a href="mailto:contact@immorent.ma">contact@immorent.ma</a></li>
+                <li><PhoneIcon className="list-icon" /> Téléphone : +212 5 24 12 34 56</li>
+                <li><MapPinIcon className="list-icon" /> Adresse : Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc</li>
               </ul>
             </section>
 
             <div className="update">
-              <p>📅 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p><CalendarIcon className="update-icon" /> Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               <p>Version : 2.0</p>
               <p><Link to="/" className="back-link">← Retour à l'accueil</Link></p>
             </div>
@@ -246,6 +247,16 @@ const CGV = () => {
           margin-bottom: 1rem;
           font-weight: 600;
           margin-top: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .section-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+          color: #d4af37;
+          flex-shrink: 0;
         }
 
         .cgv-content h3 {
@@ -272,26 +283,26 @@ const CGV = () => {
           text-decoration: underline;
         }
 
-        .cgv-list {
+        .contact-list {
           margin: 0.75rem 0;
-          padding-left: 1.5rem;
+          padding-left: 0;
           list-style: none;
         }
 
-        .cgv-list li {
+        .contact-list li {
           margin-bottom: 0.5rem;
           color: #4b5563;
           line-height: 1.5;
-          position: relative;
-          padding-left: 1rem;
+          display: flex;
+          align-items: center;
         }
 
-        .cgv-list li::before {
-          content: "•";
+        .list-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
           color: #d4af37;
-          font-weight: bold;
-          position: absolute;
-          left: 0;
+          flex-shrink: 0;
         }
 
         .info-box {
@@ -304,7 +315,9 @@ const CGV = () => {
         }
 
         .info-icon {
-          font-size: 1.25rem;
+          width: 1rem;
+          height: 1rem;
+          color: #d97706;
           flex-shrink: 0;
         }
 
@@ -327,6 +340,14 @@ const CGV = () => {
           margin-bottom: 0.25rem;
         }
 
+        .update-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.25rem;
+          color: #9ca3af;
+          display: inline-block;
+        }
+
         .back-link {
           display: inline-block;
           margin-top: 0.5rem;
@@ -337,8 +358,6 @@ const CGV = () => {
         .back-link:hover {
           text-decoration: underline;
         }
-
-        @media (max-width: 768px) {
           .cgv-hero h1 {
             font-size: 1.5rem;
           }

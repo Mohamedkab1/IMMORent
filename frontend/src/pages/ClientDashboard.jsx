@@ -3,13 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   HomeIcon, 
   DocumentTextIcon, 
-  CurrencyEuroIcon, 
+  CurrencyDollarIcon, 
   BellIcon, 
-  UserIcon, 
   CalendarIcon, 
   MagnifyingGlassIcon, 
   HeartIcon, 
@@ -18,13 +18,14 @@ import {
   XCircleIcon, 
   ArrowPathIcon,
   KeyIcon,
-  TagIcon,
-  BuildingOfficeIcon
+  TagIcon
 } from '@heroicons/react/24/outline';
+import StatsCard from '../components/Common/StatsCard';
 
 const ClientDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [requests, setRequests] = useState([]);
   const [contracts, setContracts] = useState([]);
@@ -79,7 +80,6 @@ const ClientDashboard = () => {
     }
   };
 
-// Dans loadContracts, corrigez le calcul du totalPayments
   const loadContracts = async () => {
     try {
       const response = await contractService.getMyContracts();
@@ -87,10 +87,8 @@ const ClientDashboard = () => {
         const data = response.data.data || [];
         setContracts(data);
         
-        // Calculer le total des paiements correctement
         const activeContracts = data.filter(c => c.status === 'active');
         const total = activeContracts.reduce((sum, c) => {
-          // Assurez-vous que monthly_rent est un nombre
           const monthlyRent = parseFloat(c.monthly_rent) || 0;
           return sum + monthlyRent;
         }, 0);
@@ -110,7 +108,6 @@ const ClientDashboard = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir annuler cette demande ?')) {
       return;
     }
-
     try {
       const response = await requestService.cancel(id);
       if (response.success) {
@@ -127,32 +124,22 @@ const ClientDashboard = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { bg: '#fef3c7', color: '#d97706', text: 'En attente', icon: ClockIcon },
-      approved: { bg: '#dcfce7', color: '#059669', text: 'Approuvée', icon: CheckCircleIcon },
-      rejected: { bg: '#fee2e2', color: '#dc2626', text: 'Refusée', icon: XCircleIcon },
-      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: 'Annulée', icon: XCircleIcon },
-      active: { bg: '#dcfce7', color: '#059669', text: 'Actif', icon: CheckCircleIcon },
-      terminated: { bg: '#fee2e2', color: '#dc2626', text: 'Résilié', icon: XCircleIcon },
-      expired: { bg: '#f3f4f6', color: '#6b7280', text: 'Expiré', icon: ClockIcon },
-      completed: { bg: '#dbeafe', color: '#2563eb', text: 'Terminé', icon: CheckCircleIcon }
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('En attente', 'En attente'), icon: ClockIcon },
+      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Approuvée', 'Approuvée'), icon: CheckCircleIcon },
+      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Refusée', 'Refusée'), icon: XCircleIcon },
+      cancelled: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('Annulée', 'Annulée'), icon: XCircleIcon },
+      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Actif', 'Actif'), icon: CheckCircleIcon },
+      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Résilié', 'Résilié'), icon: XCircleIcon },
+      expired: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('Expiré', 'Expiré'), icon: ClockIcon },
+      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('Terminé', 'Terminé'), icon: CheckCircleIcon }
     };
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
     
     return (
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        padding: '0.25rem 0.5rem',
-        background: config.bg,
-        color: config.color,
-        borderRadius: '1rem',
-        fontSize: '0.625rem',
-        fontWeight: '500'
-      }}>
-        <Icon style={{ width: '0.75rem', height: '0.75rem' }} />
-        {config.text}
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}>
+        <Icon className="w-3.5 h-3.5" />
+        {config.label}
       </span>
     );
   };
@@ -160,74 +147,16 @@ const ClientDashboard = () => {
   const getRequestTypeBadge = (type) => {
     if (type === 'rent') {
       return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.25rem 0.5rem',
-          background: '#dcfce7',
-          color: '#059669',
-          borderRadius: '1rem',
-          fontSize: '0.625rem',
-          fontWeight: '500'
-        }}>
-          <KeyIcon style={{ width: '0.75rem', height: '0.75rem' }} />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500">
+          <KeyIcon className="w-3.5 h-3.5" />
           Location
         </span>
       );
     } else {
       return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.25rem 0.5rem',
-          background: '#fee2e2',
-          color: '#dc2626',
-          borderRadius: '1rem',
-          fontSize: '0.625rem',
-          fontWeight: '500'
-        }}>
-          <TagIcon style={{ width: '0.75rem', height: '0.75rem' }} />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-500">
+          <TagIcon className="w-3.5 h-3.5" />
           Achat
-        </span>
-      );
-    }
-  };
-
-  const getContractTypeBadge = (type) => {
-    if (type === 'rent') {
-      return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.25rem 0.5rem',
-          background: '#dcfce7',
-          color: '#059669',
-          borderRadius: '1rem',
-          fontSize: '0.625rem',
-          fontWeight: '500'
-        }}>
-          <KeyIcon style={{ width: '0.75rem', height: '0.75rem' }} />
-          Location
-        </span>
-      );
-    } else {
-      return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.25rem 0.5rem',
-          background: '#fee2e2',
-          color: '#dc2626',
-          borderRadius: '1rem',
-          fontSize: '0.625rem',
-          fontWeight: '500'
-        }}>
-          <TagIcon style={{ width: '0.75rem', height: '0.75rem' }} />
-          Vente
         </span>
       );
     }
@@ -235,885 +164,225 @@ const ClientDashboard = () => {
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
-        <p>Chargement de votre espace...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 dark:text-slate-400">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="font-medium animate-pulse">Chargement de votre espace...</p>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="client-dashboard">
-        {/* Sidebar */}
-        <div className="dashboard-sidebar">
-          <div className="sidebar-header">
-            <div className="user-info">
-              <div className="user-avatar">{user?.name?.charAt(0)}</div>
-              <div>
-                <h3>{user?.name}</h3>
-                <p>Client</p>
-              </div>
-            </div>
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-slate-50 dark:bg-slate-900">
+      
+      {/* Sidebar */}
+      <aside className="w-full md:w-72 bg-white dark:bg-slate-800 border-e border-slate-200 dark:border-slate-700 flex flex-col transition-colors duration-300">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-700 text-center">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-secondary to-yellow-200 rounded-full flex items-center justify-center text-primary text-2xl font-black shadow-lg shadow-secondary/30 mb-4">
+            {user?.name?.charAt(0)}
           </div>
-          <nav className="sidebar-nav">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate">{user?.name}</h3>
+          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">Client</p>
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-1">
+          <button 
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md shadow-primary/20 dark:shadow-secondary/20' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+          >
+            <HomeIcon className="w-5 h-5" /> {t('Dashboard')}
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('requests')}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+          >
+            <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.pending_requests')}
+            {stats.activeRequests > 0 && (
+              <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold leading-none min-w-[1.25rem] text-center">
+                {stats.activeRequests}
+              </span>
+            )}
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('contracts')}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+          >
+            <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.active_contracts')}
+          </button>
+        </nav>
+        
+        <div className="p-4 border-t border-slate-100 dark:border-slate-700">
+          <Link to="/properties" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-md">
+            <MagnifyingGlassIcon className="w-5 h-5" /> {t('nav.properties')}
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('dash.client.welcome')}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Gérez vos demandes et vos suivis en toute simplicité.</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
             <button 
-              className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
+              onClick={refreshData} 
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium transition-all shadow-sm disabled:opacity-50"
             >
-              <HomeIcon className="nav-icon" /> Tableau de bord
+              <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? t('common.loading') : 'Actualiser'}
             </button>
-            <button 
-              className={`nav-link ${activeTab === 'requests' ? 'active' : ''}`}
-              onClick={() => setActiveTab('requests')}
-            >
-              <DocumentTextIcon className="nav-icon" /> Mes demandes
-              {stats.activeRequests > 0 && <span className="badge">{stats.activeRequests}</span>}
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'contracts' ? 'active' : ''}`}
-              onClick={() => setActiveTab('contracts')}
-            >
-              <DocumentTextIcon className="nav-icon" /> Mes contrats
-            </button>
-            <button 
-              className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
-              onClick={() => setActiveTab('profile')}
-            >
-              <UserIcon className="nav-icon" /> Mon profil
-            </button>
-          </nav>
-          <div className="sidebar-footer">
-            <Link to="/properties" className="btn-search">
-              <MagnifyingGlassIcon className="btn-search-icon" /> Rechercher un bien
-            </Link>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="dashboard-main">
-          <div className="content-header">
-            <h1>Tableau de bord client</h1>
-            <div className="header-actions">
-              <button onClick={refreshData} className="btn-refresh" disabled={refreshing}>
-                <ArrowPathIcon className={`refresh-icon ${refreshing ? 'spin' : ''}`} />
-                {refreshing ? 'Actualisation...' : 'Actualiser'}
-              </button>
-              <button className="btn-notification">
-                <BellIcon className="notification-icon" />
-                <span className="badge">{stats.activeRequests}</span>
-              </button>
-            </div>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+          <StatsCard 
+            title={t('dash.stats.pending_requests')} 
+            value={stats.activeRequests} 
+            icon={DocumentTextIcon} 
+            color="amber" 
+          />
+          <StatsCard 
+            title={t('dash.stats.active_contracts')} 
+            value={stats.activeContracts} 
+            icon={CheckCircleIcon} 
+            color="green" 
+          />
+          <StatsCard 
+            title="Dépenses mensuelles" 
+            value={`${stats.totalPayments.toLocaleString('fr-FR')} DH`} 
+            icon={CurrencyDollarIcon} 
+            color="blue" 
+          />
+          <StatsCard 
+            title="Biens favoris" 
+            value={stats.favoriteProperties} 
+            icon={HeartIcon} 
+            color="rose" 
+          />
+        </div>
 
-          {/* Stats Cards */}
-          {/* Stats Cards - Version corrigée */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon requests">
-                <DocumentTextIcon className="stat-icon-svg" />
+        {/* Dynamic Content */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Demandes Récentes</h2>
+                <button onClick={() => setActiveTab('requests')} className="text-sm font-semibold text-primary dark:text-secondary hover:underline">
+                  Voir tout ({requests.length})
+                </button>
               </div>
-              <div>
-                <h3>{stats.activeRequests}</h3>
-                <p>Demandes en cours</p>
-              </div>
-            </div>
-            
-            <div className="stat-card">
-              <div className="stat-icon contracts">
-                <DocumentTextIcon className="stat-icon-svg" />
-              </div>
-              <div>
-                <h3>{stats.activeContracts}</h3>
-                <p>Contrats actifs</p>
-              </div>
-            </div>
-            
-            <div className="stat-card">
-              <div className="stat-icon payments">
-                <CurrencyEuroIcon className="stat-icon-svg" />
-              </div>
-              <div>
-                {/* Correction de l'affichage du total */}
-                <h3>{stats.totalPayments.toLocaleString('fr-FR')} DH</h3>
-                <p>Total mensuel</p>
-              </div>
-            </div>
-            
-            <div className="stat-card">
-              <div className="stat-icon favorites">
-                <HeartIcon className="stat-icon-svg" />
-              </div>
-              <div>
-                <h3>{stats.favoriteProperties}</h3>
-                <p>Biens favoris</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Dashboard Tab */}
-          {activeTab === 'dashboard' && (
-            <>
-              <div className="content-section">
-                <div className="section-header">
-                  <h2>Mes demandes récentes</h2>
-                  <button className="view-all" onClick={() => setActiveTab('requests')}>
-                    Voir tout ({stats.activeRequests})
-                  </button>
-                </div>
-                <div className="requests-list">
-                  {requests.slice(0, 3).map(request => (
-                    <div key={request.id} className="request-card">
-                      <div className="request-header">
-                        <h3>{request.property?.title}</h3>
-                        <div className="request-badges">
-                          {getRequestTypeBadge(request.type)}
-                          {getStatusBadge(request.status)}
-                        </div>
-                      </div>
-                      {request.type === 'rent' && (
-                        <p className="request-date">
-                          <CalendarIcon className="inline-icon" />
-                          Du {new Date(request.start_date).toLocaleDateString()} au {new Date(request.end_date).toLocaleDateString()}
-                        </p>
-                      )}
-                      <p className="request-price">
-                        <CurrencyEuroIcon className="inline-icon" />
-                        {request.property?.price.toLocaleString()}DH{request.type === 'rent' ? '/mois' : ''}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {requests.slice(0, 3).map(request => (
+                  <div key={request.id} className="group border border-slate-100 dark:border-slate-700 rounded-xl p-5 hover:border-secondary dark:hover:border-secondary/50 hover:shadow-md transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-bold text-slate-800 dark:text-white line-clamp-2 pr-2">{request.property?.title}</h3>
+                      <div className="flex-shrink-0">{getRequestTypeBadge(request.type)}</div>
+                    </div>
+                    {request.type === 'rent' && (
+                      <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                        <ClockIcon className="w-4 h-4 text-slate-400" />
+                        {new Date(request.start_date).toLocaleDateString()}
                       </p>
-                      {request.status === 'pending' && (
-                        <div className="request-actions">
-                          <button onClick={() => cancelRequest(request.id)} className="btn-cancel">
-                            Annuler la demande
-                          </button>
-                        </div>
-                      )}
-                      {request.status === 'rejected' && request.rejection_reason && (
-                        <p className="rejection-reason">
-                          Motif: {request.rejection_reason}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  {requests.filter(r => r.status === 'pending' || r.status === 'approved').length === 0 && (
-                    <div className="empty-state">
-                      <p>Aucune demande en cours</p>
-                      <Link to="/properties">Parcourir les biens</Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {contracts.filter(c => c.status === 'active' || c.status === 'completed').length > 0 && (
-                <div className="content-section">
-                  <div className="section-header">
-                    <h2>Contrats récents</h2>
-                    <button className="view-all" onClick={() => setActiveTab('contracts')}>
-                      Voir tout
-                    </button>
-                  </div>
-                  <div className="contracts-list">
-                    {contracts.filter(c => c.status === 'active' || c.status === 'completed').slice(0, 1).map(contract => (
-                      <Link to={`/contracts/${contract.id}`} key={contract.id} className="contract-card">
-                        <div className="contract-header">
-                          <h3>{contract.property?.title}</h3>
-                          {getContractTypeBadge(contract.contract_type)}
-                        </div>
-                        {contract.contract_type === 'rent' ? (
-                          <>
-                            <div className="contract-dates">
-                              <span>Du {new Date(contract.start_date).toLocaleDateString()}</span>
-                              <span>au {new Date(contract.end_date).toLocaleDateString()}</span>
-                            </div>
-                            <div className="contract-price">
-                              <span>Loyer mensuel:</span>
-                              <strong>{contract.monthly_rent}DH</strong>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="contract-price">
-                              <span>Prix de vente:</span>
-                              <strong>{contract.sale_price}DH</strong>
-                            </div>
-                            <div className="contract-date">
-                              <span>Date de vente: {new Date(contract.sale_date).toLocaleDateString()}</span>
-                            </div>
-                          </>
-                        )}
-                        {getStatusBadge(contract.status)}
-                        <button className="btn-view-contract">Voir le contrat</button>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Requests Tab */}
-          {activeTab === 'requests' && (
-            <div className="content-section full-width">
-              <div className="section-header">
-                <h2>Toutes mes demandes</h2>
-                <button onClick={refreshData} className="btn-refresh-small">
-                  <ArrowPathIcon className={`refresh-small-icon ${refreshing ? 'spin' : ''}`} />
-                  Actualiser
-                </button>
-              </div>
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Bien</th>
-                      <th>Type</th>
-                      <th>Période</th>
-                      <th>Date demande</th>
-                      <th>Prix</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {requests.map(request => (
-                      <tr key={request.id}>
-                        <td>
-                          <strong>{request.property?.title}</strong>
-                          <br/><span className="text-muted">{request.property?.city}</span>
-                        </td>
-                        <td>{getRequestTypeBadge(request.type)}</td>
-                        <td>
-                          {request.type === 'rent' ? (
-                            `${new Date(request.start_date).toLocaleDateString()} - ${new Date(request.end_date).toLocaleDateString()}`
-                          ) : (
-                            'Demande d\'achat'
-                          )}
-                        </td>
-                        <td>{new Date(request.created_at).toLocaleDateString()}</td>
-                        <td>{request.property?.price.toLocaleString()}DH{request.type === 'rent' ? '/mois' : ''}</td>
-                        <td>{getStatusBadge(request.status)}</td>
-                        <td className="actions-cell">
-                          {request.status === 'pending' && (
-                            <button onClick={() => cancelRequest(request.id)} className="btn-cancel-small">
-                              Annuler
-                            </button>
-                          )}
-                          {request.status === 'approved' && (
-                            <span className="text-success">En attente de contrat</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {requests.length === 0 && (
-                      <tr>
-                        <td colSpan="7" className="empty-cell">
-                          Aucune demande effectuée
-                        </td>
-                      </tr>
                     )}
-                  </tbody>
-                </table>
+                    <p className="flex items-center gap-2 text-lg font-bold text-primary dark:text-slate-200 mb-6">
+                      <CurrencyDollarIcon className="w-5 h-5 text-secondary" />
+                      {request.property?.price.toLocaleString()} DH {request.type === 'rent' ? '/ mois' : ''}
+                    </p>
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
+                       {getStatusBadge(request.status)}
+                    </div>
+                  </div>
+                ))}
+                {requests.length === 0 && (
+                  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                    <p className="text-slate-500 dark:text-slate-400 mb-3">Aucune demande en cours</p>
+                    <Link to="/properties" className="inline-flex items-center text-primary font-semibold hover:text-secondary">Découvrir les biens ➔</Link>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Contracts Tab */}
-          {activeTab === 'contracts' && (
-            <div className="content-section full-width">
-              <div className="section-header">
-                <h2>Mes contrats</h2>
-                <button onClick={refreshData} className="btn-refresh-small">
-                  <ArrowPathIcon className={`refresh-small-icon ${refreshing ? 'spin' : ''}`} />
-                  Actualiser
-                </button>
-              </div>
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>N° Contrat</th>
-                      <th>Bien</th>
-                      <th>Type</th>
-                      <th>Période/Date</th>
-                      <th>Montant</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {contracts.map(contract => (
-                      <tr key={contract.id}>
-                        <td>
-                          <Link to={`/contracts/${contract.id}`} className="contract-link">
-                            {contract.contract_number}
-                          </Link>
-                        </td>
-                        <td>{contract.property?.title}</td>
-                        <td>{getContractTypeBadge(contract.contract_type)}</td>
-                        <td>
-                          {contract.contract_type === 'rent' ? (
-                            `${new Date(contract.start_date).toLocaleDateString()} - ${new Date(contract.end_date).toLocaleDateString()}`
-                          ) : (
-                            `Vente le ${new Date(contract.sale_date).toLocaleDateString()}`
-                          )}
-                        </td>
-                        <td>
-                          {contract.contract_type === 'rent' 
-                            ? `${contract.monthly_rent}DH / mois`
-                            : `${contract.sale_price}DH`
-                          }
-                        </td>
-                        <td>{getStatusBadge(contract.status)}</td>
-                        <td className="actions-cell">
-                          <Link to={`/contracts/${contract.id}`} className="btn-view" title="Voir">
-                            Voir
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                    {contracts.length === 0 && (
-                      <tr>
-                        <td colSpan="7" className="empty-cell">
-                          Aucun contrat pour le moment
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <style>{`
-        .client-dashboard {
-          display: flex;
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-        }
-
-        .dashboard-sidebar {
-          width: 280px;
-          background: white;
-          box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-          position: ;
-          top: 70px;
-          left: 0;
-          bottom: 0;
-          overflow-y: auto;
-        }
-
-        .sidebar-header {
-          padding: 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .user-info {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .user-avatar {
-          width: 3rem;
-          height: 3rem;
-          background: linear-gradient(135deg, #d4af37 0%, #c4a52e 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #0f2b4d;
-          font-weight: 700;
-          font-size: 1.25rem;
-        }
-
-        .user-info h3 {
-          font-size: 1rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .user-info p {
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .sidebar-nav {
-          padding: 1rem;
-        }
-
-        .nav-link {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          width: 100%;
-          padding: 0.75rem 1rem;
-          background: none;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          text-align: left;
-          font-size: 0.875rem;
-          color: #6b7280;
-          transition: all 0.3s;
-          position: relative;
-        }
-
-        .nav-link:hover {
-          background: #f3f4f6;
-          color: #d4af37;
-        }
-
-        .nav-link.active {
-          background: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .nav-icon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .badge {
-          position: absolute;
-          right: 1rem;
-          background: #ef4444;
-          color: white;
-          font-size: 0.625rem;
-          padding: 0.125rem 0.375rem;
-          border-radius: 1rem;
-        }
-
-        .sidebar-footer {
-          padding: 1rem;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .btn-search {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          width: 100%;
-          padding: 0.75rem;
-          background: #d4af37;
-          color: #0f2b4d;
-          text-decoration: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          font-size: 0.875rem;
-        }
-
-        .btn-search-icon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .dashboard-main {
-          flex: 1;
-          margin-left: 280px;
-          padding: 1.5rem;
-        }
-
-        .content-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.5rem;
-        }
-
-        .content-header h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-        }
-
-        .header-actions {
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-        }
-
-        .btn-refresh {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 1rem;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          font-size: 0.75rem;
-        }
-
-        .refresh-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-        }
-
-        .btn-notification {
-          position: relative;
-          background: white;
-          border: none;
-          padding: 0.5rem;
-          border-radius: 50%;
-          cursor: pointer;
-        }
-
-        .notification-icon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 1rem;
-          border-radius: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-icon {
-          width: 2rem;
-          height: 2rem;
-          background: #f3f4f6;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #d4af37;
-        }
-
-        .stat-icon-svg {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .stat-card h3 {
-          font-size: 1.25rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .stat-card p {
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .content-section {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1rem;
-          margin-bottom: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .content-section.full-width {
-          width: 100%;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-
-        .section-header h2 {
-          font-size: 1rem;
-          color: #0f2b4d;
-        }
-
-        .view-all {
-          background: none;
-          border: none;
-          color: #d4af37;
-          cursor: pointer;
-          font-size: 0.75rem;
-        }
-
-        .btn-refresh-small {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          padding: 0.375rem 0.75rem;
-          background: #f3f4f6;
-          border: none;
-          border-radius: 0.375rem;
-          cursor: pointer;
-          font-size: 0.75rem;
-        }
-
-        .refresh-small-icon {
-          width: 0.75rem;
-          height: 0.75rem;
-        }
-
-        .requests-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .request-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          padding: 1rem;
-        }
-
-        .request-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 0.75rem;
-        }
-
-        .request-header h3 {
-          font-size: 1rem;
-          color: #0f2b4d;
-          margin: 0;
-        }
-
-        .request-badges {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .request-date {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #6b7280;
-          font-size: 0.75rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .request-price {
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #d4af37;
-          margin-bottom: 0.75rem;
-        }
-
-        .btn-cancel {
-          padding: 0.375rem 0.75rem;
-          background: #fee2e2;
-          color: #dc2626;
-          border: none;
-          border-radius: 0.375rem;
-          cursor: pointer;
-          font-size: 0.75rem;
-        }
-
-        .rejection-reason {
-          color: #dc2626;
-          font-size: 0.625rem;
-          margin-top: 0.5rem;
-        }
-
-        .contracts-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .contract-card {
-          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%);
-          padding: 1rem;
-          border-radius: 0.5rem;
-          color: white;
-          text-decoration: none;
-          display: block;
-        }
-
-        .contract-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.75rem;
-        }
-
-        .contract-header h3 {
-          font-size: 1rem;
-          margin: 0;
-          color: white;
-        }
-
-        .contract-dates {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 0.5rem;
-          font-size: 0.75rem;
-          opacity: 0.9;
-        }
-
-        .contract-price {
-          margin-bottom: 0.5rem;
-          font-size: 0.75rem;
-        }
-
-        .contract-price strong {
-          font-size: 1rem;
-          margin-left: 0.5rem;
-        }
-
-        .contract-date {
-          margin-bottom: 0.5rem;
-          font-size: 0.75rem;
-        }
-
-        .btn-view-contract {
-          display: inline-block;
-          margin-top: 0.75rem;
-          padding: 0.375rem 0.75rem;
-          background: white;
-          color: #0f2b4d;
-          text-decoration: none;
-          border-radius: 0.375rem;
-          font-size: 0.75rem;
-          font-weight: 500;
-          border: none;
-          cursor: pointer;
-        }
-
-        .table-container {
-          overflow-x: auto;
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table th {
-          text-align: left;
-          padding: 0.75rem;
-          background: #f8f9fa;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: #6b7280;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .data-table td {
-          padding: 0.75rem;
-          border-bottom: 1px solid #e5e7eb;
-          font-size: 0.75rem;
-        }
-
-        .contract-link {
-          color: #d4af37;
-          text-decoration: none;
-          font-size: 0.75rem;
-        }
-
-        .btn-view {
-          padding: 0.25rem 0.5rem;
-          background: #e0f2fe;
-          color: #0284c7;
-          text-decoration: none;
-          border-radius: 0.25rem;
-          font-size: 0.625rem;
-        }
-
-        .btn-cancel-small {
-          padding: 0.25rem 0.5rem;
-          background: #fee2e2;
-          color: #dc2626;
-          border: none;
-          border-radius: 0.25rem;
-          cursor: pointer;
-          font-size: 0.625rem;
-        }
-
-        .text-success {
-          color: #059669;
-          font-size: 0.625rem;
-        }
-
-        .text-muted {
-          color: #9ca3af;
-          font-size: 0.625rem;
-        }
-
-        .inline-icon {
-          width: 0.75rem;
-          height: 0.75rem;
-          display: inline;
-          vertical-align: middle;
-          margin-right: 0.25rem;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 2rem;
-          color: #6b7280;
-        }
-
-        .empty-state a {
-          color: #d4af37;
-          text-decoration: none;
-        }
-
-        .empty-cell {
-          text-align: center;
-          padding: 2rem;
-          color: #6b7280;
-        }
-
-        .loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        .spin {
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 1024px) {
-          .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .dashboard-sidebar {
-            display: none;
-          }
-          .dashboard-main {
-            margin-left: 0;
-          }
-          .request-header {
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-        }
-      `}</style>
-    </>
+            </section>
+          </div>
+        )}
+
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Historique des demandes</h2>
+             </div>
+             <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse">
+                 <thead>
+                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                     <th className="p-4 font-semibold">Bien ciblé</th>
+                     <th className="p-4 font-semibold text-center">Statut</th>
+                     <th className="p-4 font-semibold text-right">Actions</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                   {requests.map(request => (
+                     <tr key={request.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                       <td className="p-4">
+                         <div className="font-bold text-slate-800 dark:text-white text-sm">{request.property?.title}</div>
+                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{request.property?.city}</div>
+                       </td>
+                       <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
+                       <td className="p-4 text-right">
+                         {request.status === 'pending' && (
+                           <button onClick={() => cancelRequest(request.id)} className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg">
+                             {t('common.delete')}
+                           </button>
+                         )}
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+          </section>
+        )}
+
+        {/* Contracts Tab */}
+        {activeTab === 'contracts' && (
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Mes Contrats Actifs</h2>
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                {contracts.map(contract => (
+                  <div key={contract.id} className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between mb-4">
+                      <h3 className="font-bold text-slate-800 dark:text-white">{contract.property?.title}</h3>
+                      {getStatusBadge(contract.status)}
+                    </div>
+                    <div className="space-y-2 mb-6 text-sm text-slate-600 dark:text-slate-400">
+                      <p className="flex justify-between"><span>Loyer:</span> <span className="font-bold text-primary dark:text-white">{contract.monthly_rent?.toLocaleString()} DH</span></p>
+                      <p className="flex justify-between"><span>Début:</span> <span>{new Date(contract.start_date).toLocaleDateString()}</span></p>
+                      <p className="flex justify-between"><span>Fin:</span> <span>{new Date(contract.end_date).toLocaleDateString()}</span></p>
+                    </div>
+                    <Link to={`/contracts/${contract.id}`} className="block w-full py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all">
+                      Voir les détails
+                    </Link>
+                  </div>
+                ))}
+                {contracts.length === 0 && (
+                  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                    <p className="text-slate-500 dark:text-slate-400">Aucun contrat actif</p>
+                  </div>
+                )}
+             </div>
+          </section>
+        )}
+
+      </main>
+    </div>
   );
 };
 

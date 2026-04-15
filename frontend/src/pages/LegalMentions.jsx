@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ClipboardDocumentIcon, UserIcon, ServerIcon, CodeBracketIcon, LockClosedIcon, ShieldCheckIcon, ScaleIcon, ExclamationTriangleIcon, CheckIcon, ChartBarIcon, MagnifyingGlassIcon, HeartIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 const LegalMentions = () => {
   const currentYear = new Date().getFullYear();
@@ -17,7 +18,7 @@ const LegalMentions = () => {
             
             {/* Éditeur du site */}
             <section>
-              <h2>📋 1. Éditeur du site</h2>
+              <h2><ClipboardDocumentIcon className="section-icon" /> 1. Éditeur du site</h2>
               <p><strong>IMMORent Maroc SARL</strong></p>
               <p>Société à responsabilité limitée au capital de 500 000 DH</p>
               <p>Siège social : Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000, Maroc</p>
@@ -31,14 +32,14 @@ const LegalMentions = () => {
 
             {/* Directeur de publication */}
             <section>
-              <h2>👨‍💼 2. Directeur de publication</h2>
+              <h2><UserIcon className="section-icon" /> 2. Directeur de publication</h2>
               <p><strong>Mohamed Kabbaj</strong>, Gérant</p>
               <p>Email : <a href="mailto:M.Kabbaj@immorent.ma">M.Kabbaj@immorent.ma</a></p>
             </section>
 
             {/* Hébergement */}
             <section>
-              <h2>🖥️ 3. Hébergement</h2>
+              <h2><ServerIcon className="section-icon" /> 3. Hébergement</h2>
               <p><strong>Maroc Datacenter</strong></p>
               <p>Adresse : Technopark, 1100 Avenue Al Irfane, Casablanca, Maroc</p>
               <p>Téléphone : +212 5 22 12 34 56</p>
@@ -47,7 +48,7 @@ const LegalMentions = () => {
 
             {/* Conception et développement */}
             <section>
-              <h2>💻 4. Conception et développement</h2>
+              <h2><CodeBracketIcon className="section-icon" /> 4. Conception et développement</h2>
               <p><strong>IMMORent Tech Solutions</strong></p>
               <p>Agence digitale spécialisée dans les solutions immobilières</p>
               <p>Email : <a href="mailto:dev@immorent.ma">dev@immorent.ma</a></p>
@@ -55,21 +56,21 @@ const LegalMentions = () => {
 
             {/* Propriété intellectuelle */}
             <section>
-              <h2>©️ 5. Propriété intellectuelle</h2>
+              <h2><DocumentTextIcon className="section-icon" /> 5. Propriété intellectuelle</h2>
               <p>L'ensemble des contenus présents sur le site <strong>IMMORent.ma</strong> (textes, images, logos, vidéos, icônes, base de données, etc.) sont la propriété exclusive de <strong>IMMORent Maroc SARL</strong> ou de ses partenaires et sont protégés par les dispositions du Code de la Propriété Intellectuelle marocain (Loi n° 17-97 relative à la protection de la propriété littéraire et artistique).</p>
               <p>Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable de la société.</p>
             </section>
 
             {/* Protection des données personnelles */}
             <section>
-              <h2>🔒 6. Protection des données personnelles</h2>
+              <h2><LockClosedIcon className="section-icon" /> 6. Protection des données personnelles</h2>
               <p>Conformément à la <strong>Loi n° 09-08</strong> relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel (CNDP), vous disposez des droits suivants :</p>
               <ul className="legal-list">
-                <li>✔️ Droit d'accès à vos données personnelles</li>
-                <li>✔️ Droit de rectification des informations inexactes</li>
-                <li>✔️ Droit d'opposition pour motifs légitimes</li>
-                <li>✔️ Droit à l'effacement (droit à l'oubli)</li>
-                <li>✔️ Droit à la portabilité de vos données</li>
+                <li><CheckIcon className="list-icon" /> Droit d'accès à vos données personnelles</li>
+                <li><CheckIcon className="list-icon" /> Droit de rectification des informations inexactes</li>
+                <li><CheckIcon className="list-icon" /> Droit d'opposition pour motifs légitimes</li>
+                <li><CheckIcon className="list-icon" /> Droit à l'effacement (droit à l'oubli)</li>
+                <li><CheckIcon className="list-icon" /> Droit à la portabilité de vos données</li>
               </ul>
               <p>Pour exercer ces droits, contactez notre Délégué à la Protection des Données (DPO) : <a href="mailto:dpo@immorent.ma">dpo@immorent.ma</a></p>
               <p>Pour plus d'informations, consultez notre <Link to="/confidentialite">Politique de confidentialité</Link>.</p>
@@ -77,50 +78,50 @@ const LegalMentions = () => {
 
             {/* Cookies */}
             <section>
-              <h2>🍪 7. Cookies</h2>
+              <h2><ShieldCheckIcon className="section-icon" /> 7. Cookies</h2>
               <p>Le site IMMORent.ma utilise des cookies pour :</p>
               <ul className="legal-list">
-                <li>📊 Analyser l'audience et mesurer les performances</li>
-                <li>🔍 Mémoriser vos préférences de recherche</li>
-                <li>❤️ Gérer vos biens favoris</li>
-                <li>🔐 Assurer la sécurité de votre session</li>
+                <li><ChartBarIcon className="list-icon" /> Analyser l'audience et mesurer les performances</li>
+                <li><MagnifyingGlassIcon className="list-icon" /> Mémoriser vos préférences de recherche</li>
+                <li><HeartIcon className="list-icon" /> Gérer vos biens favoris</li>
+                <li><LockClosedIcon className="list-icon" /> Assurer la sécurité de votre session</li>
               </ul>
               <p>Vous pouvez paramétrer vos préférences en matière de cookies à tout moment depuis le bandeau présent sur le site ou via les paramètres de votre navigateur.</p>
             </section>
 
             {/* Conditions générales d'utilisation */}
             <section>
-              <h2>⚖️ 8. Conditions générales d'utilisation</h2>
+              <h2><ScaleIcon className="section-icon" /> 8. Conditions générales d'utilisation</h2>
               <p>L'utilisation du site IMMORent.ma implique l'acceptation pleine et entière des conditions générales d'utilisation décrites dans les présentes mentions légales et dans nos <Link to="/cgv">CGV</Link>.</p>
               <p>IMMORent Maroc SARL se réserve le droit de modifier à tout moment ces conditions. Les utilisateurs sont invités à les consulter régulièrement.</p>
             </section>
 
             {/* Responsabilité */}
             <section>
-              <h2>⚠️ 9. Responsabilité</h2>
+              <h2><ExclamationTriangleIcon className="section-icon" /> 9. Responsabilité</h2>
               <p>IMMORent Maroc SARL met tout en œuvre pour assurer l'exactitude et la mise à jour des informations diffusées sur le site. Toutefois, l'entreprise ne peut garantir l'exhaustivité, l'exactitude ou l'absence de modification par un tiers des informations présentes.</p>
               <p>Les informations fournies sur le site le sont à titre indicatif et ne sauraient engager la responsabilité de IMMORent Maroc SARL. L'utilisateur reconnaît utiliser ces informations sous sa responsabilité exclusive.</p>
             </section>
 
             {/* Droit applicable */}
             <section>
-              <h2>⚖️ 10. Droit applicable</h2>
+              <h2><ScaleIcon className="section-icon" /> 10. Droit applicable</h2>
               <p>Les présentes mentions légales sont régies par le droit marocain. En cas de litige, et après tentative de recherche d'une solution amiable, les tribunaux de <strong>Marrakech</strong> seront seuls compétents.</p>
             </section>
 
             {/* Contact */}
             <section>
-              <h2>📞 11. Nous contacter</h2>
+              <h2><PhoneIcon className="section-icon" /> 11. Nous contacter</h2>
               <p>Pour toute question relative aux mentions légales ou à l'utilisation du site :</p>
               <ul className="legal-list">
-                <li>📧 Email : <a href="mailto:legal@immorent.ma">legal@immorent.ma</a></li>
-                <li>📞 Téléphone : +212 5 24 12 34 56</li>
-                <li>📍 Adresse : Avenue Mohammed VI, Guéliz, Marrakech 40000</li>
+                <li><EnvelopeIcon className="list-icon" /> Email : <a href="mailto:legal@immorent.ma">legal@immorent.ma</a></li>
+                <li><PhoneIcon className="list-icon" /> Téléphone : +212 5 24 12 34 56</li>
+                <li><MapPinIcon className="list-icon" /> Adresse : Avenue Mohammed VI, Guéliz, Marrakech 40000</li>
               </ul>
             </section>
 
             <div className="update">
-              <p>📅 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p><CalendarIcon className="update-icon" /> Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               <p>Version : 2.0</p>
             </div>
           </div>
@@ -184,6 +185,16 @@ const LegalMentions = () => {
           margin-bottom: 1rem;
           font-weight: 600;
           margin-top: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .section-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+          color: #d4af37;
+          flex-shrink: 0;
         }
 
         .legal-content p {
@@ -213,16 +224,16 @@ const LegalMentions = () => {
           margin-bottom: 0.5rem;
           color: #4b5563;
           line-height: 1.5;
-          position: relative;
-          padding-left: 0.5rem;
+          display: flex;
+          align-items: center;
         }
 
-        .legal-list li::before {
-          content: "•";
+        .list-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
           color: #d4af37;
-          font-weight: bold;
-          position: absolute;
-          left: -1rem;
+          flex-shrink: 0;
         }
 
         .update {
@@ -236,6 +247,16 @@ const LegalMentions = () => {
 
         .update p {
           margin-bottom: 0.25rem;
+          display: flex;
+          align-items: center;
+        }
+
+        .update-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+          color: #9ca3af;
+          flex-shrink: 0;
         }
 
         @media (max-width: 768px) {

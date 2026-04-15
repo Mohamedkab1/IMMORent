@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { LockClosedIcon, BuildingOfficeIcon, ChartBarIcon, ScaleIcon, ShieldCheckIcon, PencilIcon, EnvelopeIcon, CalendarIcon, CheckIcon, ClipboardDocumentIcon, UserIcon } from '@heroicons/react/24/outline';
 
 const Privacy = () => {
   const currentYear = new Date().getFullYear();
@@ -17,14 +18,14 @@ const Privacy = () => {
             
             {/* Introduction */}
             <section>
-              <h2>🔒 1. Introduction</h2>
+              <h2><LockClosedIcon className="section-icon" /> 1. Introduction</h2>
               <p>IMMORent Maroc SARL (ci-après "IMMORent", "nous", "notre") accorde une importance primordiale à la protection de vos données personnelles. La présente politique de confidentialité a pour objectif de vous informer sur la manière dont nous collectons, utilisons, stockons et protégeons vos informations lorsque vous utilisez notre plateforme immobilière <strong>IMMORent.ma</strong>.</p>
               <p>Nous nous engageons à respecter la <strong>Loi n° 09-08</strong> relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à garantir la confidentialité de vos informations.</p>
             </section>
 
             {/* Responsable du traitement */}
             <section>
-              <h2>🏢 2. Responsable du traitement</h2>
+              <h2><BuildingOfficeIcon className="section-icon" /> 2. Responsable du traitement</h2>
               <p><strong>IMMORent Maroc SARL</strong></p>
               <p>Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000, Maroc</p>
               <p>Téléphone : +212 5 24 12 34 56</p>
@@ -34,7 +35,7 @@ const Privacy = () => {
 
             {/* Données collectées */}
             <section>
-              <h2>📊 3. Données personnelles collectées</h2>
+              <h2><ChartBarIcon className="section-icon" /> 3. Données personnelles collectées</h2>
               <p>Nous collectons les catégories de données suivantes :</p>
               
               <h3>3.1 Données d'identification</h3>
@@ -89,13 +90,13 @@ const Privacy = () => {
 
             {/* Base légale du traitement */}
             <section>
-              <h2>⚖️ 5. Base légale du traitement</h2>
+              <h2><ScaleIcon className="section-icon" /> 5. Base légale du traitement</h2>
               <p>Nous traitons vos données personnelles sur la base de :</p>
               <ul className="privacy-list">
-                <li>✔️ <strong>Votre consentement</strong> (pour les communications marketing, cookies)</li>
-                <li>✔️ <strong>L'exécution du contrat</strong> (pour la gestion des locations et des contrats)</li>
-                <li>✔️ <strong>Notre intérêt légitime</strong> (pour l'amélioration de nos services, la sécurité)</li>
-                <li>✔️ <strong>Obligations légales</strong> (conservation des données, réponse aux autorités)</li>
+                <li><CheckIcon className="list-icon" /> <strong>Votre consentement</strong> (pour les communications marketing, cookies)</li>
+                <li><CheckIcon className="list-icon" /> <strong>L'exécution du contrat</strong> (pour la gestion des locations et des contrats)</li>
+                <li><CheckIcon className="list-icon" /> <strong>Notre intérêt légitime</strong> (pour l'amélioration de nos services, la sécurité)</li>
+                <li><CheckIcon className="list-icon" /> <strong>Obligations légales</strong> (conservation des données, réponse aux autorités)</li>
               </ul>
             </section>
 
@@ -183,12 +184,12 @@ const Privacy = () => {
               <h2>🛡️ 9. Sécurité des données</h2>
               <p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données :</p>
               <ul className="privacy-list">
-                <li>🔐 Chiffrement SSL/TLS pour toutes les communications</li>
-                <li>🔒 Chiffrement des mots de passe (hachage)</li>
-                <li>🛡️ Pare-feu et systèmes de détection d'intrusion</li>
-                <li>📋 Contrôle d'accès strict aux données</li>
-                <li>📊 Sauvegardes régulières et sécurisées</li>
-                <li>👨‍💻 Audits de sécurité réguliers</li>
+                <li><LockClosedIcon className="list-icon" /> Chiffrement SSL/TLS pour toutes les communications</li>
+                <li><LockClosedIcon className="list-icon" /> Chiffrement des mots de passe (hachage)</li>
+                <li><ShieldCheckIcon className="list-icon" /> Pare-feu et systèmes de détection d'intrusion</li>
+                <li><ClipboardDocumentIcon className="list-icon" /> Contrôle d'accès strict aux données</li>
+                <li><ChartBarIcon className="list-icon" /> Sauvegardes régulières et sécurisées</li>
+                <li><UserIcon className="list-icon" /> Audits de sécurité réguliers</li>
               </ul>
               <p>En cas de violation de données, nous vous informerons dans les meilleurs délais conformément à la réglementation.</p>
             </section>
@@ -201,7 +202,7 @@ const Privacy = () => {
 
             {/* Cookies */}
             <section>
-              <h2>🍪 11. Cookies et technologies similaires</h2>
+              <h2><ShieldCheckIcon className="section-icon" /> 11. Cookies et technologies similaires</h2>
               <p>Nous utilisons des cookies pour :</p>
               <ul className="privacy-list">
                 <li><strong>Cookies essentiels :</strong> Authentification, sécurité, session</li>
@@ -214,13 +215,13 @@ const Privacy = () => {
 
             {/* Modification de la politique */}
             <section>
-              <h2>📝 12. Modification de la politique</h2>
+              <h2><PencilIcon className="section-icon" /> 12. Modification de la politique</h2>
               <p>Nous nous réservons le droit de modifier cette politique de confidentialité. Toute modification sera publiée sur cette page avec une date de mise à jour. Nous vous invitons à consulter régulièrement cette page.</p>
             </section>
 
             {/* Contact DPO */}
             <section>
-              <h2>📧 13. Contact</h2>
+              <h2><EnvelopeIcon className="section-icon" /> 13. Contact</h2>
               <p><strong>Délégué à la Protection des Données (DPO) :</strong></p>
               <p>Email : <a href="mailto:dpo@immorent.ma">dpo@immorent.ma</a></p>
               <p>Adresse : Avenue Mohammed VI, Guéliz, Marrakech 40000, Maroc</p>
@@ -229,7 +230,7 @@ const Privacy = () => {
             </section>
 
             <div className="update">
-              <p>📅 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p><CalendarIcon className="update-icon" /> Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               <p>Version : 2.0</p>
               <p><Link to="/" className="back-link">← Retour à l'accueil</Link></p>
             </div>
@@ -294,6 +295,16 @@ const Privacy = () => {
           margin-bottom: 1rem;
           font-weight: 600;
           margin-top: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .section-icon {
+          width: 1.25rem;
+          height: 1.25rem;
+          margin-right: 0.5rem;
+          color: #d4af37;
+          flex-shrink: 0;
         }
 
         .privacy-content h3 {
@@ -390,8 +401,50 @@ const Privacy = () => {
           font-size: 0.75rem;
         }
 
+        .privacy-list {
+          margin: 0.75rem 0;
+          padding-left: 1.5rem;
+          list-style: none;
+        }
+
+        .privacy-list li {
+          margin-bottom: 0.5rem;
+          color: #4b5563;
+          line-height: 1.5;
+          display: flex;
+          align-items: center;
+        }
+
+        .list-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+          color: #d4af37;
+          flex-shrink: 0;
+        }
+
+        .update {
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+          color: #9ca3af;
+          font-size: 0.75rem;
+        }
+
         .update p {
           margin-bottom: 0.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .update-icon {
+          width: 1rem;
+          height: 1rem;
+          margin-right: 0.5rem;
+          color: #9ca3af;
+          flex-shrink: 0;
         }
 
         .back-link {

@@ -10,7 +10,7 @@ return new class extends Migration
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
             $table->string('contract_number')->unique();
-            $table->string('contract_type')->default('rent'); // rent ou sale
+            $table->string('contract_type')->default('rent'); 
             $table->foreignId('rental_request_id')->nullable()->constrained();
             $table->foreignId('property_id')->constrained();
             $table->foreignId('buyer_id')->nullable()->constrained('users');

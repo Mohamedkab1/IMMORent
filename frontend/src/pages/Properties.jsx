@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { propertyService } from '../services/properties';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -8,11 +9,15 @@ import {
   MapPinIcon,
   HomeIcon,
   BuildingOfficeIcon,
-  CurrencyEuroIcon,
-  ArrowPathIcon
+  CurrencyDollarIcon,
+  ArrowPathIcon,
+  ArrowsRightLeftIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
 const Properties = () => {
+  const { t } = useLanguage();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,12 +36,12 @@ const Properties = () => {
   });
 
   const propertyTypes = [
-    { value: '', label: 'Tous types' },
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
+    { value: '', label: t('prop.filter.type') },
+    { value: 'apartment', label: t('home.apartments') },
+    { value: 'villa', label: t('home.houses') },
     { value: 'studio', label: 'Studio' },
-    { value: 'commercial', label: 'Local commercial' },
-    { value: 'land', label: 'Terrain' }
+    { value: 'office', label: t('home.commercial') },
+    { value: 'land', label: t('home.lands') }
   ];
 
   useEffect(() => {
@@ -96,614 +101,268 @@ const Properties = () => {
     setTimeout(() => fetchProperties(), 100);
   };
 
-  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400';
+  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80';
 
   return (
-    <>
-      <div className="properties-page">
-        <div className="properties-hero">
-          <div className="hero-content">
-            <h1>Nos biens immobiliers</h1>
-            <p>Découvrez notre sélection de biens à louer ou à vendre partout en France</p>
-            <button 
-              className="filter-toggle"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <FunnelIcon className="filter-icon" />
-              {showFilters ? 'Masquer les filtres' : 'Afficher les filtres'}
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 px-6 py-20 text-center overflow-hidden">
+        {/* Abstract Background patterns */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" width="404" height="404" fill="none" viewBox="0 0 404 404">
+            <defs>
+              <pattern id="pattern-circles" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="2" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="404" height="404" fill="url(#pattern-circles)" />
+          </svg>
         </div>
 
-        <div className="properties-container">
-          <div className={`filters-sidebar ${showFilters ? 'show' : ''}`}>
-            <div className="filters-header">
-              <h2>Filtres</h2>
-              <button onClick={() => setShowFilters(false)}>
-                <XMarkIcon className="close-icon" />
-              </button>
-            </div>
+        <div className="relative z-10 max-w-3xl mx-auto text-white">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-md">
+            Trouvez votre <span className="text-secondary">lieu idéal</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-sm font-medium">
+            Découvrez notre sélection premium de biens immobiliers à louer ou à vendre, adaptés à votre style de vie.
+          </p>
+          <button 
+            className="md:hidden inline-flex items-center gap-2 px-6 py-3 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-xl hover:-translate-y-1"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <FunnelIcon className="w-5 h-5" />
+            {showFilters ? 'Masquer les filtres' : 'Afficher les filtres'}
+          </button>
+        </div>
+      </div>
 
-            <form onSubmit={handleSubmit} className="filters-form">
-              <div className="filter-group">
-                <label>Ville</label>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8">
+        
+        {/* Filters Sidebar */}
+        <aside className={`fixed md:relative top-0 ${showFilters ? 'start-0' : '-start-full'} md:start-0 w-80 md:w-1/4 h-full md:h-auto bg-white dark:bg-slate-800 z-50 md:z-0 shadow-2xl md:shadow-sm md:rounded-2xl border-e md:border border-slate-200 dark:border-slate-700 transition-all duration-300 overflow-y-auto md:overflow-visible`}>
+          <div className="p-6 sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center z-10">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <FunnelIcon className="w-5 h-5 text-primary dark:text-secondary" />
+              Filtres
+            </h2>
+            <button onClick={() => setShowFilters(false)} className="md:hidden p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Localisation</label>
+              <div className="relative">
+                <MapPinIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   name="city"
                   value={filters.city}
                   onChange={handleFilterChange}
-                  placeholder="Ex: Paris, Lyon..."
+                  placeholder="Ex: Casablanca, Marrakech..."
+                  className="w-full ps-10 pe-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
                 />
-              </div>
-
-              <div className="filter-group">
-                <label>Type de bien</label>
-                <select
-                  name="type"
-                  value={filters.type}
-                  onChange={handleFilterChange}
-                >
-                  {propertyTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="filter-group">
-                <label>Prix (DH / mois)</label>
-                <div className="price-inputs">
-                  <input
-                    type="number"
-                    name="min_price"
-                    value={filters.min_price}
-                    onChange={handleFilterChange}
-                    placeholder="Min"
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    name="max_price"
-                    value={filters.max_price}
-                    onChange={handleFilterChange}
-                    placeholder="Max"
-                  />
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label>Pièces</label>
-                <select
-                  name="rooms"
-                  value={filters.rooms}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">Toutes</option>
-                  <option value="1">1 pièce</option>
-                  <option value="2">2 pièces</option>
-                  <option value="3">3 pièces</option>
-                  <option value="4">4 pièces</option>
-                  <option value="5">5+ pièces</option>
-                </select>
-              </div>
-
-              <div className="filter-actions">
-                <button type="submit" className="btn-apply">
-                  Appliquer
-                </button>
-                <button type="button" onClick={handleReset} className="btn-reset">
-                  Réinitialiser
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="properties-content">
-            <div className="results-header">
-              <div className="results-info">
-                {!loading && !error && (
-                  <p><strong>{pagination.total}</strong> bien{pagination.total !== 1 ? 's' : ''} trouvé{pagination.total !== 1 ? 's' : ''}</p>
-                )}
               </div>
             </div>
 
-            {loading && (
-              <div className="loading-state">
-                <ArrowPathIcon className="spinner" />
-                <p>Chargement des biens...</p>
+            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type de bien</label>
+              <select
+                name="type"
+                value={filters.type}
+                onChange={handleFilterChange}
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all appearance-none cursor-pointer text-slate-700"
+              >
+                {propertyTypes.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget (DH)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  name="min_price"
+                  value={filters.min_price}
+                  onChange={handleFilterChange}
+                  placeholder="Min"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
+                />
+                <span className="text-slate-400 font-bold">-</span>
+                <input
+                  type="number"
+                  name="max_price"
+                  value={filters.max_price}
+                  onChange={handleFilterChange}
+                  placeholder="Max"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
+                />
               </div>
-            )}
+            </div>
 
-            {error && !loading && (
-              <div className="error-state">
-                <p>{error}</p>
-                <button onClick={fetchProperties}>Réessayer</button>
-              </div>
-            )}
+            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pièces</label>
+              <select
+                name="rooms"
+                value={filters.rooms}
+                onChange={handleFilterChange}
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all appearance-none cursor-pointer text-slate-700"
+              >
+                <option value="">Toutes</option>
+                {[1,2,3,4].map(n => <option key={n} value={n}>{n} pièce{n>1?'s':''}</option>)}
+                <option value="5">5+ pièces</option>
+              </select>
+            </div>
 
-            {!loading && !error && (
-              <>
-                {properties.length === 0 ? (
-                  <div className="no-results">
-                    <p>Aucun bien trouvé</p>
-                    <button onClick={handleReset}>Réinitialiser les filtres</button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="properties-grid">
-                      {properties.map(property => (
-                        <div key={property.id} className="property-card">
-                          <div className="property-image">
-                            <img 
-                              src={property.images?.[0] ? `http://localhost:8000/storage/${property.images[0]}` : defaultImage} 
-                              alt={property.title}
-                            />
-                            <span className="property-type">{property.type_label}</span>
-                            {property.transaction_type === 'sale' && (
-                              <span className="property-sale-badge">À vendre</span>
-                            )}
-                          </div>
-                          
-                          <div className="property-content">
-                            <h3>{property.title}</h3>
-                            <div className="property-location">
-                              <MapPinIcon className="location-icon" />
-                              <span>{property.city}</span>
-                            </div>
-                            <div className="property-features">
-                              <span className="feature-item">
-                                <HomeIcon className="feature-icon" />
-                                {property.surface} m²
-                              </span>
-                              <span className="feature-item">
-                                <BuildingOfficeIcon className="feature-icon" />
-                                {property.rooms} pièces
-                              </span>
-                            </div>
-                            <div className="property-price">
-                              <strong>{property.price?.toLocaleString('fr-FR')}DH</strong>
-                              <span>{property.transaction_type === 'rent' ? '/mois' : ''}</span>
-                              {property.transaction_type === 'sale' && (
-                                <span className="sale-label">Vente</span>
-                              )}
-                            </div>
-                            <Link to={`/properties/${property.id}`} className="btn-details">
-                              Voir détails
-                            </Link>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+            <div className="flex flex-col gap-3 pt-2">
+              <button type="submit" className="w-full py-3 bg-primary text-white hover:bg-primary-hover active:scale-95 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2">
+                <MagnifyingGlassIcon className="w-5 h-5" /> Rechercher
+              </button>
+              <button type="button" onClick={handleReset} className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 rounded-xl font-bold transition-all">
+                Réinitialiser
+              </button>
+            </div>
+          </form>
+        </aside>
 
-                    {pagination.lastPage > 1 && (
-                      <div className="pagination">
-                        <button
-                          onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
-                          disabled={pagination.currentPage === 1}
-                        >
-                          Précédent
-                        </button>
-                        <span>Page {pagination.currentPage} sur {pagination.lastPage}</span>
-                        <button
-                          onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
-                          disabled={pagination.currentPage === pagination.lastPage}
-                        >
-                          Suivant
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+        {/* Backdrop for mobile sidebar */}
+        {showFilters && (
+          <div className="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setShowFilters(false)} />
+        )}
+
+        {/* Properties Content */}
+        <div className="flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            {!loading && !error ? (
+              <h2 className="text-slate-800 dark:text-white text-lg font-bold">
+                <span className="text-primary dark:text-secondary text-2xl me-2">{pagination.total}</span>
+                Résultat{pagination.total > 1 ? 's' : ''} trouvé{pagination.total > 1 ? 's' : ''}
+              </h2>
+            ) : <div className="h-8"></div>}
+            
+            {/* Optional Sorting here */}
           </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
+              <ArrowPathIcon className="w-12 h-12 text-primary dark:text-secondary animate-spin mb-4" />
+              <p className="font-semibold animate-pulse">Recherche des meilleurs biens...</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-red-50 dark:bg-red-900/10 rounded-2xl border-2 border-dashed border-red-200 dark:border-red-900/30 text-center px-4">
+              <XMarkIcon className="w-16 h-16 text-red-400 mb-4" />
+              <p className="text-red-600 dark:text-red-400 font-bold text-lg mb-4">{error}</p>
+              <button onClick={fetchProperties} className="px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-xl font-semibold transition-colors">Réessayer</button>
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 text-center px-4 shadow-sm">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
+                <MagnifyingGlassIcon className="w-10 h-10 text-slate-400" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Aucun bien trouvé</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm">Nous n'avons trouvé aucun bien correspondant à vos critères de recherche actuels.</p>
+              <button onClick={handleReset} className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
+                Réinitialiser les filtres
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {properties.map(property => (
+                  <div key={property.id} className="group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-200 dark:bg-slate-700">
+                      <img 
+                        src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage} 
+                        alt={property.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60"></div>
+                      
+                      <div className="absolute top-4 start-4 flex flex-col gap-2">
+                        {property.transaction_type === 'sale' ? (
+                          <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">Vente</span>
+                        ) : (
+                           <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">Location</span>
+                        )}
+                      </div>
+                      
+                      <div className="absolute top-4 end-4">
+                        <span className="px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-primary dark:text-secondary text-xs font-bold rounded-full shadow-lg hidden md:block">
+                          {property.type_label}
+                        </span>
+                      </div>
+                      
+                      <div className="absolute bottom-4 inset-x-4">
+                         <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{property.title}</h3>
+                         <div className="text-slate-200 text-xs mt-1 flex items-center gap-1 opacity-90">
+                           <MapPinIcon className="w-3.5 h-3.5" />
+                           {property.city}
+                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex flex-col">
+                           <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Prix</span>
+                           <div className="text-xl font-black text-primary dark:text-white">
+                             {property.price?.toLocaleString('fr-FR')} <span className="text-sm font-bold text-slate-400">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
+                           </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 py-4 border-y border-slate-100 dark:border-slate-700 mb-4 mt-auto">
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 text-sm font-medium">
+                          <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400" />
+                          {property.surface} m²
+                        </div>
+                        <div className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 text-sm font-medium">
+                          <BuildingOfficeIcon className="w-4 h-4 text-slate-400" />
+                          {property.rooms} p.
+                        </div>
+                      </div>
+
+                      <Link to={`/properties/${property.id}`} className="block w-full py-3 bg-secondary text-primary hover:bg-secondary-hover text-center font-bold rounded-xl transition-all shadow-md">
+                        Voir les détails
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination.lastPage > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm w-fit mx-auto">
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
+                    disabled={pagination.currentPage === 1}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    Précédent
+                  </button>
+                  
+                  <div className="px-4 py-2 text-sm font-bold text-slate-800 dark:text-white">
+                    {pagination.currentPage} <span className="text-slate-400 font-medium mx-1">/</span> {pagination.lastPage}
+                  </div>
+                  
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
+                    disabled={pagination.currentPage === pagination.lastPage}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
-
-      <style>{`
-        .properties-page {
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-        }
-
-        .properties-hero {
-          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%);
-          padding: 3rem 1.5rem;
-          text-align: center;
-          color: white;
-        }
-
-        .hero-content h1 {
-          font-size: 2rem;
-          margin-bottom: 0.5rem;
-          color: white;
-        }
-
-        .hero-content p {
-          opacity: 0.9;
-          margin-bottom: 1.5rem;
-        }
-
-        .filter-toggle {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
-          background: #d4af37;
-          color: #0f2b4d;
-          border: none;
-          border-radius: 2rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .filter-toggle .filter-icon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .filter-toggle:hover {
-          background: #c4a52e;
-        }
-
-        .properties-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 2rem 1.5rem;
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          gap: 2rem;
-        }
-
-        .filters-sidebar {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1.5rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-          height: fit-content;
-          position: sticky;
-          top: 90px;
-        }
-
-        .filters-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.5rem;
-          padding-bottom: 0.75rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .filters-header h2 {
-          font-size: 1.125rem;
-          color: #0f2b4d;
-        }
-
-        .filters-header button {
-          background: none;
-          border: none;
-          cursor: pointer;
-          display: none;
-        }
-
-        .filters-header button .close-icon {
-          width: 1rem;
-          height: 1rem;
-          color: #6b7280;
-        }
-
-        .filter-group {
-          margin-bottom: 1.25rem;
-        }
-
-        .filter-group label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-          color: #374151;
-          font-size: 0.875rem;
-        }
-
-        .filter-group input,
-        .filter-group select {
-          width: 100%;
-          padding: 0.625rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .filter-group input:focus,
-        .filter-group select:focus {
-          outline: none;
-          border-color: #d4af37;
-        }
-
-        .price-inputs {
-          display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 0.5rem;
-          align-items: center;
-        }
-
-        .price-inputs span {
-          color: #6b7280;
-        }
-
-        .filter-actions {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-          margin-top: 1.5rem;
-        }
-
-        .btn-apply,
-        .btn-reset {
-          padding: 0.625rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .btn-apply {
-          background: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .btn-apply:hover {
-          background: #c4a52e;
-        }
-
-        .btn-reset {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .btn-reset:hover {
-          background: #e5e7eb;
-        }
-
-        .properties-content {
-          flex: 1;
-        }
-
-        .results-header {
-          margin-bottom: 1.5rem;
-        }
-
-        .results-info p {
-          color: #6b7280;
-        }
-
-        .results-info strong {
-          color: #d4af37;
-        }
-
-        .properties-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 1.5rem;
-        }
-
-        .property-card {
-          background: white;
-          border-radius: 0.75rem;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-          transition: all 0.3s;
-        }
-
-        .property-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-
-        .property-image {
-          position: relative;
-          height: 200px;
-        }
-
-        .property-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .property-type {
-          position: absolute;
-          top: 0.75rem;
-          right: 0.75rem;
-          background: #d4af37;
-          color: #0f2b4d;
-          padding: 0.25rem 0.75rem;
-          border-radius: 2rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-
-        .property-sale-badge {
-          position: absolute;
-          top: 0.75rem;
-          left: 0.75rem;
-          background: #dc2626;
-          color: white;
-          padding: 0.25rem 0.75rem;
-          border-radius: 2rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-
-        .property-content {
-          padding: 1rem;
-        }
-
-        .property-content h3 {
-          font-size: 1rem;
-          margin-bottom: 0.5rem;
-          color: #0f2b4d;
-        }
-
-        /* Styles pour la localisation */
-        .property-location {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #6b7280;
-          font-size: 0.75rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .location-icon {
-          width: 0.75rem !important;
-          height: 0.75rem !important;
-          min-width: 0.75rem;
-          color: #9ca3af;
-        }
-
-        /* Styles pour les caractéristiques */
-        .property-features {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .feature-item {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #6b7280;
-          font-size: 0.7rem;
-        }
-
-        .feature-icon {
-          width: 0.7rem !important;
-          height: 0.7rem !important;
-          min-width: 0.7rem;
-          color: #9ca3af;
-        }
-
-        .property-price {
-          margin-bottom: 1rem;
-        }
-
-        .property-price strong {
-          font-size: 1rem;
-          color: #d4af37;
-        }
-
-        .property-price span {
-          font-size: 0.7rem;
-          color: #6b7280;
-        }
-
-        .sale-label {
-          display: inline-block;
-          margin-left: 0.5rem;
-          padding: 0.125rem 0.375rem;
-          background: #fee2e2;
-          color: #dc2626;
-          border-radius: 0.25rem;
-          font-size: 0.6rem;
-          font-weight: 500;
-        }
-
-        .btn-details {
-          display: block;
-          width: 100%;
-          padding: 0.625rem;
-          background: #0f2b4d;
-          color: white;
-          text-align: center;
-          text-decoration: none;
-          border-radius: 0.5rem;
-          font-weight: 500;
-          transition: all 0.3s;
-        }
-
-        .btn-details:hover {
-          background: #1e4a6e;
-        }
-
-        .pagination {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 1rem;
-          margin-top: 2rem;
-        }
-
-        .pagination button {
-          padding: 0.5rem 1rem;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .pagination button:hover:not(:disabled) {
-          background: #d4af37;
-          color: white;
-          border-color: #d4af37;
-        }
-
-        .pagination button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .loading-state,
-        .error-state,
-        .no-results {
-          text-align: center;
-          padding: 3rem;
-          background: white;
-          border-radius: 0.75rem;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          margin: 0 auto 1rem;
-          animation: spin 1s linear infinite;
-          color: #d4af37;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 1024px) {
-          .properties-container {
-            grid-template-columns: 1fr;
-          }
-
-          .filters-sidebar {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 90%;
-            max-width: 320px;
-            height: 100vh;
-            z-index: 1000;
-            border-radius: 0;
-            transition: left 0.3s;
-          }
-
-          .filters-sidebar.show {
-            left: 0;
-          }
-
-          .filters-header button {
-            display: block;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

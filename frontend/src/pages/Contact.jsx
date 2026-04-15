@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -21,426 +22,166 @@ const Contact = () => {
   };
 
   return (
-    <>
-      <div className="contact-page">
-        <div className="contact-hero">
-          <div className="hero-content">
-            <h1>Contactez-nous</h1>
-            <p>Notre équipe est à votre disposition pour répondre à toutes vos questions à Marrakech</p>
-          </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 py-20 px-4 text-center border-b border-primary/20 dark:border-slate-800 relative z-10 overflow-hidden">
+        {/* Abstract Background patterns */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 text-white" width="600" height="600" fill="currentColor" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="50" />
+          </svg>
         </div>
-
-        <div className="contact-container">
-          <div className="contact-info-grid">
-            <div className="info-card">
-              <div className="info-icon">📍</div>
-              <h3>Adresse</h3>
-              <p>Avenue Mohammed VI, Guéliz<br />Marrakech 40000, Maroc</p>
-            </div>
-            <div className="info-card">
-              <div className="info-icon">📞</div>
-              <h3>Téléphone</h3>
-              <p>+212 5 24 12 34 56</p>
-              <p className="info-note">Lun-Ven, 9h-18h</p>
-            </div>
-            <div className="info-card">
-              <div className="info-icon">✉️</div>
-              <h3>Email</h3>
-              <p>contact@immorent.ma</p>
-              <p>support@immorent.ma</p>
-            </div>
-            <div className="info-card">
-              <div className="info-icon">🕐</div>
-              <h3>Horaires</h3>
-              <p>Lundi - Jeudi : 9h - 18h</p>
-              <p>Vendredi : 9h - 13h | 15h - 18h</p>
-              <p>Samedi : 10h - 14h</p>
-              <p className="info-note">Dimanche : Fermé</p>
-            </div>
-          </div>
-
-          <div className="contact-main">
-            <div className="contact-form-container">
-              <h2>Envoyez-nous un message</h2>
-              {submitted ? (
-                <div className="success-message">
-                  <div className="success-icon">✓</div>
-                  <h3>Message envoyé !</h3>
-                  <p>Merci de nous avoir contactés. Nous vous répondrons dans les plus brefs délais.</p>
-                  <button onClick={() => setSubmitted(false)} className="btn-new">Nouveau message</button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="contact-form">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Nom complet *</label>
-                      <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-                    </div>
-                    <div className="form-group">
-                      <label>Email *</label>
-                      <input type="email" name="email" value={formData.email} onChange={handleChange} required />
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Téléphone</label>
-                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 12 34 56 78" />
-                    </div>
-                    <div className="form-group">
-                      <label>Sujet *</label>
-                      <select name="subject" value={formData.subject} onChange={handleChange} required>
-                        <option value="">Sélectionnez un sujet</option>
-                        <option value="info">Demande d'information</option>
-                        <option value="support">Support technique</option>
-                        <option value="partnership">Partenariat</option>
-                        <option value="claim">Réclamation</option>
-                        <option value="visit">Demande de visite</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Message *</label>
-                    <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder="Votre message..." />
-                  </div>
-                  <div className="form-checkbox">
-                    <input type="checkbox" id="consent" required />
-                    <label htmlFor="consent">J'accepte que mes données soient traitées conformément à la <a href="/confidentialite">politique de confidentialité</a></label>
-                  </div>
-                  <button type="submit" className="btn-submit" disabled={submitting}>
-                    {submitting ? 'Envoi...' : 'Envoyer le message'}
-                  </button>
-                </form>
-              )}
-            </div>
-            <div className="map-container">
-              <iframe 
-                title="Carte Marrakech"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217009.8920852963!2d-8.04298672152276!3d31.646783331007564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5950b6534f87adb8!2sMarrakech%2C%20Maroc!5e0!3m2!1sfr!2sfr!4v1700000000000!5m2!1sfr!2sfr" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen 
-                loading="lazy"
-              />
-            </div>
-          </div>
-
-          <div className="faq-section">
-            <h2>Questions fréquentes</h2>
-            <div className="faq-grid">
-              <div className="faq-item">
-                <h3>Comment créer un compte ?</h3>
-                <p>Cliquez sur "Inscription" en haut à droite et remplissez le formulaire avec vos informations.</p>
-              </div>
-              <div className="faq-item">
-                <h3>Comment faire une demande de location ?</h3>
-                <p>Connectez-vous, trouvez le bien à Marrakech et cliquez sur "Faire une demande".</p>
-              </div>
-              <div className="faq-item">
-                <h3>Les paiements sont-ils sécurisés ?</h3>
-                <p>Oui, tous les paiements sont traités de manière sécurisée via notre partenaire HPS (Payment Center).</p>
-              </div>
-              <div className="faq-item">
-                <h3>Comment contacter un agent ?</h3>
-                <p>Sur chaque fiche de bien, vous trouverez les coordonnées de l'agent immobilier.</p>
-              </div>
-              <div className="faq-item">
-                <h3>Proposez-vous des visites virtuelles ?</h3>
-                <p>Oui, certains biens proposent des visites virtuelles. Contactez-nous pour plus d'informations.</p>
-              </div>
-              <div className="faq-item">
-                <h3>Quels sont les quartiers disponibles ?</h3>
-                <p>Nous couvrons tous les quartiers de Marrakech : Guéliz, Hivernage, Medina, Palmeraie, etc.</p>
-              </div>
-            </div>
-          </div>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+            Contactez-<span className="text-secondary">Nous</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-sm">
+            Notre équipe est à votre entière disposition pour répondre à toutes vos questions et vous accompagner.
+          </p>
         </div>
       </div>
 
-      <style>{`
-        .contact-page { 
-          min-height: calc(100vh - 70px); 
-          background: #f8f9fa; 
-        }
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        
+        {/* Info Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {[
+            { icon: MapPinIcon, title: 'Adresse', line1: '123 Avenue Mohammed VI,', line2: 'Guéliz, Marrakech 40000', note: null },
+            { icon: PhoneIcon, title: 'Téléphone', line1: '+212 5 24 12 34 56', line2: '+212 6 00 00 00 00', note: 'Lun-Ven, 9h-18h' },
+            { icon: EnvelopeIcon, title: 'Email', line1: 'contact@immorent.ma', line2: 'support@immorent.ma', note: 'Réponse sous 24h' },
+            { icon: ClockIcon, title: 'Horaires', line1: 'Lun-Jeu : 9h-18h', line2: 'Ven: 9h-13h | Sam: 10h-14h', note: 'Dimanche : Fermé' }
+          ].map((info, i) => (
+            <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <div className="w-16 h-16 mx-auto bg-primary/10 dark:bg-secondary/10 rounded-2xl flex items-center justify-center mb-6 rotate-3">
+                <info.icon className="w-8 h-8 text-primary dark:text-secondary" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">{info.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium">
+                {info.line1} <br /> {info.line2}
+              </p>
+              {info.note && <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">{info.note}</p>}
+            </div>
+          ))}
+        </div>
 
-        .contact-hero { 
-          background: linear-gradient(135deg, #0f2b4d 0%, #1e4a6e 100%); 
-          padding: 4rem 1.5rem; 
-          text-align: center; 
-          color: white; 
-        }
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-20">
+          
+          {/* Form */}
+          <div className="bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+             
+             {/* Decorative blob */}
+             <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-secondary/10 dark:bg-secondary/5 rounded-full blur-3xl rounded-full"></div>
 
-        .hero-content h1 { 
-          font-size: 2.5rem; 
-          margin-bottom: 1rem; 
-          color: white; 
-        }
+             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 relative z-10">Envoyez un message</h2>
+             <p className="text-slate-500 dark:text-slate-400 mb-8 relative z-10">Remplissez ce formulaire et nous vous recontacterons au plus vite.</p>
+             
+             {submitted ? (
+               <div className="flex flex-col items-center justify-center py-12 text-center relative z-10 animate-fade-in-up">
+                 <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
+                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Message Envoyé !</h3>
+                 <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-sm">Merci de nous avoir contactés. Notre équipe reviendra vers vous très prochainement.</p>
+                 <button onClick={() => setSubmitted(false)} className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-xl font-bold transition-colors">
+                   Envoyer un autre message
+                 </button>
+               </div>
+             ) : (
+               <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nom complet <span className="text-rose-500">*</span></label>
+                     <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Jean Dupont" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email <span className="text-rose-500">*</span></label>
+                     <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="jean@exemple.com" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                   </div>
+                 </div>
 
-        .hero-content p { 
-          font-size: 1.125rem; 
-          opacity: 0.9; 
-        }
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Téléphone</label>
+                     <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 00 00 00 00" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sujet <span className="text-rose-500">*</span></label>
+                     <select name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer">
+                       <option value="">Sélectionnez un sujet</option>
+                       <option value="info">Demande d'information</option>
+                       <option value="support">Support technique</option>
+                       <option value="partnership">Partenariat</option>
+                       <option value="claim">Réclamation / Signalement</option>
+                       <option value="visit">Demande de visite</option>
+                     </select>
+                   </div>
+                 </div>
 
-        .contact-container { 
-          max-width: 1200px; 
-          margin: 0 auto; 
-          padding: 3rem 1.5rem; 
-        }
+                 <div className="space-y-2">
+                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Votre message <span className="text-rose-500">*</span></label>
+                   <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder="Comment pouvons-nous vous aider ?" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y" />
+                 </div>
 
-        .contact-info-grid { 
-          display: grid; 
-          grid-template-columns: repeat(4, 1fr); 
-          gap: 2rem; 
-          margin-bottom: 3rem; 
-        }
+                 <div className="flex items-start gap-3 mt-4">
+                   <input type="checkbox" id="consent" required className="mt-1 w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-700" />
+                   <label htmlFor="consent" className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                     J'accepte que mes données soient traitées conformément à la <a href="/confidentialite" className="text-primary hover:underline">politique de confidentialité</a> de la plateforme.
+                   </label>
+                 </div>
 
-        .info-card { 
-          background: white; 
-          padding: 1.5rem; 
-          border-radius: 0.75rem; 
-          text-align: center; 
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-          transition: all 0.3s; 
-        }
+                 <button type="submit" disabled={submitting} className="w-full py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 mt-4">
+                   {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                   {submitting ? 'Envoi en cours...' : <><PaperAirplaneIcon className="w-5 h-5" /> Envoyer le message</>}
+                 </button>
+               </form>
+             )}
+          </div>
 
-        .info-card:hover { 
-          transform: translateY(-4px); 
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1); 
-        }
+          {/* Map */}
+          <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 relative group">
+            {/* Map Placeholder or Google maps Embed */}
+            <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse pointer-events-none -z-10"></div>
+            <iframe 
+              title="Carte localisation agence Marrakech"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217009.8920852963!2d-8.04298672152276!3d31.646783331007564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5950b6534f87adb8!2sMarrakech%2C%20Maroc!5e0!3m2!1sfr!2sfr!4v1700000000000!5m2!1sfr!2sfr" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }} 
+              allowFullScreen 
+              loading="lazy"
+              className="grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 z-10 relative"
+            />
+          </div>
+          
+        </div>
 
-        .info-icon { 
-          font-size: 2rem; 
-          margin-bottom: 1rem; 
-        }
+        {/* FAQ Section */}
+        <div className="text-center max-w-4xl mx-auto">
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-12">
+            Questions fréquentes
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-1.5 bg-secondary rounded-full"></div>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-start">
+            {[
+              { q: 'Comment créer un compte ?', a: 'Cliquez sur "Créer un compte" en haut à droite, remplissez le formulaire avec vos informations. C\'est rapide et gratuit.' },
+              { q: 'Comment faire une demande de location ?', a: 'Connectez-vous à votre compte, trouvez le bien qui vous intéresse et cliquez sur le bouton "Demander la location".' },
+              { q: 'Les transactions sont-elles sécurisées ?', a: 'Oui, tous les contrats et paiements (le cas échéant) sont gérés via des processus stricts et sécurisés.' },
+              { q: 'Comment contacter un agent immobilier ?', a: 'Sur la fiche détaillée de chaque bien, vous trouverez les coordonnées complètes de l\'agent responsable pour le contacter.' }
+            ].map((faq, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-start gap-3">
+                   <div className="mt-1 w-2 h-2 rounded-full bg-secondary flex-shrink-0"></div>
+                   {faq.q}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 font-medium pl-5">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        .info-card h3 { 
-          font-size: 1.125rem; 
-          color: #0f2b4d; 
-          margin-bottom: 0.5rem; 
-        }
-
-        .info-card p { 
-          color: #6b7280; 
-          font-size: 0.875rem; 
-          line-height: 1.5;
-        }
-
-        .info-note { 
-          font-size: 0.75rem; 
-          color: #9ca3af; 
-          margin-top: 0.25rem; 
-        }
-
-        .contact-main { 
-          display: grid; 
-          grid-template-columns: 1fr 1fr; 
-          gap: 2rem; 
-          margin-bottom: 3rem; 
-        }
-
-        .contact-form-container { 
-          background: white; 
-          padding: 2rem; 
-          border-radius: 0.75rem; 
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-        }
-
-        .contact-form-container h2 { 
-          font-size: 1.5rem; 
-          color: #0f2b4d; 
-          margin-bottom: 1.5rem; 
-        }
-
-        .form-row { 
-          display: grid; 
-          grid-template-columns: 1fr 1fr; 
-          gap: 1rem; 
-          margin-bottom: 1rem; 
-        }
-
-        .form-group { 
-          margin-bottom: 1rem; 
-        }
-
-        .form-group label { 
-          display: block; 
-          margin-bottom: 0.5rem; 
-          font-weight: 500; 
-          color: #374151; 
-          font-size: 0.875rem; 
-        }
-
-        .form-group input, 
-        .form-group select, 
-        .form-group textarea { 
-          width: 100%; 
-          padding: 0.625rem; 
-          border: 1px solid #d1d5db; 
-          border-radius: 0.5rem; 
-          font-size: 0.875rem; 
-          transition: all 0.3s;
-        }
-
-        .form-group input:focus, 
-        .form-group select:focus, 
-        .form-group textarea:focus { 
-          outline: none; 
-          border-color: #d4af37;
-          box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-        }
-
-        .form-checkbox { 
-          display: flex; 
-          align-items: center; 
-          gap: 0.5rem; 
-          margin: 1rem 0; 
-        }
-
-        .form-checkbox label {
-          font-size: 0.875rem;
-          color: #6b7280;
-        }
-
-        .form-checkbox a { 
-          color: #d4af37; 
-          text-decoration: none; 
-        }
-
-        .form-checkbox a:hover {
-          text-decoration: underline;
-        }
-
-        .btn-submit { 
-          width: 100%; 
-          padding: 0.75rem; 
-          background: #d4af37; 
-          color: #0f2b4d; 
-          border: none; 
-          border-radius: 0.5rem; 
-          font-weight: 600; 
-          cursor: pointer; 
-          transition: all 0.3s; 
-          font-size: 0.875rem;
-        }
-
-        .btn-submit:hover:not(:disabled) { 
-          background: #c4a52e; 
-        }
-
-        .btn-submit:disabled { 
-          opacity: 0.5; 
-          cursor: not-allowed; 
-        }
-
-        .success-message { 
-          text-align: center; 
-          padding: 2rem; 
-        }
-
-        .success-icon { 
-          width: 3rem; 
-          height: 3rem; 
-          background: #10b981; 
-          color: white; 
-          border-radius: 50%; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          font-size: 1.5rem; 
-          margin: 0 auto 1rem; 
-        }
-
-        .success-message h3 { 
-          color: #0f2b4d; 
-          margin-bottom: 0.5rem; 
-        }
-
-        .btn-new { 
-          margin-top: 1rem; 
-          padding: 0.5rem 1rem; 
-          background: #d4af37; 
-          border: none; 
-          border-radius: 0.5rem; 
-          cursor: pointer; 
-          font-size: 0.875rem;
-        }
-
-        .map-container { 
-          height: 100%; 
-          min-height: 450px; 
-          border-radius: 0.75rem; 
-          overflow: hidden; 
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-        }
-
-        .faq-section { 
-          background: white; 
-          padding: 2rem; 
-          border-radius: 0.75rem; 
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
-        }
-
-        .faq-section h2 { 
-          font-size: 1.5rem; 
-          color: #0f2b4d; 
-          text-align: center; 
-          margin-bottom: 2rem; 
-        }
-
-        .faq-grid { 
-          display: grid; 
-          grid-template-columns: repeat(2, 1fr); 
-          gap: 1.5rem; 
-        }
-
-        .faq-item { 
-          padding: 1rem; 
-          background: #f8f9fa; 
-          border-radius: 0.5rem; 
-          transition: all 0.3s;
-        }
-
-        .faq-item:hover {
-          transform: translateY(-2px);
-        }
-
-        .faq-item h3 { 
-          font-size: 1rem; 
-          color: #0f2b4d; 
-          margin-bottom: 0.5rem; 
-        }
-
-        .faq-item p { 
-          color: #6b7280; 
-          font-size: 0.875rem; 
-          line-height: 1.5;
-        }
-
-        @media (max-width: 1024px) { 
-          .contact-info-grid { 
-            grid-template-columns: repeat(2, 1fr); 
-          } 
-          .faq-grid { 
-            grid-template-columns: 1fr; 
-          } 
-        }
-
-        @media (max-width: 768px) { 
-          .contact-main { 
-            grid-template-columns: 1fr; 
-          } 
-          .form-row { 
-            grid-template-columns: 1fr; 
-          } 
-          .contact-info-grid { 
-            grid-template-columns: 1fr; 
-          }
-          .hero-content h1 {
-            font-size: 1.75rem;
-          }
-        }
-      `}</style>
-    </>
+      </div>
+    </div>
   );
 };
 

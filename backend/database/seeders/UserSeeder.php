@@ -10,71 +10,63 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole = Role::where('slug', 'admin')->first();
-        $agentRole = Role::where('slug', 'agent')->first();
-        $clientRole = Role::where('slug', 'client')->first();
-
-        // Admin
-        User::updateOrCreate(
-            ['email' => 'admin@immobilier.com'],
+        $users = [
             [
-                'name' => 'Admin',
+                'name' => 'Amine Bensouda',
+                'email' => 'admin@immorent.ma',
                 'password' => Hash::make('password'),
-                'role_id' => $adminRole->id,
-                'phone' => '0123456789',
-                'address' => '1 rue de l\'Administration, Paris',
-                'is_active' => true,
-            ]
-        );
-
-        // Agents
-        User::updateOrCreate(
-            ['email' => 'jean.dupont@agence.com'],
+                'phone' => '+212 661 123456',
+                'role_slug' => 'admin',
+                'email_verified_at' => now(),
+            ],
             [
-                'name' => 'Jean Dupont',
+                'name' => 'Yassine Lamrani',
+                'email' => 'yassine@agent.ma',
                 'password' => Hash::make('password'),
-                'role_id' => $agentRole->id,
-                'phone' => '0123456780',
-                'address' => '10 rue des Agents, Lyon',
-                'is_active' => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'marie.martin@agence.com'],
+                'phone' => '+212 662 234567',
+                'role_slug' => 'agent',
+                'email_verified_at' => now(),
+            ],
             [
-                'name' => 'Marie Martin',
+                'name' => 'Leila Tazi',
+                'email' => 'leila@agent.ma',
                 'password' => Hash::make('password'),
-                'role_id' => $agentRole->id,
-                'phone' => '0123456781',
-                'address' => '20 avenue des Pros, Marseille',
-                'is_active' => true,
-            ]
-        );
-
-        // Clients
-        User::updateOrCreate(
-            ['email' => 'pierre.durand@email.com'],
+                'phone' => '+212 663 345678',
+                'role_slug' => 'agent',
+                'email_verified_at' => now(),
+            ],
             [
-                'name' => 'Pierre Durand',
+                'name' => 'Mehdi Alami',
+                'email' => 'mehdi@client.ma',
                 'password' => Hash::make('password'),
-                'role_id' => $clientRole->id,
-                'phone' => '0623456789',
-                'address' => '5 rue des Clients, Bordeaux',
-                'is_active' => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'sophie.bernard@email.com'],
+                'phone' => '+212 664 456789',
+                'role_slug' => 'client',
+                'email_verified_at' => now(),
+            ],
             [
-                'name' => 'Sophie Bernard',
+                'name' => 'Sara El Fassi',
+                'email' => 'sara@client.ma',
                 'password' => Hash::make('password'),
-                'role_id' => $clientRole->id,
-                'phone' => '0634567890',
-                'address' => '15 rue des Locataires, Lille',
-                'is_active' => true,
-            ]
-        );
+                'phone' => '+212 665 567890',
+                'role_slug' => 'client',
+                'email_verified_at' => now(),
+            ],
+        ];
+
+        foreach ($users as $userData) {
+            $roleSlug = $userData['role_slug'];
+            unset($userData['role_slug']);
+            
+            $user = User::updateOrCreate(
+                ['email' => $userData['email']],
+                $userData
+            );
+            
+            $role = Role::where('slug', $roleSlug)->first();
+            if ($role) {
+                $user->role_id = $role->id;
+                $user->save();
+            }
+        }
     }
 }

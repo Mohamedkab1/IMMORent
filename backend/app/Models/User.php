@@ -70,6 +70,11 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'tenant_id');
     }
 
+    public function favorites()
+    {
+        return $this->belongsToMany(Property::class, 'favorites', 'user_id', 'property_id')->withTimestamps();
+    }
+
     // Helpers
     public function isAdmin()
     {

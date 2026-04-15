@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
             $table->text('message')->nullable();
             $table->text('rejection_reason')->nullable();
+            $table->string('type')->default('rent'); // rent ou sale
             $table->timestamp('processed_at')->nullable();
             $table->foreignId('processed_by')->nullable()->constrained('users');
             $table->timestamps();

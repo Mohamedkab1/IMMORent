@@ -8,7 +8,8 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
-use Illuminate\DomPDF\Facades\Pdf;
+use Barryvdh\DomPDF\Facades\Pdf;
+use App\Http\Requests\StoreContractRequest;
 
 class ContractController extends Controller
 {
@@ -54,28 +55,9 @@ class ContractController extends Controller
 /**
  * Créer un contrat (Location ou Vente)
  */
-public function store(Request $request)
+public function store(StoreContractRequest $request)
 {
     try {
-        $validator = Validator::make($request->all(), [
-            'rental_request_id' => 'required|exists:rental_requests,id',
-            'contract_type' => 'required|in:rent,sale',
-            'start_date' => 'required_if:contract_type,rent|nullable|date',
-            'end_date' => 'required_if:contract_type,rent|nullable|date|after:start_date',
-            'sale_date' => 'required_if:contract_type,sale|nullable|date',
-            'monthly_rent' => 'required_if:contract_type,rent|nullable|numeric|min:0',
-            'sale_price' => 'required_if:contract_type,sale|nullable|numeric|min:0',
-            'security_deposit' => 'nullable|numeric|min:0',
-            'charges' => 'nullable|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur de validation',
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         $rentalRequest = RentalRequest::with(['user', 'property'])->find($request->rental_request_id);
         
@@ -123,8 +105,9 @@ public function store(Request $request)
 
         $contract = Contract::create($contractData);
 
-        // Mettre à jour le statut du bien
+        // Mettre à jour le statut du bien et de la demande
         $property->update(['status' => $request->contract_type === 'rent' ? 'rented' : 'sold']);
+        $rentalRequest->update(['status' => 'finalized']);
 
         return response()->json([
             'success' => true,
@@ -157,6 +140,8 @@ public function store(Request $request)
                     'message' => 'Contrat non trouvé'
                 ], 404);
             }
+
+            $this->authorize('view', $contract);
             
             return response()->json([
                 'success' => true,
@@ -184,6 +169,8 @@ public function store(Request $request)
                     'message' => 'Contrat non trouvé'
                 ], 404);
             }
+
+            $this->authorize('update', $contract);
 
             $validator = Validator::make($request->all(), [
                 'status' => 'required|in:active,terminated,expired',
@@ -218,8 +205,11 @@ public function store(Request $request)
     public function myContracts(Request $request)
     {
         try {
-            $contracts = Contract::with(['property', 'owner'])
-                ->where('tenant_id', $request->user()->id)
+            $contracts = Contract::with(['property', 'owner', 'seller'])
+                ->where(function($query) use ($request) {
+                    $query->where('tenant_id', $request->user()->id)
+                          ->orWhere('buyer_id', $request->user()->id);
+                })
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
                 
@@ -286,49 +276,76 @@ public function store(Request $request)
                     'message' => 'Contrat non trouvé'
                 ], 404);
             }
+
+            $this->authorize('view', $contract);
             
-            // Créer un PDF simple sans relations
+            // Déterminer le type de contrat et les labels
+            $isSale = $contract->contract_type === 'sale';
+            $title = $isSale ? 'Contrat de vente' : 'Contrat de location';
+            $party1Label = $isSale ? 'Vendeur' : 'Bailleur';
+            $party2Label = $isSale ? 'Acquéreur' : 'Locataire';
+            
             $html = '<!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>Contrat de location</title>
+                <title>' . $title . '</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; }
-                    h1 { color: #2563eb; text-align: center; }
-                    .info { margin: 20px 0; }
-                    .label { font-weight: bold; display: inline-block; width: 150px; }
+                    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+                    .logo { color: #2563eb; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+                    .title { font-size: 22px; text-transform: uppercase; margin-top: 10px; }
+                    .info { margin: 20px 0; line-height: 1.6; }
+                    .label { font-weight: bold; display: inline-block; width: 180px; }
+                    .signature-section { margin-top: 60px; }
+                    .signature-box { display: inline-block; width: 45%; vertical-align: top; }
+                    .signature-line { border-top: 1px solid #000; width: 80%; margin-top: 60px; }
+                    footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: gray; }
                 </style>
             </head>
             <body>
-                <h1>ImmoGest</h1>
-                <h2 style="text-align:center">Contrat de location</h2>
-                <p style="text-align:center">N° ' . $contract->contract_number . '</p>
-                <p style="text-align:center">Date: ' . date('d/m/Y') . '</p>
+                <div class="header">
+                    <div class="logo">IMMORent</div>
+                    <div class="title">' . $title . '</div>
+                    <p>N° ' . $contract->contract_number . '</p>
+                </div>
 
                 <div class="info">
-                    <p><span class="label">Contrat N°:</span> ' . $contract->contract_number . '</p>
+                    <p><span class="label">Référence:</span> ' . $contract->contract_number . '</p>
+                    <p><span class="label">Date de signature:</span> ' . date('d/m/Y', strtotime($contract->signed_at)) . '</p>
+                    <hr style="border: 0; border-top: 1px solid #eee;">
+                    ';
+
+            if ($isSale) {
+                $html .= '
+                    <p><span class="label">Prix de vente:</span> ' . number_format($contract->sale_price, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Date de vente:</span> ' . date('d/m/Y', strtotime($contract->sale_date)) . '</p>';
+            } else {
+                $html .= '
                     <p><span class="label">Date de début:</span> ' . date('d/m/Y', strtotime($contract->start_date)) . '</p>
                     <p><span class="label">Date de fin:</span> ' . date('d/m/Y', strtotime($contract->end_date)) . '</p>
-                    <p><span class="label">Loyer mensuel:</span> ' . number_format($contract->monthly_rent, 2) . ' €</p>
-                    <p><span class="label">Charges:</span> ' . number_format($contract->charges ?? 0, 2) . ' €</p>
-                    <p><span class="label">Dépôt de garantie:</span> ' . number_format($contract->security_deposit, 2) . ' €</p>
+                    <p><span class="label">Loyer mensuel:</span> ' . number_format($contract->monthly_rent, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Charges:</span> ' . number_format($contract->charges ?? 0, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Dépôt de garantie:</span> ' . number_format($contract->security_deposit, 2, ',', ' ') . ' DH</p>';
+            }
+
+            $html .= '
                 </div>
 
-                <div style="margin-top: 50px;">
-                    <div style="display: inline-block; width: 45%;">
-                        <p>Signature du bailleur</p>
-                        <div style="border-top: 1px solid black; width: 80%; margin-top: 50px;"></div>
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <p>Signature du ' . $party1Label . '</p>
+                        <div class="signature-line"></div>
                     </div>
-                    <div style="display: inline-block; width: 45%; float: right;">
-                        <p>Signature du locataire</p>
-                        <div style="border-top: 1px solid black; width: 80%; margin-top: 50px;"></div>
+                    <div class="signature-box" style="float: right;">
+                        <p>Signature du ' . $party2Label . '</p>
+                        <div class="signature-line"></div>
                     </div>
                 </div>
 
-                <p style="text-align:center; margin-top:50px; font-size:10px; color:gray;">
-                    ImmoGest - Plateforme de gestion immobilière
-                </p>
+                <footer>
+                    IMMORent - Plateforme SaaS Immobilière Premium - ' . date('Y') . '
+                </footer>
             </body>
             </html>';
             

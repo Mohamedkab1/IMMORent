@@ -7,6 +7,7 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\StoreRentalRequestRequest;
 
 class RentalRequestController extends Controller
 {
@@ -56,25 +57,9 @@ class RentalRequestController extends Controller
     /**
      * Créer une demande (Location ou Achat)
      */
-    public function store(Request $request)
+    public function store(StoreRentalRequestRequest $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'property_id' => 'required|exists:properties,id',
-                'type' => 'required|in:rent,sale',
-                'start_date' => 'required_if:type,rent|nullable|date|after_or_equal:today',
-                'end_date' => 'required_if:type,rent|nullable|date|after:start_date',
-                'message' => 'nullable|string|max:1000',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
             $property = Property::find($request->property_id);
             
             if (!$property) {
@@ -139,6 +124,8 @@ class RentalRequestController extends Controller
                     'message' => 'Demande non trouvée'
                 ], 404);
             }
+
+            $this->authorize('view', $request);
             
             return response()->json([
                 'success' => true,
@@ -167,6 +154,8 @@ class RentalRequestController extends Controller
                     'message' => 'Demande non trouvée'
                 ], 404);
             }
+
+            $this->authorize('update', $rentalRequest);
             
             $validator = Validator::make($request->all(), [
                 'status' => 'required|in:approved,rejected',
@@ -231,6 +220,16 @@ class RentalRequestController extends Controller
                     'success' => false,
                     'message' => 'Demande non trouvée'
                 ], 404);
+            }
+
+            $this->authorize('delete', $rentalRequest);
+
+            // Vérifier que la demande appartient à l'utilisateur
+            if ($rentalRequest->user_id !== request()->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Non autorisé à annuler cette demande'
+                ], 403);
             }
             
             if ($rentalRequest->status !== 'pending') {

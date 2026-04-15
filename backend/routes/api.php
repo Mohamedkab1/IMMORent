@@ -9,6 +9,10 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\TestPdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,6 +79,10 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // ========== TABLEAUX DE BORD ==========
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    
+    // ========== FAVORIS ==========
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']);
     
     // ========== UTILISATEURS ==========
     Route::get('/users', [UserController::class, 'index']);
@@ -153,6 +161,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
     });
+    // ========== NOTIFICATIONS ==========
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // ========== MESSAGERIE ==========
+    Route::get('/conversations', [MessageController::class, 'index']);
+    Route::get('/conversations/{id}', [MessageController::class, 'show']);
+    Route::post('/messages', [MessageController::class, 'store']);
+
 });
 
 // ===========================================
@@ -174,4 +194,4 @@ Route::middleware('auth:sanctum')->get('/test', function (Illuminate\Http\Reques
 // ===========================================
 // ROUTES DE TEST POUR CONTRAT PDF
 // ===========================================
-Route::middleware('auth:sanctum')->get('/test-pdf-contract/{id}', [App\Http\Controllers\Api\TestPdfController::class, 'downloadContract']);
+Route::middleware('auth:sanctum')->get('/test-pdf-contract/{id}', [TestPdfController::class, 'downloadContract']);
