@@ -118,9 +118,19 @@ class DashboardController extends Controller
             'contracts' => [
                 'managed' => Contract::where('agent_id', $user->id)->where('status', 'active')->count(),
             ],
-            'revenue_managed' => Contract::where('agent_id', $user->id)
+            'revenue_managed' => (float) Contract::where('agent_id', $user->id)
                 ->where('status', 'active')
-                ->sum('monthly_rent'),
+                ->where('contract_type', 'rent')
+                ->select(DB::raw('SUM(monthly_rent + COALESCE(charges, 0)) as total'))
+                ->value('total') ?? 0,
+            'sales_managed' => [
+                'total_value' => (float) Contract::where('agent_id', $user->id)
+                    ->where('contract_type', 'sale')
+                    ->sum('sale_price'),
+                'count' => Contract::where('agent_id', $user->id)
+                    ->where('contract_type', 'sale')
+                    ->count(),
+            ],
             'charts' => [
                 'requests_by_month' => $this->getMonthlyRequestsForAgent($user),
             ]

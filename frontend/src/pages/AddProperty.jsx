@@ -165,7 +165,7 @@ const AddProperty = () => {
       data.append('city', formData.city);
       data.append('postal_code', formData.postal_code);
       data.append('surface', parseFloat(formData.surface));
-      data.append('rooms', parseInt(formData.rooms));
+      data.append('rooms', parseInt(formData.rooms) || 1);
       data.append('bedrooms', parseInt(formData.bedrooms) || 0);
       data.append('bathrooms', parseInt(formData.bathrooms) || 0);
       data.append('type', formData.type);

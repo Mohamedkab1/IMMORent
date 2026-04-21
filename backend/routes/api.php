@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\TestPdfController;
 
 /*
@@ -91,11 +92,30 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Routes admin
     Route::middleware(['admin'])->group(function () {
+        Route::post('/users', [UserController::class, 'store']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
         Route::put('/users/{id}/status', [UserController::class, 'toggleStatus']);
         Route::get('/admin/stats', [DashboardController::class, 'adminStats']);
         Route::get('/admin/logs', [DashboardController::class, 'logs']);
+        
+        // Agent validation routes
+        Route::get('/admin/agent-requests', [UserController::class, 'getPendingAgents']);
+        Route::put('/admin/agent-requests/{id}/process', [UserController::class, 'adminProcessAgentRequest']);
+
+        // Property Admin
+        Route::get('/admin/properties', [PropertyController::class, 'adminIndex']);
+        Route::put('/admin/properties/{id}/approve', [PropertyController::class, 'approve']);
+        Route::put('/admin/properties/{id}/reject', [PropertyController::class, 'reject']);
+        Route::put('/admin/properties/{id}/archive', [PropertyController::class, 'toggleArchive']);
+        Route::put('/admin/properties/{id}/featured', [PropertyController::class, 'toggleFeatured']);
+
+        // Settings
+        Route::get('/admin/settings', [SettingController::class, 'index']);
+        Route::put('/admin/settings/bulk', [SettingController::class, 'updateBulk']);
     });
+
+    // ========== PROFIL ET RÔLES ==========
+    Route::post('/me/become-agent', [UserController::class, 'requestAgentRole']);
     
     // ========== PROPRIÉTÉS (Gestion) ==========
     // Routes pour les agents et admin

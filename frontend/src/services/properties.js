@@ -154,4 +154,55 @@ export const propertyService = {
       throw error;
     }
   },
+
+  // Admin Methods
+  async getAdminAll(params = {}) {
+    try {
+      const response = await api.get('/admin/properties', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.getAdminAll:', error);
+      throw error;
+    }
+  },
+
+  async approve(id) {
+    try {
+      const response = await api.put(`/admin/properties/${id}/approve`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.approve:', error);
+      throw error;
+    }
+  },
+
+  async reject(id) {
+    try {
+      const response = await api.put(`/admin/properties/${id}/reject`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.reject:', error);
+      throw error;
+    }
+  },
+
+  async toggleArchive(id) {
+    try {
+      const response = await api.put(`/admin/properties/${id}/archive`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.toggleArchive:', error);
+      throw error;
+    }
+  },
+
+  async toggleFeatured(id) {
+    try {
+      const response = await api.put(`/admin/properties/${id}/featured`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.toggleFeatured:', error);
+      throw error;
+    }
+  }
 };

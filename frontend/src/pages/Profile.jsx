@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, PencilIcon, CheckIcon, XMarkIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, PencilIcon, CheckIcon, XMarkIcon, CalendarIcon, BriefcaseIcon } from '@heroicons/react/24/outline';
+import { userService } from '../services/users';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -26,6 +27,24 @@ const Profile = () => {
       toast.error('Erreur lors de la mise à jour');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBecomeAgent = async () => {
+    if (window.confirm('Souhaitez-vous vraiment envoyer une demande pour devenir agent immobilier ?')) {
+      setLoading(true);
+      try {
+        const res = await userService.becomeAgent();
+        if (res.success) {
+          toast.success('Votre demande a été envoyée avec succès');
+          // Idéalement on rafraîchit l'user dans le contexte
+          setTimeout(() => window.location.reload(), 2000);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -125,6 +144,55 @@ const Profile = () => {
                 )}
               </div>
             </div>
+            {user?.role?.slug === 'client' && (
+              <div className="profile-card mt-8 border-t-4 border-amber-500">
+                <div className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
+                      <BriefcaseIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800">Devenir Agent Immobilier</h3>
+                      <p className="text-sm text-slate-500">Gérez vos propres biens et profitez d'outils professionnels.</p>
+                    </div>
+                  </div>
+
+                  {!user.agent_status ? (
+                    <div className="bg-slate-50 p-4 rounded-xl mb-4">
+                      <ul className="text-sm text-slate-600 space-y-2 mb-4">
+                        <li>✓ Publier et gérer des annonces</li>
+                        <li>✓ Recevoir et traiter des demandes directes</li>
+                        <li>✓ Créer et gérer des contrats de location/vente</li>
+                      </ul>
+                      <button 
+                        onClick={handleBecomeAgent}
+                        disabled={loading}
+                        className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                      >
+                        {loading ? 'Traitement...' : 'Soumettre ma candidature'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`p-4 rounded-xl flex items-center justify-between ${
+                      user.agent_status === 'pending' ? 'bg-amber-50 border border-amber-100' : 
+                      user.agent_status === 'rejected' ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'
+                    }`}>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Statut de votre demande</p>
+                        <p className={`font-bold ${
+                          user.agent_status === 'pending' ? 'text-amber-700' : 
+                          user.agent_status === 'rejected' ? 'text-red-700' : 'text-green-700'
+                        }`}>
+                          {user.agent_status === 'pending' ? 'En attente de validation' : 
+                           user.agent_status === 'rejected' ? 'Demande refusée' : 'Candidature approuvée'}
+                        </p>
+                      </div>
+                      {user.agent_status === 'pending' && <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"></div>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -46,15 +46,24 @@ class AuthController extends Controller
                 ], 400);
             }
 
+            // Déterminer le statut initial et l'activation
+            $isActive = true;
+            $agentStatus = null;
+
+            if ($request->role === 'agent') {
+                $isActive = false;
+                $agentStatus = 'pending';
+            }
             // Créer l'utilisateur
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role_id' => $role->id,
+                'agent_status' => $agentStatus,
                 'phone' => $request->phone,
                 'address' => $request->address,
-                'is_active' => true,
+                'is_active' => $isActive,
             ]);
 
             // Créer le token Sanctum

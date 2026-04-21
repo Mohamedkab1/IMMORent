@@ -19,6 +19,11 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Account inactive
+  if (!user.is_active && user.role?.slug !== 'admin') {
+    return <Navigate to="/login" state={{ from: location, message: 'Votre compte est en attente de validation.' }} replace />;
+  }
+
   // Role based protection
   if (requiredRole && user.role !== requiredRole && user.role?.slug !== requiredRole) {
     // If user has 'role.slug' instead of a simple string

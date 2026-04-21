@@ -59,5 +59,35 @@ export const userService = {
             console.error('Erreur userService.create:', error);
             throw error;
         }
+    },
+
+    async becomeAgent() {
+        try {
+            const response = await api.post('/me/become-agent');
+            return response.data;
+        } catch (error) {
+            console.error('Erreur userService.becomeAgent:', error);
+            throw error;
+        }
+    },
+
+    async getAgentRequests() {
+        try {
+            const response = await api.get('/admin/agent-requests');
+            return response.data;
+        } catch (error) {
+            console.error('Erreur userService.getAgentRequests:', error);
+            throw error;
+        }
+    },
+
+    async processAgentRequest(id, status) {
+        try {
+            const response = await api.put(`/admin/agent-requests/${id}/process`, { status });
+            return response.data;
+        } catch (error) {
+            console.error('Erreur userService.processAgentRequest:', error);
+            throw error;
+        }
     }
 };

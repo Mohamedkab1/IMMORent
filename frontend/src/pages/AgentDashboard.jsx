@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
+import { dashboardService } from '../services/dashboard';
 import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
@@ -58,6 +59,7 @@ const AgentDashboard = () => {
   const loadAllData = async () => {
     setLoading(true);
     await Promise.all([
+      loadBackendStats(),
       loadProperties(),
       loadRequests(),
       loadContracts()
@@ -65,9 +67,28 @@ const AgentDashboard = () => {
     setLoading(false);
   };
 
+  const loadBackendStats = async () => {
+    try {
+      const response = await dashboardService.getStats();
+      if (response.success) {
+        const data = response.data;
+        setStats({
+          totalProperties: data.my_properties?.total || 0,
+          availableProperties: data.my_properties?.available || 0,
+          pendingRequests: data.requests?.pending || 0,
+          activeContracts: data.contracts?.managed || 0,
+          monthlyRevenue: parseFloat(data.revenue_managed) || 0
+        });
+      }
+    } catch (error) {
+      console.error('Erreur chargement stats:', error);
+    }
+  };
+
   const refreshData = async () => {
     setRefreshing(true);
     await Promise.all([
+      loadBackendStats(),
       loadProperties(),
       loadRequests(),
       loadContracts()
@@ -80,13 +101,8 @@ const AgentDashboard = () => {
     try {
       const response = await propertyService.getMyProperties();
       if (response.success) {
-        const data = response.data.data || [];
-        setProperties(data);
-        setStats(prev => ({ 
-          ...prev, 
-          totalProperties: data.length, 
-          availableProperties: data.filter(p => p.status?.toLowerCase() === 'available').length 
-        }));
+        const items = response.data.data || [];
+        setProperties(items);
       }
     } catch (error) {
       console.error('Erreur chargement biens:', error);
@@ -98,12 +114,8 @@ const AgentDashboard = () => {
     try {
       const response = await requestService.getAll();
       if (response.success) {
-        const data = response.data || [];
-        setRequests(data);
-        setStats(prev => ({ 
-          ...prev, 
-          pendingRequests: data.filter(r => r.status?.toLowerCase() === 'pending').length 
-        }));
+        const items = response.data || [];
+        setRequests(items);
       }
     } catch (error) {
       console.error('Erreur chargement demandes:', error);
@@ -114,31 +126,15 @@ const AgentDashboard = () => {
     try {
       const response = await contractService.getAgentContracts();
       if (response.success) {
-        let data = response.data.data || [];
+        let items = response.data.data || [];
         
-        data = data.map(contract => ({
+        items = items.map(contract => ({
           ...contract,
           monthly_rent: parseFloat(contract.monthly_rent) || 0,
           charges: parseFloat(contract.charges) || 0
         }));
         
-        setContracts(data);
-        
-        const now = new Date();
-        const activeContracts = data.filter(c => {
-          if (c.status?.toLowerCase() !== 'active') return false;
-          const startDate = new Date(c.start_date);
-          const endDate = new Date(c.end_date);
-          return startDate <= now && endDate >= now;
-        });
-        
-        const totalRevenue = activeContracts.reduce((sum, c) => sum + c.monthly_rent, 0);
-        
-        setStats(prev => ({ 
-          ...prev, 
-          activeContracts: activeContracts.length,
-          monthlyRevenue: totalRevenue
-        }));
+        setContracts(items);
       }
     } catch (error) {
       console.error('Erreur chargement contrats:', error);
@@ -475,9 +471,78 @@ const AgentDashboard = () => {
                  </tbody>
                </table>
              </div>
-           </section>
+                      </section>
         )}
 
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Gestion des demandes</h2>
+              <div className="flex gap-2">
+                <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-500 rounded-full text-xs font-bold">
+                  {requests.filter(r => r.status === 'pending').length} en attente
+                </span>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <th className="p-4 font-semibold">Client</th>
+                    <th className="p-4 font-semibold">Bien concerné</th>
+                    <th className="p-4 font-semibold">Date demande</th>
+                    <th className="p-4 font-semibold text-center">Statut</th>
+                    <th className="p-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {requests.map(request => (
+                    <tr key={request.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800 dark:text-white text-sm">{request.user?.name}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{request.user?.email}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">{request.property?.title}</div>
+                        <div className="text-xs text-slate-500">{request.property?.city}</div>
+                      </td>
+                      <td className="p-4 text-sm text-slate-600 dark:text-slate-400">
+                        {new Date(request.created_at).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
+                      <td className="p-4 text-right">
+                        {request.status === 'pending' ? (
+                          <div className="flex justify-end gap-3">
+                            <button 
+                              onClick={() => handleProcessRequest(request.id, 'approved')}
+                              className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-1"
+                            >
+                              <CheckCircleIcon className="w-4 h-4" /> Approuver
+                            </button>
+                            <button 
+                              onClick={() => handleProcessRequest(request.id, 'rejected')}
+                              className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+                            >
+                              <XCircleIcon className="w-4 h-4" /> Refuser
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">Traitée le {new Date(request.processed_at || request.updated_at).toLocaleDateString('fr-FR')}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {requests.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">Aucune demande reçue</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
         {/* Contracts Tab - Full View */}
         {activeTab === 'contracts' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">

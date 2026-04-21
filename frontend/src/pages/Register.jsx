@@ -85,12 +85,24 @@ const Register = () => {
       toast.success(response.message || 'Inscription réussie');
       
       if (formData.role === 'agent') {
-        navigate('/dashboard/agent');
+        toast.info('Votre compte agent est en attente de validation par un administrateur.');
+        navigate('/login');
       } else {
         navigate('/dashboard/client');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
+      console.error('Erreur inscription detail:', error.response?.data);
+      const errorMsg = error.response?.data?.message || "Erreur lors de l'inscription";
+      const validationErrors = error.response?.data?.errors;
+      
+      if (validationErrors) {
+        // Afficher tous les messages d'erreur de validation
+        Object.values(validationErrors).forEach(errArray => {
+          errArray.forEach(msg => toast.error(msg));
+        });
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -172,6 +184,7 @@ const Register = () => {
                       <li>✓ Traitement des demandes</li>
                       <li>✓ Création de contrats</li>
                     </ul>
+                    <p className="text-[10px] mt-2 text-amber-600 font-bold uppercase tracking-tighter">Validation admin requise</p>
                     {selectedRole === 'agent' && <div className="selected-badge">✓</div>}
                   </div>
                 </div>

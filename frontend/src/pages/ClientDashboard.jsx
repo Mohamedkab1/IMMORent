@@ -293,7 +293,7 @@ const ClientDashboard = () => {
                     )}
                     <p className="flex items-center gap-2 text-lg font-bold text-primary dark:text-slate-200 mb-6">
                       <CurrencyDollarIcon className="w-5 h-5 text-secondary" />
-                      {request.property?.price.toLocaleString()} DH {request.type === 'rent' ? '/ mois' : ''}
+                      {(request.property?.price || 0).toLocaleString()} DH {request.type === 'rent' ? '/ mois' : ''}
                     </p>
                     <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
                        {getStatusBadge(request.status)}

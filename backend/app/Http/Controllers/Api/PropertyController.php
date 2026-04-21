@@ -30,6 +30,25 @@ class PropertyController extends Controller
                 $query->where('listing_type', $request->listing_type);
             }
 
+            // Filtrage par type de bien (apartment, house, etc.)
+            if ($request->has('type') && !empty($request->type)) {
+                $query->where('type', $request->type);
+            }
+
+            // Filtrage par ville
+            if ($request->has('city') && !empty($request->city)) {
+                $query->where('city', 'like', '%' . $request->city . '%');
+            }
+
+            // Recherche textuelle
+            if ($request->has('search') && !empty($request->search)) {
+                $searchTerm = $request->search;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('title', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('address', 'like', '%' . $searchTerm . '%');
+                });
+            }
             if ($request->has('min_price')) {
                 $query->where('price', '>=', $request->min_price);
             }
@@ -131,8 +150,11 @@ class PropertyController extends Controller
             $data['status'] = 'available';
             
             // Fix bug: transaction_type supplied by frontend must be stored in listing_type
-            if (isset($data['transaction_type']) && !isset($data['listing_type'])) {
-                $data['listing_type'] = $data['transaction_type'] === 'sale' ? 'for_sale' : 'for_rent';
+            if (isset($data['transaction_type'])) {
+                if (!isset($data['listing_type'])) {
+                    $data['listing_type'] = $data['transaction_type'] === 'sale' ? 'for_sale' : 'for_rent';
+                }
+                unset($data['transaction_type']);
             }
 
             $property = Property::create($data);
@@ -236,6 +258,9 @@ class PropertyController extends Controller
             'category_id'           => $property->category_id,
             'user_id'               => $property->user_id,
             'owner_id'              => $property->owner_id,
+            'is_featured'           => (bool) $property->is_featured,
+            'is_approved'           => (bool) $property->is_approved,
+            'is_archived'           => (bool) $property->is_archived,
             'created_at'            => $property->created_at,
             'updated_at'            => $property->updated_at,
         ];
@@ -488,6 +513,125 @@ class PropertyController extends Controller
         }
     }
 
+
+    /**
+     * Liste complète des biens (Admin uniquement)
+     */
+    public function adminIndex(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+
+        try {
+            $query = Property::with(['category', 'user', 'owner']);
+
+            // Filtres admin
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->has('is_approved')) {
+                $query->where('is_approved', $request->is_approved === 'true' || $request->is_approved === '1');
+            }
+
+            if ($request->has('is_archived')) {
+                $query->where('is_archived', $request->is_archived === 'true' || $request->is_archived === '1');
+            }
+
+            if ($request->has('is_featured')) {
+                $query->where('is_featured', $request->is_featured === 'true' || $request->is_featured === '1');
+            }
+
+            // Recherche
+            if ($request->has('search') && !empty($request->search)) {
+                $searchTerm = $request->search;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('title', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('id', $searchTerm);
+                });
+            }
+
+            $properties = $query->latest()->paginate($request->get('per_page', 15));
+
+            $properties->getCollection()->transform(function ($property) {
+                return $this->formatProperty($property, true);
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $properties
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur adminIndex properties: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur serveur'], 500);
+        }
+    }
+
+    /**
+     * Approuver un bien
+     */
+    public function approve($id)
+    {
+        $property = Property::findOrFail($id);
+        $property->is_approved = true;
+        $property->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bien approuvé avec succès',
+            'data' => $this->formatProperty($property)
+        ]);
+    }
+
+    /**
+     * Rejeter un bien
+     */
+    public function reject($id)
+    {
+        $property = Property::findOrFail($id);
+        $property->is_approved = false;
+        $property->status = 'unavailable';
+        $property->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bien rejeté',
+            'data' => $this->formatProperty($property)
+        ]);
+    }
+
+    /**
+     * Archiver/Désarchiver un bien
+     */
+    public function toggleArchive($id)
+    {
+        $property = Property::findOrFail($id);
+        $property->is_archived = !$property->is_archived;
+        $property->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $property->is_archived ? 'Bien archivé' : 'Bien désarchivé',
+            'data' => $this->formatProperty($property)
+        ]);
+    }
+
+    /**
+     * Mettre en avant / Retirer de la mise en avant
+     */
+    public function toggleFeatured($id)
+    {
+        $property = Property::findOrFail($id);
+        $property->is_featured = !$property->is_featured;
+        $property->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $property->is_featured ? 'Bien mis en avant' : 'Mise en avant retirée',
+            'data' => $this->formatProperty($property)
+        ]);
+    }
 
     private function getTypeLabel($type)
     {
