@@ -61,7 +61,7 @@ const ClientDashboard = () => {
       loadContracts()
     ]);
     setRefreshing(false);
-    toast.success('Données actualisées');
+    toast.success(t('common.data_refreshed', 'Données actualisées'));
   };
 
   const loadRequests = async () => {
@@ -105,13 +105,13 @@ const ClientDashboard = () => {
   };
 
   const cancelRequest = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir annuler cette demande ?')) {
+    if (!window.confirm(t('client.requests.cancel_confirm'))) {
       return;
     }
     try {
       const response = await requestService.cancel(id);
       if (response.success) {
-        toast.success('Demande annulée avec succès');
+        toast.success(t('client.requests.cancelled_success', 'Demande annulée avec succès'));
         loadRequests();
       } else {
         toast.error(response.message || 'Erreur lors de l\'annulation');
@@ -149,14 +149,14 @@ const ClientDashboard = () => {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500">
           <KeyIcon className="w-3.5 h-3.5" />
-          Location
+          {t('prop.filter.rent', 'Location')}
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-500">
           <TagIcon className="w-3.5 h-3.5" />
-          Achat
+          {t('prop.filter.sale', 'Achat')}
         </span>
       );
     }
@@ -166,7 +166,7 @@ const ClientDashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 dark:text-slate-400">
         <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="font-medium animate-pulse">Chargement de votre espace...</p>
+        <p className="font-medium animate-pulse">{t('client.dashboard.loading')}</p>
       </div>
     );
   }
@@ -181,7 +181,7 @@ const ClientDashboard = () => {
             {user?.name?.charAt(0)}
           </div>
           <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate">{user?.name}</h3>
-          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">Client</p>
+          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">{t('auth.role.client_short', 'Client')}</p>
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
@@ -189,7 +189,7 @@ const ClientDashboard = () => {
             onClick={() => setActiveTab('dashboard')}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md shadow-primary/20 dark:shadow-secondary/20' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
           >
-            <HomeIcon className="w-5 h-5" /> {t('Dashboard')}
+            <HomeIcon className="w-5 h-5" /> {t('admin.tabs.overview', 'Dashboard')}
           </button>
           
           <button 
@@ -224,7 +224,7 @@ const ClientDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('dash.client.welcome')}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Gérez vos demandes et vos suivis en toute simplicité.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('client.dashboard.subtitle')}</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -234,7 +234,7 @@ const ClientDashboard = () => {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium transition-all shadow-sm disabled:opacity-50"
             >
               <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? t('common.loading') : 'Actualiser'}
+              {refreshing ? t('common.loading') : t('common.refresh', 'Actualiser')}
             </button>
           </div>
         </div>
@@ -254,13 +254,13 @@ const ClientDashboard = () => {
             color="green" 
           />
           <StatsCard 
-            title="Dépenses mensuelles" 
-            value={`${stats.totalPayments.toLocaleString('fr-FR')} DH`} 
+            title={t('client.dashboard.stats.expenses')} 
+            value={`${stats.totalPayments.toLocaleString(t('common.locale', 'fr-FR'))} DH`} 
             icon={CurrencyDollarIcon} 
             color="blue" 
           />
           <StatsCard 
-            title="Biens favoris" 
+            title={t('client.dashboard.stats.favorites')} 
             value={stats.favoriteProperties} 
             icon={HeartIcon} 
             color="rose" 
@@ -272,9 +272,9 @@ const ClientDashboard = () => {
           <div className="space-y-8">
             <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Demandes Récentes</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.requests.recent')}</h2>
                 <button onClick={() => setActiveTab('requests')} className="text-sm font-semibold text-primary dark:text-secondary hover:underline">
-                  Voir tout ({requests.length})
+                  {t('agent.dashboard.see_all', 'Voir tout')} ({requests.length})
                 </button>
               </div>
               
@@ -288,12 +288,12 @@ const ClientDashboard = () => {
                     {request.type === 'rent' && (
                       <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
                         <ClockIcon className="w-4 h-4 text-slate-400" />
-                        {new Date(request.start_date).toLocaleDateString()}
+                        {new Date(request.start_date).toLocaleDateString(t('common.locale', 'fr-FR'))}
                       </p>
                     )}
                     <p className="flex items-center gap-2 text-lg font-bold text-primary dark:text-slate-200 mb-6">
                       <CurrencyDollarIcon className="w-5 h-5 text-secondary" />
-                      {(request.property?.price || 0).toLocaleString()} DH {request.type === 'rent' ? '/ mois' : ''}
+                      {(request.property?.price || 0).toLocaleString(t('common.locale', 'fr-FR'))} DH {request.type === 'rent' ? '/ mois' : ''}
                     </p>
                     <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
                        {getStatusBadge(request.status)}
@@ -302,8 +302,8 @@ const ClientDashboard = () => {
                 ))}
                 {requests.length === 0 && (
                   <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                    <p className="text-slate-500 dark:text-slate-400 mb-3">Aucune demande en cours</p>
-                    <Link to="/properties" className="inline-flex items-center text-primary font-semibold hover:text-secondary">Découvrir les biens ➔</Link>
+                    <p className="text-slate-500 dark:text-slate-400 mb-3">{t('client.requests.no_data')}</p>
+                    <Link to="/properties" className="inline-flex items-center text-primary font-semibold hover:text-secondary">{t('home.hero.title')} ➔</Link>
                   </div>
                 )}
               </div>
@@ -315,15 +315,15 @@ const ClientDashboard = () => {
         {activeTab === 'requests' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Historique des demandes</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.requests.history')}</h2>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
                    <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                     <th className="p-4 font-semibold">Bien ciblé</th>
-                     <th className="p-4 font-semibold text-center">Statut</th>
-                     <th className="p-4 font-semibold text-right">Actions</th>
+                     <th className="p-4 font-semibold">{t('client.requests.table.target')}</th>
+                     <th className="p-4 font-semibold text-center">{t('common.status')}</th>
+                     <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -353,7 +353,7 @@ const ClientDashboard = () => {
         {activeTab === 'contracts' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Mes Contrats Actifs</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.contracts.active_title')}</h2>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
                 {contracts.map(contract => (
@@ -363,18 +363,18 @@ const ClientDashboard = () => {
                       {getStatusBadge(contract.status)}
                     </div>
                     <div className="space-y-2 mb-6 text-sm text-slate-600 dark:text-slate-400">
-                      <p className="flex justify-between"><span>Loyer:</span> <span className="font-bold text-primary dark:text-white">{contract.monthly_rent?.toLocaleString()} DH</span></p>
-                      <p className="flex justify-between"><span>Début:</span> <span>{new Date(contract.start_date).toLocaleDateString()}</span></p>
-                      <p className="flex justify-between"><span>Fin:</span> <span>{new Date(contract.end_date).toLocaleDateString()}</span></p>
+                      <p className="flex justify-between"><span>{t('agent.contracts.table.rent')}:</span> <span className="font-bold text-primary dark:text-white">{contract.monthly_rent?.toLocaleString(t('common.locale', 'fr-FR'))} DH</span></p>
+                      <p className="flex justify-between"><span>{t('admin.contracts.table.period')}:</span> <span>{new Date(contract.start_date).toLocaleDateString(t('common.locale', 'fr-FR'))}</span></p>
+                      <p className="flex justify-between"><span>Fin:</span> <span>{new Date(contract.end_date).toLocaleDateString(t('common.locale', 'fr-FR'))}</span></p>
                     </div>
                     <Link to={`/contracts/${contract.id}`} className="block w-full py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all">
-                      Voir les détails
+                      {t('admin.properties.table.details', 'Voir les détails')}
                     </Link>
                   </div>
                 ))}
                 {contracts.length === 0 && (
                   <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                    <p className="text-slate-500 dark:text-slate-400">Aucun contrat actif</p>
+                    <p className="text-slate-500 dark:text-slate-400">{t('client.contracts.no_data')}</p>
                   </div>
                 )}
              </div>

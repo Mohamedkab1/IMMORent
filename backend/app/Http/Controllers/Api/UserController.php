@@ -37,11 +37,13 @@ class UserController extends Controller
             $query->where('is_active', $request->status === 'active' || $request->status === '1');
         }
 
-        // Recherche par nom ou email
+        // Recherche par nom, email ou ID
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('id', $searchTerm);
             });
         }
 

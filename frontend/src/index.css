@@ -6,6 +6,11 @@
     --primary-light: #1e4a6e;
     --secondary: #d4af37;
     --secondary-hover: #c4a52e;
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
   }
 }
 

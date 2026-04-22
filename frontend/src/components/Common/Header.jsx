@@ -126,8 +126,12 @@ const Header = () => {
           {/* Right actions */}
           <div className="hidden md:flex items-center gap-2 rtl:gap-reverse">
             {/* Theme Toggle */}
-            <button onClick={toggleTheme} className="p-2.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-secondary bg-slate-50 dark:bg-slate-800 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
-              {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+            <button 
+              onClick={toggleTheme} 
+              className="p-2.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-secondary bg-slate-50 dark:bg-slate-800 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm hover:shadow-md active:scale-95"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? <SunIcon className="w-5 h-5 text-amber-500" /> : <MoonIcon className="w-5 h-5 text-primary" />}
             </button>
 
             {/* Language Switch */}
@@ -171,8 +175,8 @@ const Header = () => {
 
                   <div className={`absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
-                       <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications', 'Notifications')}</h3>
-                       {unreadCount > 0 && <button onClick={() => notificationService.markAllRead().then(loadNotifications)} className="text-[10px] font-bold text-primary hover:underline">Tout marquer lu</button>}
+                       <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
+                       {unreadCount > 0 && <button onClick={() => notificationService.markAllRead().then(loadNotifications)} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
                     </div>
                     <div className="max-h-96 overflow-y-auto p-2">
                       {notifications.length > 0 ? notifications.map(notif => (
@@ -183,7 +187,7 @@ const Header = () => {
                         </div>
                       )) : (
                         <div className="py-8 text-center">
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aucune notification</p>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('nav.no_notifications')}</p>
                         </div>
                       )}
                     </div>
@@ -206,7 +210,7 @@ const Header = () => {
 
                   <div className={`absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Espace Personnel</p>
+                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
@@ -214,7 +218,7 @@ const Header = () => {
                         <ChartBarIcon className="w-5 h-5 opacity-70" /> {t('nav.dashboard')}
                       </Link>
                       <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
-                        <ChatBubbleLeftRightIcon className="w-5 h-5 opacity-70" /> Messages
+                        <ChatBubbleLeftRightIcon className="w-5 h-5 opacity-70" /> {t('nav.messages')}
                       </Link>
                       <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
                         <UserCircleIcon className="w-5 h-5 opacity-70" /> {t('nav.profile')}
@@ -238,8 +242,8 @@ const Header = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 text-slate-500 text-slate-600 dark:text-slate-300">
-              {theme === 'dark' ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+            <button onClick={toggleTheme} className="p-2 text-slate-600 dark:text-slate-300">
+              {theme === 'dark' ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6 text-primary" />}
             </button>
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-600 dark:text-slate-300 transition-colors">
               {mobileMenuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
@@ -263,13 +267,13 @@ const Header = () => {
 
            <div className="flex justify-between items-center px-4">
              <span className="text-sm font-black text-slate-400 uppercase tracking-widest">{t('nav.theme')}</span>
-             <button onClick={toggleTheme} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-600 dark:text-slate-300">
-                {theme === 'dark' ? <SunIcon className="w-5 h-5 text-secondary" /> : <MoonIcon className="w-5 h-5 text-primary" />}
+             <button onClick={toggleTheme} className={`p-3 rounded-2xl transition-all ${theme === 'dark' ? 'bg-amber-100/10 text-amber-500' : 'bg-primary/5 text-primary'}`}>
+                {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
              </button>
            </div>
 
            <div className="flex justify-between items-center px-4">
-              <span className="text-sm font-black text-slate-400 uppercase tracking-widest">Langue</span>
+              <span className="text-sm font-black text-slate-400 uppercase tracking-widest">{t('nav.language')}</span>
               <div className="flex gap-2">
                 {['fr', 'en', 'ar'].map(lang => (
                    <button key={lang} onClick={() => changeLanguage(lang)} className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${language === lang ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'}`}>
@@ -294,10 +298,10 @@ const Header = () => {
                </div>
                <div className="grid grid-cols-2 gap-2">
                  <Link to={dashboardLink} className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold text-slate-800 dark:text-white">
-                   <ChartBarIcon className="w-5 h-5 opacity-60" /> Dashboard
+                   <ChartBarIcon className="w-5 h-5 opacity-60" /> {t('nav.dashboard')}
                  </Link>
                  <Link to="/profile" className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold text-slate-800 dark:text-white">
-                   <UserCircleIcon className="w-5 h-5 opacity-60" /> Profil
+                   <UserCircleIcon className="w-5 h-5 opacity-60" /> {t('nav.profile')}
                  </Link>
                </div>
                <button onClick={handleLogout} className="w-full py-4 text-rose-500 font-black text-sm uppercase tracking-widest hover:bg-rose-50 rounded-2xl transition-all">
