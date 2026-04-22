@@ -1,0 +1,366 @@
+<?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Contract;
+use App\Models\RentalRequest;
+use App\Models\Property;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facades\Pdf;
+use App\Http\Requests\StoreContractRequest;
+
+class ContractController extends Controller
+{
+    /**
+     * Liste des contrats
+     */
+    public function index(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            if ($user->isAdmin()) {
+                $contracts = Contract::with(['property', 'tenant', 'owner', 'agent'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            } elseif ($user->isAgent()) {
+                $contracts = Contract::with(['property', 'tenant', 'owner'])
+                    ->where('agent_id', $user->id)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            } else {
+                $contracts = Contract::with(['property', 'owner'])
+                    ->where('tenant_id', $user->id)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $contracts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement des contrats'
+            ], 500);
+        }
+    }
+
+    /**
+     * Créer un contrat à partir d'une demande validée
+     */
+/**
+ * Créer un contrat (Location ou Vente)
+ */
+public function store(StoreContractRequest $request)
+{
+    try {
+
+        $rentalRequest = RentalRequest::with(['user', 'property'])->find($request->rental_request_id);
+        
+        if (!$rentalRequest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Demande non trouvée'
+            ], 404);
+        }
+
+        $property = $rentalRequest->property;
+        
+        // Vérifier le type de transaction
+        if ($request->contract_type !== $property->transaction_type) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Le type de contrat ne correspond pas au type de bien'
+            ], 400);
+        }
+
+        $contractData = [
+            'contract_type' => $request->contract_type,
+            'rental_request_id' => $rentalRequest->id,
+            'property_id' => $property->id,
+            'agent_id' => $property->user_id,
+            'security_deposit' => $request->security_deposit,
+            'charges' => $request->charges,
+            'status' => 'active',
+            'signed_at' => now(),
+        ];
+
+        // Remplir selon le type de contrat
+        if ($request->contract_type === 'rent') {
+            $contractData['tenant_id'] = $rentalRequest->user_id;
+            $contractData['owner_id'] = $property->owner_id;
+            $contractData['start_date'] = $request->start_date;
+            $contractData['end_date'] = $request->end_date;
+            $contractData['monthly_rent'] = $request->monthly_rent;
+        } else {
+            $contractData['buyer_id'] = $rentalRequest->user_id;
+            $contractData['seller_id'] = $property->owner_id;
+            $contractData['sale_date'] = $request->sale_date;
+            $contractData['sale_price'] = $request->sale_price;
+        }
+
+        $contract = Contract::create($contractData);
+
+        // Mettre à jour le statut du bien et de la demande
+        $property->update(['status' => $request->contract_type === 'rent' ? 'rented' : 'sold']);
+        $rentalRequest->update(['status' => 'finalized']);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->contract_type === 'rent' ? 'Contrat de location créé' : 'Contrat de vente créé',
+            'data' => $contract->load(['property', 'tenant', 'buyer', 'owner', 'seller', 'agent'])
+        ], 201);
+
+    } catch (\Exception $e) {
+        Log::error('Erreur store contract: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la création du contrat',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    /**
+     * Détails d'un contrat
+     */
+    public function show($id)
+    {
+        try {
+            $contract = Contract::with(['property', 'tenant', 'owner', 'agent', 'payments'])
+                ->find($id);
+            
+            if (!$contract) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contrat non trouvé'
+                ], 404);
+            }
+
+            $this->authorize('view', $contract);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $contract
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement'
+            ], 500);
+        }
+    }
+
+    /**
+     * Mettre à jour le statut d'un contrat
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $contract = Contract::find($id);
+            
+            if (!$contract) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contrat non trouvé'
+                ], 404);
+            }
+
+            $this->authorize('update', $contract);
+
+            $validator = Validator::make($request->all(), [
+                'status' => 'required|in:active,terminated,expired',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur de validation',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $contract->update(['status' => $request->status]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Statut du contrat mis à jour',
+                'data' => $contract
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour'
+            ], 500);
+        }
+    }
+
+    /**
+     * Mes contrats (Client)
+     */
+    public function myContracts(Request $request)
+    {
+        try {
+            $contracts = Contract::with(['property', 'owner', 'seller'])
+                ->where(function($query) use ($request) {
+                    $query->where('tenant_id', $request->user()->id)
+                          ->orWhere('buyer_id', $request->user()->id);
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+                
+            return response()->json([
+                'success' => true,
+                'data' => $contracts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement'
+            ], 500);
+        }
+    }
+
+ 
+    /**
+     * Contrats gérés par l'agent connecté
+     */
+    public function agentContracts(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            // Vérifier que l'utilisateur est un agent ou admin
+            if (!$user->isAgent() && !$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Accès non autorisé. Seuls les agents et administrateurs peuvent accéder à cette ressource.'
+                ], 403);
+            }
+            
+            $contracts = Contract::with(['property', 'tenant', 'owner'])
+                ->where('agent_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+                
+            return response()->json([
+                'success' => true,
+                'data' => $contracts
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur agentContracts: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement des contrats',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Télécharger le contrat au format PDF
+     */
+    public function download($id)
+    {
+        try {
+            // Récupérer le contrat
+            $contract = Contract::find($id);
+            
+            if (!$contract) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contrat non trouvé'
+                ], 404);
+            }
+
+            $this->authorize('view', $contract);
+            
+            // Déterminer le type de contrat et les labels
+            $isSale = $contract->contract_type === 'sale';
+            $title = $isSale ? 'Contrat de vente' : 'Contrat de location';
+            $party1Label = $isSale ? 'Vendeur' : 'Bailleur';
+            $party2Label = $isSale ? 'Acquéreur' : 'Locataire';
+            
+            $html = '<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>' . $title . '</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+                    .logo { color: #2563eb; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+                    .title { font-size: 22px; text-transform: uppercase; margin-top: 10px; }
+                    .info { margin: 20px 0; line-height: 1.6; }
+                    .label { font-weight: bold; display: inline-block; width: 180px; }
+                    .signature-section { margin-top: 60px; }
+                    .signature-box { display: inline-block; width: 45%; vertical-align: top; }
+                    .signature-line { border-top: 1px solid #000; width: 80%; margin-top: 60px; }
+                    footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: gray; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="logo">IMMORent</div>
+                    <div class="title">' . $title . '</div>
+                    <p>N° ' . $contract->contract_number . '</p>
+                </div>
+
+                <div class="info">
+                    <p><span class="label">Référence:</span> ' . $contract->contract_number . '</p>
+                    <p><span class="label">Date de signature:</span> ' . date('d/m/Y', strtotime($contract->signed_at)) . '</p>
+                    <hr style="border: 0; border-top: 1px solid #eee;">
+                    ';
+
+            if ($isSale) {
+                $html .= '
+                    <p><span class="label">Prix de vente:</span> ' . number_format($contract->sale_price, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Date de vente:</span> ' . date('d/m/Y', strtotime($contract->sale_date)) . '</p>';
+            } else {
+                $html .= '
+                    <p><span class="label">Date de début:</span> ' . date('d/m/Y', strtotime($contract->start_date)) . '</p>
+                    <p><span class="label">Date de fin:</span> ' . date('d/m/Y', strtotime($contract->end_date)) . '</p>
+                    <p><span class="label">Loyer mensuel:</span> ' . number_format($contract->monthly_rent, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Charges:</span> ' . number_format($contract->charges ?? 0, 2, ',', ' ') . ' DH</p>
+                    <p><span class="label">Dépôt de garantie:</span> ' . number_format($contract->security_deposit, 2, ',', ' ') . ' DH</p>';
+            }
+
+            $html .= '
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <p>Signature du ' . $party1Label . '</p>
+                        <div class="signature-line"></div>
+                    </div>
+                    <div class="signature-box" style="float: right;">
+                        <p>Signature du ' . $party2Label . '</p>
+                        <div class="signature-line"></div>
+                    </div>
+                </div>
+
+                <footer>
+                    IMMORent - Plateforme SaaS Immobilière Premium - ' . date('Y') . '
+                </footer>
+            </body>
+            </html>';
+            
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('A4', 'portrait');
+            
+            return $pdf->download('contrat_' . $contract->contract_number . '.pdf');
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
+    }
+}

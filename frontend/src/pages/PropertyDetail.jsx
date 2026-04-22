@@ -1,0 +1,401 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { propertyService } from '../services/properties';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { toast } from 'react-toastify';
+import { messageService } from '../services/messages';
+import { 
+  MapPinIcon, 
+  HomeIcon, 
+  CalendarIcon,
+  UserIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  ArrowLeftIcon,
+  HeartIcon,
+  ShareIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  BuildingOfficeIcon,
+  ExclamationTriangleIcon,
+  ArrowsRightLeftIcon,
+  CurrencyDollarIcon
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import ReviewSection from '../components/properties/ReviewSection';
+
+const PropertyDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
+  
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+
+  useEffect(() => {
+    if (id) fetchProperty();
+  }, [id]);
+
+  const parseFeatures = (features) => {
+    if (!features) return [];
+    if (Array.isArray(features)) return features;
+    if (typeof features === 'string') {
+      try { return JSON.parse(features); }
+      catch (e) { return []; }
+    }
+    return [];
+  };
+
+  const fetchProperty = async () => {
+    setLoading(true);
+    try {
+      const response = await propertyService.getById(id);
+      if (response.success && response.data) {
+        if (response.data.features) response.data.features = parseFeatures(response.data.features);
+        setProperty(response.data);
+        // Verify if properly favorited by user (Requires endpoint in API to return favorite status, for now assuming not favorite by default) 
+      } else setError('Bien non trouvé');
+    } catch (err) {
+      setError('Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContact = () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter');
+      navigate('/login');
+      return;
+    }
+    setShowContactForm(true);
+  };
+
+  const sendContactMessage = async () => {
+    if (!contactMessage.trim()) {
+      toast.warning('Veuillez écrire un message');
+      return;
+    }
+    
+    setSendingMessage(true);
+    try {
+      const response = await messageService.sendMessage({
+        receiver_id: property.user_id,
+        property_id: property.id,
+        body: contactMessage
+      });
+      
+      if (response.success) {
+        toast.success('Message envoyé ! Redirection vers la messagerie...');
+        setTimeout(() => {
+          navigate('/messages');
+        }, 1500);
+      }
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi du message');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleRequestRental = () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter');
+      navigate('/login');
+      return;
+    }
+    if (user?.role?.slug !== 'client') {
+      toast.error('Seuls les clients peuvent faire une demande');
+      return;
+    }
+    if (property?.transaction_type !== 'rent') {
+      toast.error('Ce bien n\'est pas disponible à la location');
+      return;
+    }
+    navigate(`/requests/new?property=${id}`);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Lien copié dans le presse-papier');
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter pour ajouter aux favoris');
+      navigate('/login');
+      return;
+    }
+
+    try {
+       setIsFavorite(!isFavorite); // Optimistic UI
+       /* 
+       const response = await fetch('/api/favorites/toggle', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+         body: JSON.stringify({ property_id: property.id })
+       });
+       const data = await response.json();
+       setIsFavorite(data.status === 'added');
+       */
+       toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
+    } catch (error) {
+       setIsFavorite(!isFavorite); // Rollback
+       toast.error('Erreur de connexion');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-main)] flex flex-col justify-center items-center">
+        <div className="w-16 h-16 border-4 border-[var(--border-color)] border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="text-[var(--text-muted)] font-medium">Chargement des détails...</p>
+      </div>
+    );
+  }
+
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-main)] flex justify-center items-center px-4">
+        <div className="bg-[var(--card-bg)] p-8 rounded-2xl shadow-sm text-center max-w-md w-full border border-[var(--border-color)]">
+          <XMarkIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-[var(--text-main)] mb-2">Erreur</h2>
+          <p className="text-[var(--text-muted)] mb-6">{error || 'Bien introuvable.'}</p>
+          <button onClick={() => navigate('/properties')} className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
+            Retour aux biens
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const features = parseFeatures(property.features);
+  const images = property.images?.length > 0 ? property.images : [null];
+  const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80';
+  const agent = property.user || { name: 'Agent', email: 'contact@immorent.com', phone: 'Non renseigné' };
+
+  return (
+    <div className="min-h-screen bg-[var(--bg-main)] transition-colors duration-300 pb-20">
+      
+      {/* Sticky Navigation */}
+      <nav className="sticky top-0 z-40 bg-[var(--bg-header)] backdrop-blur-md border-b border-[var(--border-color)] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-secondary font-semibold transition-colors">
+            <ArrowLeftIcon className="w-5 h-5 rtl:rotate-180" /> <span className="hidden sm:inline">Retour aux résultats</span>
+          </button>
+          
+          <div className="flex items-center gap-3">
+            <button onClick={handleShare} className="p-2 text-[var(--text-muted)] hover:text-primary dark:hover:text-white bg-[var(--bg-muted)] hover:bg-[var(--border-color)] rounded-full transition-all">
+              <ShareIcon className="w-5 h-5" />
+            </button>
+            <button onClick={handleToggleFavorite} className="p-2 text-[var(--text-muted)] hover:text-red-500 bg-[var(--bg-muted)] hover:bg-[var(--border-color)] rounded-full transition-all">
+              {isFavorite ? <HeartIconSolid className="w-5 h-5 text-red-500" /> : <HeartIcon className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Title and Header */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-8">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${property.transaction_type === 'rent' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500'}`}>
+                {property.transaction_type === 'rent' ? t('prop.status.rented') : t('prop.status.sold')}
+              </span>
+              <span className="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-xs font-bold">
+                {property.type_label}
+              </span>
+              {property.status === 'available' && (
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-500 rounded-full text-xs font-bold">
+                  {t('prop.status.available')}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">{property.title}</h1>
+            <p className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium">
+              <MapPinIcon className="w-5 h-5" />
+              {property.city} {property.postal_code}
+            </p>
+          </div>
+          
+          <div className="text-start md:text-end">
+            <div className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Prix demandé</div>
+            <div className="text-4xl md:text-5xl font-black text-primary dark:text-secondary mt-1">
+              {property.price?.toLocaleString('fr-FR')} <span className="text-xl font-bold text-slate-400 dark:text-slate-500">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Gallery */}
+        <div className="mb-12">
+          <div className="relative h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-xl mb-4 bg-slate-200 dark:bg-slate-800">
+            <img 
+              src={images[selectedImage] ? (images[selectedImage].startsWith('http') ? images[selectedImage] : `/storage/${images[selectedImage]}`) : defaultImage} 
+              alt={property.title} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent pointer-events-none"></div>
+          </div>
+          
+          {images.length > 1 && (
+            <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+              {images.map((img, idx) => (
+                <button 
+                  key={idx} 
+                  onClick={() => setSelectedImage(idx)} 
+                  className={`relative flex-shrink-0 w-32 h-24 rounded-xl overflow-hidden border-4 transition-all duration-300 ${selectedImage === idx ? 'border-primary dark:border-secondary scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                >
+                  <img src={img ? (img.startsWith('http') ? img : `/storage/${img}`) : defaultImage} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+          
+          {/* Main Info */}
+          <div className="lg:col-span-2 space-y-12">
+            
+            {/* Highlights Grid */}
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: ArrowsRightLeftIcon, val: `${property.surface} m²`, label: 'Surface' },
+                { icon: BuildingOfficeIcon, val: `${property.rooms} p.`, label: 'Pièces' },
+                { icon: HomeIcon, val: `${property.bedrooms || 0} ch.`, label: 'Chambres' },
+                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0} sdb`, label: 'Salles de bain' }
+              ].map((item, i) => (
+                <div key={i} className="bg-[var(--card-bg)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center justify-center text-center shadow-sm">
+                  <item.icon className="w-8 h-8 text-primary dark:text-secondary mb-3" />
+                  <span className="text-xl font-bold text-[var(--text-main)]">{item.val}</span>
+                  <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{item.label}</span>
+                </div>
+              ))}
+            </section>
+
+            {/* Description */}
+            <section className="bg-[var(--card-bg)] p-8 rounded-3xl border border-[var(--border-color)] shadow-sm">
+              <h2 className="text-2xl font-bold text-[var(--text-main)] mb-6">Description du bien</h2>
+              <div className="prose dark:prose-invert max-w-none text-[var(--text-muted)] leading-relaxed">
+                <p className="whitespace-pre-line">{property.description}</p>
+              </div>
+            </section>
+
+            {/* Features */}
+            {features.length > 0 && (
+              <section className="bg-[var(--card-bg)] p-8 rounded-3xl border border-[var(--border-color)] shadow-sm">
+                <h2 className="text-2xl font-bold text-[var(--text-main)] mb-6">{t('prop.details.features')}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {features.map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 p-4 bg-[var(--bg-main)] rounded-xl border border-[var(--border-color)]">
+                      <CheckCircleIcon className="w-6 h-6 text-green-500 flex-shrink-0" />
+                      <span className="text-[var(--text-main)] font-medium">{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Reviews Section */}
+            <section className="bg-[var(--card-bg)] p-8 rounded-3xl border border-[var(--border-color)] shadow-sm">
+                <ReviewSection propertyId={id} />
+            </section>
+
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              
+              {/* Agent Card */}
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Votre conseiller</h3>
+                
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                    {agent.name?.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-800 dark:text-white text-lg">{agent.name}</div>
+                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400">Agent IMMORent</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <a href={`tel:${agent.phone}`} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-secondary group transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                       <PhoneIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold">{agent.phone}</span>
+                  </a>
+                  <a href={`mailto:${agent.email}`} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-secondary group transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                       <EnvelopeIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-sm break-all">{agent.email}</span>
+                  </a>
+                </div>
+
+                {!showContactForm ? (
+                  <div className="space-y-3">
+                    <button onClick={handleContact} className="w-full py-4 bg-white dark:bg-slate-700 border-2 border-primary dark:border-slate-600 text-primary dark:text-white hover:bg-primary-50 dark:hover:bg-slate-600 rounded-xl font-bold transition-all shadow-sm">
+                      Envoyer un message
+                    </button>
+                    {property.transaction_type === 'rent' && property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
+                      <button onClick={handleRequestRental} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
+                        Demander la location
+                      </button>
+                    )}
+                    {property.transaction_type === 'sale' && (
+                      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-500 rounded-xl text-sm font-medium">
+                        <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
+                        <p>Ce bien est à vendre. Veuillez contacter l'agent pour convenir d'une visite.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Votre message</label>
+                    <textarea 
+                      value={contactMessage} 
+                      onChange={e => setContactMessage(e.target.value)} 
+                      rows="4" 
+                      placeholder="Je suis intéressé par ce bien..."
+                      className="w-full p-4 mb-4 bg-white dark:bg-slate-800 border fill-primary border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:text-white resize-none"
+                    />
+                    <div className="flex flex-col gap-2">
+                        <button 
+                          onClick={sendContactMessage} 
+                          disabled={sendingMessage}
+                          className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md disabled:opacity-50"
+                        >
+                          {sendingMessage ? 'Envoi...' : 'Envoyer'}
+                        </button>
+                       <button onClick={() => setShowContactForm(false)} className="w-full py-3 bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-xl font-bold transition-colors">
+                         Annuler
+                       </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  );
+};
+
+export default PropertyDetail;

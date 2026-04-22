@@ -1,0 +1,110 @@
+.login-container {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: var(--bg-main);
+  transition: var(--theme-transition);
+}
+
+.login-box {
+  background-color: var(--card-bg);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 400px;
+  transition: var(--theme-transition);
+}
+
+.login-box h2 {
+  text-align: center;
+  color: var(--text-main);
+  margin-bottom: 10px;
+  transition: var(--theme-transition);
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  transition: var(--theme-transition);
+}
+
+.login-subtitle a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--theme-transition);
+}
+
+.login-subtitle a:hover {
+  text-decoration: underline;
+}
+
+.login-form .form-group {
+  margin-bottom: 20px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-main);
+  font-weight: 600;
+  transition: var(--theme-transition);
+}
+
+.login-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: var(--theme-transition);
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.btn-login-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.btn-login-submit:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-login-submit:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.forgot-password {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
