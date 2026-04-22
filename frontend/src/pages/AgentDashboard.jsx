@@ -297,7 +297,7 @@ const AgentDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('dash.agent.welcome')}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Supervisez votre portfolio immobilier en temps réel.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('agent.dashboard.subtitle')}</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ const AgentDashboard = () => {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium transition-all shadow-sm"
             >
               <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? t('common.loading') : 'Actualiser'}
+               {refreshing ? t('common.loading') : t('agent.dashboard.refresh', 'Actualiser')}
             </button>
           </div>
         </div>
@@ -352,7 +352,7 @@ const AgentDashboard = () => {
                     {t('dash.stats.pending_requests')}
                   </h2>
                   <button onClick={() => setActiveTab('requests')} className="text-sm font-semibold text-primary hover:underline">
-                    Tout voir
+                    {t('agent.dashboard.see_all', 'Tout voir')}
                   </button>
                 </div>
                 
@@ -360,18 +360,18 @@ const AgentDashboard = () => {
                   {requests.filter(r => r.status?.toLowerCase() === 'pending').slice(0, 3).map(request => (
                     <div key={request.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700 gap-4">
                        <div>
-                         <h4 className="font-bold text-slate-800 dark:text-white text-sm">{request.user?.name || 'Client Inconnu'}</h4>
+                         <h4 className="font-bold text-slate-800 dark:text-white text-sm">{request.user?.name || t('agent.requests.client_unknown', 'Client Inconnu')}</h4>
                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{request.property?.title}</p>
                        </div>
                        <div className="flex gap-2 text-right">
-                         <button onClick={() => handleProcessRequest(request.id, 'approved')} className="text-xs font-bold text-green-600 hover:underline">Approuver</button>
-                         <button onClick={() => handleProcessRequest(request.id, 'rejected')} className="text-xs font-bold text-red-600 hover:underline">Refuser</button>
+                         <button onClick={() => handleProcessRequest(request.id, 'approved')} className="text-xs font-bold text-green-600 hover:underline">{t('common.approve')}</button>
+                         <button onClick={() => handleProcessRequest(request.id, 'rejected')} className="text-xs font-bold text-red-600 hover:underline">{t('common.reject')}</button>
                        </div>
                     </div>
                   ))}
                   {requests.filter(r => r.status?.toLowerCase() === 'pending').length === 0 && (
                     <div className="p-6 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                      Aucune demande en attente
+                      {t('agent.requests.no_data')}
                     </div>
                   )}
                 </div>
@@ -391,7 +391,7 @@ const AgentDashboard = () => {
                     <div key={contract.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
                        <div>
                          <h4 className="font-bold text-slate-800 dark:text-white text-sm">{contract.property?.title}</h4>
-                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Locataire: {contract.tenant?.name}</p>
+                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('agent.contracts.table.tenant')}: {contract.tenant?.name}</p>
                        </div>
                        <div className="text-right">
                          <div className="font-bold text-slate-800 dark:text-white text-sm">{contract.monthly_rent?.toLocaleString()} DH</div>
@@ -401,7 +401,7 @@ const AgentDashboard = () => {
                   ))}
                   {contracts.length === 0 && (
                     <div className="p-6 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                      Aucun contrat actif
+                      {t('agent.contracts.no_data')}
                     </div>
                   )}
                 </div>
@@ -414,21 +414,21 @@ const AgentDashboard = () => {
         {activeTab === 'properties' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Gestion de mes biens</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.properties.title')}</h2>
                 <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
-                  <PlusIcon className="w-4 h-4" /> Ajouter
+                  <PlusIcon className="w-4 h-4" /> {t('agent.properties.add')}
                 </Link>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
-                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                     <th className="p-4 font-semibold">Titre & Ville</th>
-                     <th className="p-4 font-semibold">Attributs</th>
-                     <th className="p-4 font-semibold text-right">Tarif</th>
-                     <th className="p-4 font-semibold text-center">Statut</th>
-                     <th className="p-4 font-semibold text-right">Actions</th>
-                   </tr>
+                    <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <th className="p-4 font-semibold">{t('agent.properties.table.title')}</th>
+                      <th className="p-4 font-semibold">{t('agent.properties.table.attrs')}</th>
+                      <th className="p-4 font-semibold text-right">{t('prop.details.price')}</th>
+                      <th className="p-4 font-semibold text-center">{t('common.status')}</th>
+                      <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
+                    </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                    {properties.map(property => (
@@ -464,9 +464,9 @@ const AgentDashboard = () => {
                      </tr>
                    ))}
                    {properties.length === 0 && (
-                     <tr>
-                       <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">Aucun bien enregistré</td>
-                     </tr>
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.properties.no_data')}</td>
+                      </tr>
                    )}
                  </tbody>
                </table>
@@ -478,10 +478,10 @@ const AgentDashboard = () => {
         {activeTab === 'requests' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Gestion des demandes</h2>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.requests.title')}</h2>
               <div className="flex gap-2">
                 <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-500 rounded-full text-xs font-bold">
-                  {requests.filter(r => r.status === 'pending').length} en attente
+                  {t('agent.requests.pending_count', { count: requests.filter(r => r.status === 'pending').length })}
                 </span>
               </div>
             </div>
@@ -489,11 +489,11 @@ const AgentDashboard = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <th className="p-4 font-semibold">Client</th>
-                    <th className="p-4 font-semibold">Bien concerné</th>
-                    <th className="p-4 font-semibold">Date demande</th>
-                    <th className="p-4 font-semibold text-center">Statut</th>
-                    <th className="p-4 font-semibold text-right">Actions</th>
+                    <th className="p-4 font-semibold">{t('agent.requests.table.client')}</th>
+                    <th className="p-4 font-semibold">{t('agent.requests.table.property')}</th>
+                    <th className="p-4 font-semibold">{t('agent.requests.table.date')}</th>
+                    <th className="p-4 font-semibold text-center">{t('common.status')}</th>
+                    <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -508,7 +508,7 @@ const AgentDashboard = () => {
                         <div className="text-xs text-slate-500">{request.property?.city}</div>
                       </td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-400">
-                        {new Date(request.created_at).toLocaleDateString('fr-FR')}
+                        {new Date(request.created_at).toLocaleDateString(t('common.locale', 'fr-FR'))}
                       </td>
                       <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
                       <td className="p-4 text-right">
@@ -518,25 +518,25 @@ const AgentDashboard = () => {
                               onClick={() => handleProcessRequest(request.id, 'approved')}
                               className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-1"
                             >
-                              <CheckCircleIcon className="w-4 h-4" /> Approuver
+                              <CheckCircleIcon className="w-4 h-4" /> {t('common.approve')}
                             </button>
                             <button 
                               onClick={() => handleProcessRequest(request.id, 'rejected')}
                               className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
                             >
-                              <XCircleIcon className="w-4 h-4" /> Refuser
+                              <XCircleIcon className="w-4 h-4" /> {t('common.reject')}
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400 italic">Traitée le {new Date(request.processed_at || request.updated_at).toLocaleDateString('fr-FR')}</span>
+                          <span className="text-xs text-slate-400 italic">{t('agent.requests.processed_at', { date: new Date(request.processed_at || request.updated_at).toLocaleDateString(t('common.locale', 'fr-FR')) })}</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {requests.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">Aucune demande reçue</td>
-                    </tr>
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.requests.no_data')}</td>
+                      </tr>
                   )}
                 </tbody>
               </table>
@@ -547,19 +547,19 @@ const AgentDashboard = () => {
         {activeTab === 'contracts' && (
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Mes Contrats</h2>
-                <span className="text-sm text-slate-500 dark:text-slate-400">{stats.activeContracts} actif(s)</span>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.contracts.title')}</h2>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{t('agent.contracts.active_count', { count: stats.activeContracts })}</span>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
                    <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                     <th className="p-4 font-semibold">Propriété</th>
-                     <th className="p-4 font-semibold">Locataire</th>
-                     <th className="p-4 font-semibold text-right">Loyer</th>
-                     <th className="p-4 font-semibold text-center">Statut</th>
-                     <th className="p-4 font-semibold text-right">Actions</th>
-                   </tr>
+                    <th className="p-4 font-semibold">{t('agent.contracts.table.property')}</th>
+                    <th className="p-4 font-semibold">{t('agent.contracts.table.tenant')}</th>
+                    <th className="p-4 font-semibold text-right">{t('agent.contracts.table.rent')}</th>
+                    <th className="p-4 font-semibold text-center">{t('common.status')}</th>
+                    <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
+                  </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                    {contracts.map(contract => (
@@ -576,16 +576,16 @@ const AgentDashboard = () => {
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(contract.status)}</td>
                        <td className="p-4 text-right">
-                         <Link to={`/contracts/${contract.id}`} className="text-xs font-semibold text-primary hover:underline">
-                           Voir détails
-                         </Link>
+                          <Link to={`/contracts/${contract.id}`} className="text-xs font-semibold text-primary hover:underline">
+                            {t('admin.properties.table.details', 'Voir détails')}
+                          </Link>
                        </td>
                      </tr>
                    ))}
                    {contracts.length === 0 && (
-                     <tr>
-                       <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">Aucun contrat trouvé</td>
-                     </tr>
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.contracts.no_data')}</td>
+                      </tr>
                    )}
                  </tbody>
                </table>

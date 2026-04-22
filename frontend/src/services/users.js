@@ -1,12 +1,14 @@
 import api from './api';
 
 export const userService = {
-    async getAll(params = {}) {
+    async getAll(params = {}, options = {}) {
         try {
-            const response = await api.get('/users', { params });
+            const response = await api.get('/users', { params, ...options });
             return response.data;
         } catch (error) {
-            console.error('Erreur userService.getAll:', error);
+            if (error.name !== 'CanceledError' && error.name !== 'AbortError') {
+                console.error('Erreur userService.getAll:', error);
+            }
             throw error;
         }
     },

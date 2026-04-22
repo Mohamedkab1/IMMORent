@@ -63,6 +63,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [userSearch, setUserSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
 
   // --- Properties State ---
@@ -101,16 +102,24 @@ const AdminDashboard = () => {
     }
   };
 
-  const loadUsers = async () => {
+  const loadUsers = async (signal) => {
     setLoadingUsers(true);
     try {
       const res = await userService.getAll({ 
-        search: userSearch, 
+        search: debouncedSearch, 
         role: userRoleFilter 
-      });
-      if (res.success) setUsers(res.data.data);
+      }, { signal });
+      
+      if (res.success) {
+        // Handle paginated response correctly
+        const userData = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+        setUsers(userData);
+      }
     } catch (error) {
-      toast.error('Erreur chargement utilisateurs');
+      if (error.name !== 'CanceledError' && error.name !== 'AbortError') {
+        console.error('Erreur loadUsers:', error);
+        toast.error('Erreur chargement utilisateurs');
+      }
     } finally {
       setLoadingUsers(false);
     }
@@ -178,15 +187,33 @@ const AdminDashboard = () => {
     }
   };
 
+  // Debounce for user search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(userSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
+
   useEffect(() => {
     if (activeTab === 'dashboard') loadDashboardStats();
-    if (activeTab === 'users') loadUsers();
+    
+    let controller;
+    if (activeTab === 'users') {
+      controller = new AbortController();
+      loadUsers(controller.signal);
+    }
+
     if (activeTab === 'properties') loadProperties();
     if (activeTab === 'contracts') loadContracts();
     if (activeTab === 'payments') loadPayments();
     if (activeTab === 'agent-requests') loadAgentRequests();
     if (activeTab === 'settings') loadSettings();
-  }, [activeTab, userSearch, userRoleFilter, propStatusFilter]);
+
+    return () => {
+      if (controller) controller.abort();
+    };
+  }, [activeTab, debouncedSearch, userRoleFilter, propStatusFilter]);
 
   // --- Handlers ---
   const handleToggleUserStatus = async (id) => {
@@ -348,38 +375,38 @@ const AdminDashboard = () => {
             to="/dashboard/admin" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <ChartBarIcon className="w-5 h-5" /> Vue d'ensemble
+            <ChartBarIcon className="w-5 h-5" /> {t('admin.tabs.overview')}
           </Link>
           <Link 
             to="/dashboard/admin/users" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <UserGroupIcon className="w-5 h-5" /> Utilisateurs
+            <UserGroupIcon className="w-5 h-5" /> {t('admin.tabs.users')}
           </Link>
           <Link 
             to="/dashboard/admin/properties" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <HomeIcon className="w-5 h-5" /> Biens Immobiliers
+            <HomeIcon className="w-5 h-5" /> {t('admin.tabs.properties')}
           </Link>
           <Link 
             to="/dashboard/admin/contracts" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <DocumentTextIcon className="w-5 h-5" /> Contrats
+            <DocumentTextIcon className="w-5 h-5" /> {t('admin.tabs.contracts')}
           </Link>
           <Link 
             to="/dashboard/admin/payments" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <CurrencyDollarIcon className="w-5 h-5" /> Paiements
+            <CurrencyDollarIcon className="w-5 h-5" /> {t('admin.tabs.payments')}
           </Link>
           <div className="h-px bg-slate-100 dark:bg-slate-800 my-4 mx-4"></div>
           <Link 
             to="/dashboard/admin/agent-requests" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <UserIcon className="w-5 h-5" /> Demandes Agents
+            <UserIcon className="w-5 h-5" /> {t('admin.tabs.agent_requests')}
             {stats?.requests?.pending > 0 && (
               <span className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 bg-rose-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 animate-pulse">
                 {stats.requests.pending}
@@ -390,7 +417,7 @@ const AdminDashboard = () => {
             to="/dashboard/admin/settings" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
           >
-            <Cog6ToothIcon className="w-5 h-5" /> Paramètres
+            <Cog6ToothIcon className="w-5 h-5" /> {t('admin.tabs.settings')}
           </Link>
         </nav>
 
@@ -401,14 +428,14 @@ const AdminDashboard = () => {
              </div>
              <div>
                <p className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[120px]">{user.name}</p>
-               <p className="text-[10px] text-slate-500 dark:text-slate-400">Administrateur</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('auth.role.admin')}</p>
              </div>
            </div>
            <button 
              onClick={() => navigate('/')}
              className="w-full py-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
            >
-             <HomeIcon className="w-3.5 h-3.5" /> Retour au site
+             <HomeIcon className="w-3.5 h-3.5" /> {t('admin.back_to_site', 'Retour au site')}
            </button>
         </div>
       </aside>
@@ -419,16 +446,16 @@ const AdminDashboard = () => {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
             <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
-              {activeTab === 'dashboard' && "Tableau de Bord"}
-              {activeTab === 'users' && "Gestion des Utilisateurs"}
-              {activeTab === 'properties' && "Validation des Biens"}
-              {activeTab === 'contracts' && "Suivi des Contrats"}
-              {activeTab === 'payments' && "Historique des Paiements"}
-              {activeTab === 'agent-requests' && "Candidatures Agents"}
-              {activeTab === 'settings' && "Paramètres Système"}
+              {activeTab === 'dashboard' && t('admin.tabs.overview')}
+              {activeTab === 'users' && t('admin.tabs.users')}
+              {activeTab === 'properties' && t('admin.tabs.properties')}
+              {activeTab === 'contracts' && t('admin.tabs.contracts')}
+              {activeTab === 'payments' && t('admin.tabs.payments')}
+              {activeTab === 'agent-requests' && t('admin.tabs.agent_requests')}
+              {activeTab === 'settings' && t('admin.tabs.settings')}
             </h2>
             <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Bienvenue, {user.name}. Voici l'état actuel de votre plateforme.
+              {t('dash.client.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -462,7 +489,7 @@ const AdminDashboard = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard 
-                  title="Total Biens" 
+                  title={t('dash.stats.total_properties')} 
                   value={stats?.properties?.total || 0} 
                   icon={BuildingOfficeIcon} 
                   trend="+12%" 
@@ -470,7 +497,7 @@ const AdminDashboard = () => {
                   color="blue"
                 />
                 <StatsCard 
-                  title="Utilisateurs" 
+                  title={t('admin.tabs.users')} 
                   value={stats?.users?.total || 0} 
                   icon={UserGroupIcon} 
                   trend="+5%" 
@@ -478,7 +505,7 @@ const AdminDashboard = () => {
                   color="purple"
                 />
                 <StatsCard 
-                  title="Revenus" 
+                  title={t('dash.stats.revenue')} 
                   value={`${stats?.revenue?.total || 0} DH`} 
                   icon={CurrencyDollarIcon} 
                   trend="+18%" 
@@ -486,7 +513,7 @@ const AdminDashboard = () => {
                   color="amber"
                 />
                 <StatsCard 
-                  title="Demandes" 
+                  title={t('admin.tabs.agent_requests')} 
                   value={stats?.requests?.total || 0} 
                   icon={DocumentTextIcon} 
                   trend="-2%" 
@@ -500,8 +527,8 @@ const AdminDashboard = () => {
               <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none p-8">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Performance Financière</h3>
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">Évolution des revenus mensuels</p>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.overview.performance')}</h3>
+                    <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">{t('admin.overview.evolution')}</p>
                   </div>
                   <select className="bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs font-bold text-slate-600 px-4 py-2 outline-none">
                     <option>Année 2024</option>
@@ -514,7 +541,7 @@ const AdminDashboard = () => {
               </div>
 
               <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none p-8">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight mb-8">Alertes Système</h3>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight mb-8">{t('admin.overview.alerts')}</h3>
                 <div className="space-y-4">
                    <div className="p-5 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-3xl flex gap-4">
                       <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
@@ -545,101 +572,121 @@ const AdminDashboard = () => {
           <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none overflow-hidden">
              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Répertoire Utilisateurs</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{users.length} Comptes enregistrés</p>
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.users.title')}</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{users.length} {t('admin.users.count')}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                   <div className="relative flex-1 lg:w-64 lg:flex-none">
-                      <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input 
-                        type="text" 
-                        placeholder="Rechercher..." 
-                        value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:bg-white dark:focus:bg-slate-800 border-slate-100 dark:border-slate-800 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
-                      />
-                   </div>
+                    <div className="relative flex-1 lg:w-64 lg:flex-none">
+                       {loadingUsers ? (
+                         <ArrowPathIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
+                       ) : (
+                         <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                       )}
+                       <input 
+                         type="text" 
+                         placeholder="Rechercher par nom, email ou ID..." 
+                         value={userSearch}
+                         onChange={(e) => setUserSearch(e.target.value)}
+                         className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:bg-white dark:focus:bg-slate-800 border-slate-100 dark:border-slate-800 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
+                       />
+                    </div>
                    <select 
                      value={userRoleFilter}
                      onChange={(e) => setUserRoleFilter(e.target.value)}
                      className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl text-xs font-bold text-slate-600 dark:text-slate-400 outline-none"
                    >
-                     <option value="">Tous les rôles</option>
-                     <option value="admin">Administrateurs</option>
-                     <option value="agent">Agents</option>
-                     <option value="client">Clients</option>
+                     <option value="">{t('admin.users.filter.all_roles')}</option>
+                     <option value="admin">{t('auth.role.admin', 'Administrateurs')}</option>
+                     <option value="agent">{t('auth.role.agent')}</option>
+                     <option value="client">{t('auth.role.client')}</option>
                    </select>
                    <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-xs font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
                      <PlusIcon className="w-4 h-4" /> Nouveau
                    </button>
-                </div>
-             </div>
-             
-             <div className="overflow-x-auto">
-               {loadingUsers ? (
-                 <div className="p-20 text-center text-slate-400 animate-pulse font-bold tracking-widest uppercase">Chargement des données...</div>
-               ) : (
-                 <table className="w-full text-left border-collapse">
-                   <thead>
-                     <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                       <th className="px-8 py-5">Utilisateur</th>
-                       <th className="px-8 py-5">Rôle</th>
-                       <th className="px-8 py-5 text-center">Statut</th>
-                       <th className="px-8 py-5">Date Inscription</th>
-                       <th className="px-8 py-5 text-right">Actions</th>
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                     {users.map(u => (
-                       <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
-                         <td className="px-8 py-5">
-                           <div className="flex items-center gap-4">
-                             <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-primary font-black shadow-sm group-hover:scale-110 transition-transform">
-                               {u.name.charAt(0)}
-                             </div>
-                             <div>
-                               <div className="font-bold text-slate-800 dark:text-white text-sm">{u.name}</div>
-                               <div className="text-[11px] text-slate-400 font-medium mt-0.5">{u.email}</div>
-                             </div>
-                           </div>
-                         </td>
-                         <td className="px-8 py-5">{getRoleBadge(u.role)}</td>
-                         <td className="px-8 py-5 text-center">{getStatusBadge(u.is_active)}</td>
-                         <td className="px-8 py-5">
-                           <div className="text-xs text-slate-600 dark:text-slate-400 font-bold">
-                             {new Date(u.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                           </div>
-                         </td>
-                         <td className="px-8 py-5 text-right">
-                           <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button 
-                               onClick={() => handleToggleUserStatus(u.id)}
-                               className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
-                               title={u.is_active ? "Désactiver" : "Activer"}
-                             >
-                               <ArrowPathIcon className="w-4 h-4" />
-                             </button>
-                             <button 
-                               onClick={() => handleDeleteUser(u.id)}
-                               className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-rose-100 hover:text-rose-600 transition-all"
-                               title="Supprimer"
-                             >
-                               <TrashIcon className="w-4 h-4" />
-                             </button>
-                           </div>
-                         </td>
-                       </tr>
-                     ))}
-                     {users.length === 0 && (
-                       <tr>
-                         <td colSpan="5" className="p-20 text-center text-slate-400 italic">Aucun utilisateur correspondant</td>
-                       </tr>
-                     )}
-                   </tbody>
-                 </table>
-               )}
-             </div>
-          </section>
+                 </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                      <th className="px-8 py-5">{t('admin.users.table.user')}</th>
+                      <th className="px-8 py-5">{t('admin.users.table.role')}</th>
+                      <th className="px-8 py-5 text-center">{t('admin.users.table.status')}</th>
+                      <th className="px-8 py-5">{t('admin.users.table.date')}</th>
+                      <th className="px-8 py-5 text-right">{t('common.actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                    {loadingUsers ? (
+                      [1, 2, 3, 4, 5].map(i => (
+                        <tr key={i} className="animate-pulse">
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-4">
+                              <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-800"></div>
+                              <div className="space-y-2">
+                                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                                <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800/50 rounded"></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5"><div className="h-6 w-16 bg-slate-100 dark:bg-slate-800 rounded-md"></div></td>
+                          <td className="px-8 py-5 text-center"><div className="mx-auto h-5 w-12 bg-slate-100 dark:bg-slate-800 rounded-full"></div></td>
+                          <td className="px-8 py-5"><div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
+                          <td className="px-8 py-5 text-right"><div className="ml-auto h-8 w-16 bg-slate-100 dark:bg-slate-800 rounded-xl"></div></td>
+                        </tr>
+                      ))
+                    ) : (
+                      <>
+                        {users.map(u => (
+                          <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                            <td className="px-8 py-5">
+                              <div className="flex items-center gap-4">
+                                <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-primary font-black shadow-sm group-hover:scale-110 transition-transform">
+                                  {u.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-slate-800 dark:text-white text-sm">{u.name}</div>
+                                  <div className="text-[11px] text-slate-400 font-medium mt-0.5">{u.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-5">{getRoleBadge(u.role)}</td>
+                            <td className="px-8 py-5 text-center">{getStatusBadge(u.is_active)}</td>
+                            <td className="px-8 py-5">
+                              <div className="text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                {new Date(u.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </div>
+                            </td>
+                            <td className="px-8 py-5 text-right">
+                              <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={() => handleToggleUserStatus(u.id)}
+                                  className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+                                  title={u.is_active ? "Désactiver" : "Activer"}
+                                >
+                                  <ArrowPathIcon className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteUser(u.id)}
+                                  className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-rose-100 hover:text-rose-600 transition-all"
+                                  title="Supprimer"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {users.length === 0 && (
+                          <tr>
+                            <td colSpan="5" className="p-20 text-center text-slate-400 italic">Aucun utilisateur correspondant</td>
+                          </tr>
+                        )}
+                      </>
+                    )}
+                  </tbody>
+                </table>
+             </div>          </section>
         )}
 
         {/* Properties Tab */}
@@ -647,18 +694,18 @@ const AdminDashboard = () => {
           <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/20">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Gestion du Parc Immobilier</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{properties.length} Biens sous surveillance</p>
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.properties.title')}</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{properties.length} {t('admin.properties.subtitle', 'Biens sous surveillance')}</p>
                 </div>
                 <select 
                   value={propStatusFilter}
                   onChange={(e) => setPropStatusFilter(e.target.value)}
                   className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 outline-none"
                 >
-                  <option value="">Tous les statuts</option>
-                  <option value="available">Disponible</option>
-                  <option value="rented">Loué</option>
-                  <option value="sold">Vendu</option>
+                  <option value="">{t('admin.properties.filter.all', 'Tous les statuts')}</option>
+                  <option value="available">{t('prop.status.available')}</option>
+                  <option value="rented">{t('prop.status.rented')}</option>
+                  <option value="sold">{t('prop.status.sold')}</option>
                 </select>
              </div>
              
@@ -669,11 +716,11 @@ const AdminDashboard = () => {
                  <table className="w-full text-left border-collapse">
                    <thead>
                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                       <th className="px-8 py-5">Bien / Référence</th>
-                       <th className="px-8 py-5">Agent Responsable</th>
-                       <th className="px-8 py-5 text-center">Approbation</th>
-                       <th className="px-8 py-5 text-center">Flags</th>
-                       <th className="px-8 py-5 text-right">Actions</th>
+                       <th className="px-8 py-5">{t('admin.properties.table.reference')}</th>
+                       <th className="px-8 py-5">{t('admin.properties.table.agent')}</th>
+                       <th className="px-8 py-5 text-center">{t('admin.properties.table.approval')}</th>
+                       <th className="px-8 py-5 text-center">{t('admin.properties.table.flags')}</th>
+                       <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -695,7 +742,7 @@ const AdminDashboard = () => {
                            </div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.user?.name || 'Inconnu'}</div>
+                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.user?.name || t('common.unknown', 'Inconnu')}</div>
                             <div className="text-[10px] text-slate-400 uppercase tracking-wider">{p.user?.email}</div>
                          </td>
                          <td className="px-8 py-5 text-center">
@@ -727,13 +774,13 @@ const AdminDashboard = () => {
                             </div>
                          </td>
                          <td className="px-8 py-5 text-right">
-                            <Link to={`/properties/${p.id}`} className="text-primary font-black text-xs hover:underline tracking-tight">Voir Détails</Link>
+                            <Link to={`/properties/${p.id}`} className="text-primary font-black text-xs hover:underline tracking-tight">{t('admin.properties.table.details', 'Voir Détails')}</Link>
                          </td>
                        </tr>
                      ))}
                      {properties.length === 0 && (
                        <tr>
-                         <td colSpan="5" className="p-20 text-center text-slate-400 italic">Aucun bien à afficher</td>
+                         <td colSpan="5" className="p-20 text-center text-slate-400 italic">{t('admin.properties.no_data', 'Aucun bien à afficher')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -747,8 +794,8 @@ const AdminDashboard = () => {
         {activeTab === 'contracts' && (
           <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
              <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Suivi des Contrats</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Gérez les engagements juridiques de la plateforme</p>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.contracts.title')}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.contracts.subtitle')}</p>
              </div>
              
              <div className="overflow-x-auto">
@@ -758,11 +805,11 @@ const AdminDashboard = () => {
                  <table className="w-full text-left border-collapse">
                    <thead>
                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                       <th className="px-8 py-5">N° Contrat</th>
-                       <th className="px-8 py-5">Parties Prenantes</th>
-                       <th className="px-8 py-5">Période</th>
-                       <th className="px-8 py-5">Statut</th>
-                       <th className="px-8 py-5 text-right">Actions</th>
+                       <th className="px-8 py-5">{t('admin.contracts.table.number')}</th>
+                       <th className="px-8 py-5">{t('admin.contracts.table.parties')}</th>
+                       <th className="px-8 py-5">{t('admin.contracts.table.period')}</th>
+                       <th className="px-8 py-5">{t('admin.contracts.table.status')}</th>
+                       <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -770,7 +817,7 @@ const AdminDashboard = () => {
                        <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
                          <td className="px-8 py-5">
                            <div className="font-black text-slate-800 dark:text-white text-sm">{c.contract_number}</div>
-                           <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{c.contract_type === 'sale' ? 'Vente' : 'Location'}</div>
+                           <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{c.contract_type === 'sale' ? t('admin.contracts.type.sale', 'Vente') : t('admin.contracts.type.rent', 'Location')}</div>
                          </td>
                          <td className="px-8 py-5">
                             <div className="flex flex-col gap-1">
@@ -785,7 +832,7 @@ const AdminDashboard = () => {
                          </td>
                          <td className="px-8 py-5">
                             <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                               {c.status === 'active' ? 'Actif' : c.status}
+                               {c.status === 'active' ? t('admin.contracts.status.active', 'Actif') : c.status}
                             </span>
                          </td>
                          <td className="px-8 py-5 text-right">
@@ -800,7 +847,7 @@ const AdminDashboard = () => {
                      ))}
                      {contracts.length === 0 && (
                        <tr>
-                         <td colSpan="5" className="p-20 text-center text-slate-400 italic font-bold">Aucun contrat enregistré</td>
+                         <td colSpan="5" className="p-20 text-center text-slate-400 italic font-bold">{t('admin.contracts.no_data', 'Aucun contrat enregistré')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -814,8 +861,8 @@ const AdminDashboard = () => {
         {activeTab === 'payments' && (
           <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
              <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Historique des Flux Financiers</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Suivi des transactions et règlements clients</p>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.payments.title')}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.payments.subtitle')}</p>
              </div>
              
              <div className="overflow-x-auto">
@@ -825,12 +872,12 @@ const AdminDashboard = () => {
                  <table className="w-full text-left border-collapse">
                    <thead>
                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                       <th className="px-8 py-5">Référence / Date</th>
-                       <th className="px-8 py-5">Contrat / Client</th>
-                       <th className="px-8 py-5">Montant</th>
-                       <th className="px-8 py-5 text-center">Méthode</th>
-                       <th className="px-8 py-5 text-center">Statut</th>
-                       <th className="px-8 py-5 text-right">Actions</th>
+                       <th className="px-8 py-5">{t('admin.payments.table.ref')}</th>
+                       <th className="px-8 py-5">{t('admin.contracts.table.parties')}</th>
+                       <th className="px-8 py-5">{t('common.amount')}</th>
+                       <th className="px-8 py-5 text-center">{t('admin.payments.table.method')}</th>
+                       <th className="px-8 py-5 text-center">{t('common.status')}</th>
+                       <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -841,7 +888,7 @@ const AdminDashboard = () => {
                             <div className="text-[10px] font-bold text-slate-400 mt-0.5">{new Date(pay.payment_date).toLocaleDateString()}</div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Contrat: {pay.contract?.contract_number}</div>
+                            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{t('admin.contracts.table.number')}: {pay.contract?.contract_number}</div>
                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">{pay.tenant?.name}</div>
                          </td>
                          <td className="px-8 py-5">
@@ -849,7 +896,7 @@ const AdminDashboard = () => {
                          </td>
                          <td className="px-8 py-5 text-center">
                             <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[9px] font-bold uppercase tracking-tighter">
-                               {pay.payment_method === 'bank_transfer' ? 'Virement' : pay.payment_method}
+                               {pay.payment_method === 'bank_transfer' ? t('admin.payments.method.bank', 'Virement') : pay.payment_method}
                             </span>
                          </td>
                          <td className="px-8 py-5 text-center">
@@ -858,10 +905,10 @@ const AdminDashboard = () => {
                               onChange={(e) => handleUpdatePaymentStatus(pay.id, e.target.value)}
                               className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase border-none outline-none ${pay.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}
                             >
-                               <option value="pending">En attente</option>
-                               <option value="paid">Payé</option>
-                               <option value="late">Retard</option>
-                               <option value="cancelled">Annulé</option>
+                               <option value="pending">{t('admin.payments.status.pending')}</option>
+                               <option value="paid">{t('admin.payments.status.paid')}</option>
+                               <option value="late">{t('admin.payments.status.late')}</option>
+                               <option value="cancelled">{t('admin.payments.status.cancelled')}</option>
                             </select>
                          </td>
                          <td className="px-8 py-5 text-right">
@@ -871,7 +918,7 @@ const AdminDashboard = () => {
                      ))}
                      {payments.length === 0 && (
                        <tr>
-                         <td colSpan="6" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">Aucun flux financier enregistré</td>
+                         <td colSpan="6" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">{t('admin.payments.no_data', 'Aucun flux financier enregistré')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -887,8 +934,8 @@ const AdminDashboard = () => {
             <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl p-10">
                <div className="flex justify-between items-start mb-10">
                   <div>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Paramètres Généraux</h3>
-                    <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-widest">Configurez les règles métier de la plateforme</p>
+                    <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.tabs.settings')}</h3>
+                    <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-widest">{t('admin.settings.subtitle', 'Configurez les règles métier de la plateforme')}</p>
                   </div>
                   <button 
                     onClick={handleSaveSettings}
@@ -896,7 +943,7 @@ const AdminDashboard = () => {
                     className="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-primary/90 disabled:opacity-50 shadow-xl shadow-primary/30 transition-all flex items-center gap-2"
                   >
                     {savingSettings ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
-                    {savingSettings ? "Enregistrement..." : "Sauvegarder les modifications"}
+                    {savingSettings ? t('admin.settings.saving', 'Enregistrement...') : t('admin.settings.save', 'Sauvegarder les modifications')}
                   </button>
                </div>
 
@@ -926,10 +973,10 @@ const AdminDashboard = () => {
             </section>
             
             <section className="bg-rose-50/50 dark:bg-rose-900/5 border border-rose-100 dark:border-rose-900/20 rounded-[2.5rem] p-10">
-               <h4 className="text-lg font-black text-rose-800 dark:text-rose-400 tracking-tight mb-4">Zone de Danger</h4>
-               <p className="text-sm text-rose-600 dark:text-rose-500/70 mb-6 font-medium">Les actions suivantes sont irréversibles. Soyez prudent avant de procéder.</p>
+               <h4 className="text-lg font-black text-rose-800 dark:text-rose-400 tracking-tight mb-4">{t('admin.settings.danger_zone', 'Zone de Danger')}</h4>
+               <p className="text-sm text-rose-600 dark:text-rose-500/70 mb-6 font-medium">{t('admin.settings.danger_desc', 'Les actions suivantes sont irréversibles.')}</p>
                <button className="px-6 py-3 bg-white dark:bg-rose-950 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">
-                  Réinitialiser la base de données
+                  {t('admin.settings.reset_db', 'Réinitialiser la base de données')}
                </button>
             </section>
           </div>
@@ -939,8 +986,8 @@ const AdminDashboard = () => {
         {activeTab === 'agent-requests' && (
           <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
              <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Candidatures Agents</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Examinez les demandes de passage au rôle Agent</p>
+                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.agent_requests.title')}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.agent_requests.subtitle', 'Examinez les demandes de passage au rôle Agent')}</p>
              </div>
              
              <div className="overflow-x-auto">
@@ -950,10 +997,10 @@ const AdminDashboard = () => {
                  <table className="w-full text-left border-collapse">
                    <thead>
                      <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                       <th className="px-8 py-5">Candidat</th>
-                       <th className="px-8 py-5">Contact</th>
-                       <th className="px-8 py-5">Date Demande</th>
-                       <th className="px-8 py-5 text-right">Actions</th>
+                       <th className="px-8 py-5">{t('admin.agent_requests.table.candidate', 'Candidat')}</th>
+                       <th className="px-8 py-5">{t('admin.agent_requests.table.contact', 'Contact')}</th>
+                       <th className="px-8 py-5">{t('admin.agent_requests.table.date', 'Date Demande')}</th>
+                       <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -965,7 +1012,7 @@ const AdminDashboard = () => {
                          </td>
                          <td className="px-8 py-5">
                             <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{req.email}</div>
-                            <div className="text-[10px] font-bold text-slate-400 mt-0.5">{req.phone || 'Pas de téléphone'}</div>
+                            <div className="text-[10px] font-bold text-slate-400 mt-0.5">{req.phone || t('common.no_phone', 'Pas de téléphone')}</div>
                          </td>
                          <td className="px-8 py-5">
                             <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
@@ -978,13 +1025,13 @@ const AdminDashboard = () => {
                                  onClick={() => handleProcessAgentRequest(req.id, 'approved')}
                                  className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
                                >
-                                 Approuver
+                                 {t('common.approve', 'Approuver')}
                                </button>
                                <button 
                                  onClick={() => handleProcessAgentRequest(req.id, 'rejected')}
                                  className="px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
                                >
-                                 Refuser
+                                 {t('common.reject', 'Refuser')}
                                </button>
                             </div>
                          </td>
@@ -992,7 +1039,7 @@ const AdminDashboard = () => {
                      ))}
                      {agentRequests.length === 0 && (
                        <tr>
-                         <td colSpan="4" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">Aucune candidature en attente</td>
+                         <td colSpan="4" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">{t('admin.agent_requests.no_data', 'Aucune candidature en attente')}</td>
                        </tr>
                      )}
                    </tbody>
