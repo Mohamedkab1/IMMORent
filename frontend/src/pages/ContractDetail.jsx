@@ -90,27 +90,17 @@ const ContractDetail = () => {
 
   const getStatusBadge = (status, contractType) => {
     const statusConfig = {
-      active: { bg: '#dcfce7', color: '#059669', text: contractType === 'rent' ? 'Actif' : 'En cours', icon: CheckCircleIcon },
-      terminated: { bg: '#fee2e2', color: '#dc2626', text: 'Résilié', icon: ExclamationTriangleIcon },
-      expired: { bg: '#f3f4f6', color: '#6b7280', text: 'Expiré', icon: ExclamationTriangleIcon },
-      completed: { bg: '#dbeafe', color: '#2563eb', text: 'Terminé', icon: CheckCircleIcon }
+      active: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-700 dark:text-emerald-400', text: contractType === 'rent' ? 'Actif' : 'En cours', icon: CheckCircleIcon },
+      terminated: { bg: 'bg-rose-100 dark:bg-rose-900/30', color: 'text-rose-700 dark:text-rose-400', text: 'Résilié', icon: ExclamationTriangleIcon },
+      expired: { bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-500 dark:text-slate-400', text: 'Expiré', icon: ExclamationTriangleIcon },
+      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400', text: 'Terminé', icon: CheckCircleIcon }
     };
     const config = statusConfig[status] || statusConfig.active;
     const Icon = config.icon;
     
     return (
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.375rem',
-        padding: '0.375rem 0.75rem',
-        background: config.bg,
-        color: config.color,
-        borderRadius: '2rem',
-        fontSize: '0.75rem',
-        fontWeight: '500'
-      }}>
-        <Icon style={{ width: '0.875rem', height: '0.875rem' }} />
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${config.bg} ${config.color}`}>
+        <Icon className="w-4 h-4" />
         {config.text}
       </span>
     );
@@ -119,35 +109,15 @@ const ContractDetail = () => {
   const getContractTypeBadge = (type) => {
     if (type === 'rent') {
       return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.375rem',
-          padding: '0.375rem 0.75rem',
-          background: '#dcfce7',
-          color: '#059669',
-          borderRadius: '2rem',
-          fontSize: '0.75rem',
-          fontWeight: '500'
-        }}>
-          <KeyIcon style={{ width: '0.875rem', height: '0.875rem' }} />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+          <KeyIcon className="w-4 h-4" />
           Contrat de location
         </span>
       );
     } else {
       return (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.375rem',
-          padding: '0.375rem 0.75rem',
-          background: '#fee2e2',
-          color: '#dc2626',
-          borderRadius: '2rem',
-          fontSize: '0.75rem',
-          fontWeight: '500'
-        }}>
-          <TagIcon style={{ width: '0.875rem', height: '0.875rem' }} />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
+          <TagIcon className="w-4 h-4" />
           Contrat de vente
         </span>
       );
@@ -156,9 +126,9 @@ const ContractDetail = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Chargement du contrat...</p>
+      <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
+        <div className="w-16 h-16 border-4 border-bg-card border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="text-text-muted font-medium">Chargement du contrat...</p>
       </div>
     );
   }
@@ -171,557 +141,225 @@ const ContractDetail = () => {
   const canManage = isAgent || isAdmin;
 
   return (
-    <>
-      <div className="contract-detail-page">
-        <div className="detail-container">
-          {/* Navigation */}
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowLeftIcon style={{ width: '1rem', height: '1rem' }} />
-            Retour
-          </button>
+    <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Navigation */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-sub hover:text-primary transition-colors font-medium">
+          <ArrowLeftIcon className="w-4 h-4" />
+          Retour
+        </button>
 
-          {/* En-tête */}
-          <div className="header">
-            <div className="header-left">
-              <h1>Contrat de {isRentContract ? 'location' : 'vente'}</h1>
-              <p className="contract-number">N° {contract.contract_number}</p>
-              <div className="badges">
-                {getContractTypeBadge(contract.contract_type)}
-                {getStatusBadge(contract.status, contract.contract_type)}
+        {/* En-tête */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight mb-2">Contrat de {isRentContract ? 'location' : 'vente'}</h1>
+          <p className="text-text-sub font-medium mb-4">N° {contract.contract_number}</p>
+          <div className="flex flex-wrap gap-3">
+            {getContractTypeBadge(contract.contract_type)}
+            {getStatusBadge(contract.status, contract.contract_type)}
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Informations du bien */}
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
+              <HomeIcon className="w-5 h-5 text-primary" />
+              Informations du bien
+            </h2>
+            <h3 className="font-bold text-text-main text-lg mb-2">{contract.property?.title}</h3>
+            <p className="flex items-center gap-1.5 text-text-sub font-medium text-sm mb-4">
+              <MapPinIcon className="w-4 h-4" />
+              {contract.property?.address}, {contract.property?.city} {contract.property?.postal_code}
+            </p>
+            <div className="flex flex-wrap gap-4 text-text-sub font-medium text-sm">
+              <span className="flex items-center gap-1.5"><BuildingOfficeIcon className="w-4 h-4" /> {contract.property?.surface} m²</span>
+              <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.rooms} pièces</span>
+              {contract.property?.bedrooms > 0 && (
+                <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.bedrooms} chambres</span>
+              )}
+            </div>
+          </div>
+
+          {/* Parties prenantes */}
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
+              <UserIcon className="w-5 h-5 text-primary" />
+              Parties prenantes
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isRentContract ? (
+                <>
+                  <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Locataire</h4>
+                    <p className="font-bold text-text-main mb-1">{contract.tenant?.name}</p>
+                    <p className="text-xs text-text-sub mb-1">{contract.tenant?.email}</p>
+                    <p className="text-xs text-text-sub">{contract.tenant?.phone}</p>
+                  </div>
+                  <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Propriétaire</h4>
+                    <p className="font-bold text-text-main mb-1">{contract.owner?.name}</p>
+                    <p className="text-xs text-text-sub mb-1">{contract.owner?.email}</p>
+                    <p className="text-xs text-text-sub">{contract.owner?.phone}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Acheteur</h4>
+                    <p className="font-bold text-text-main mb-1">{contract.buyer?.name}</p>
+                    <p className="text-xs text-text-sub mb-1">{contract.buyer?.email}</p>
+                    <p className="text-xs text-text-sub">{contract.buyer?.phone}</p>
+                  </div>
+                  <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Vendeur</h4>
+                    <p className="font-bold text-text-main mb-1">{contract.seller?.name}</p>
+                    <p className="text-xs text-text-sub mb-1">{contract.seller?.email}</p>
+                    <p className="text-xs text-text-sub">{contract.seller?.phone}</p>
+                  </div>
+                </>
+              )}
+              <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
+                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Agent immobilier</h4>
+                <p className="font-bold text-text-main mb-1">{contract.agent?.name}</p>
+                <p className="text-xs text-text-sub mb-1">{contract.agent?.email}</p>
+                <p className="text-xs text-text-sub">{contract.agent?.phone}</p>
               </div>
             </div>
           </div>
 
-          <div className="content">
-            {/* Informations du bien */}
-            <div className="info-card">
-              <h2>
-                <HomeIcon style={{ width: '1rem', height: '1rem' }} />
-                Informations du bien
-              </h2>
-              <h3>{contract.property?.title}</h3>
-              <p className="property-address">
-                <MapPinIcon style={{ width: '0.875rem', height: '0.875rem' }} />
-                {contract.property?.address}, {contract.property?.city} {contract.property?.postal_code}
-              </p>
-              <div className="property-features">
-                <span><BuildingOfficeIcon style={{ width: '0.875rem', height: '0.875rem' }} /> {contract.property?.surface} m²</span>
-                <span><HomeIcon style={{ width: '0.875rem', height: '0.875rem' }} /> {contract.property?.rooms} pièces</span>
-                {contract.property?.bedrooms > 0 && (
-                  <span><HomeIcon style={{ width: '0.875rem', height: '0.875rem' }} /> {contract.property?.bedrooms} chambres</span>
-                )}
-              </div>
-            </div>
-
-            {/* Parties prenantes */}
-            <div className="info-card">
-              <h2>
-                <UserIcon style={{ width: '1rem', height: '1rem' }} />
-                Parties prenantes
-              </h2>
-              <div className="parties-grid">
-                {isRentContract ? (
-                  <>
-                    <div className="party-card">
-                      <h4>Locataire</h4>
-                      <p className="party-name">{contract.tenant?.name}</p>
-                      <p className="party-contact">{contract.tenant?.email}</p>
-                      <p className="party-contact">{contract.tenant?.phone}</p>
-                    </div>
-                    <div className="party-card">
-                      <h4>Propriétaire</h4>
-                      <p className="party-name">{contract.owner?.name}</p>
-                      <p className="party-contact">{contract.owner?.email}</p>
-                      <p className="party-contact">{contract.owner?.phone}</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="party-card">
-                      <h4>Acheteur</h4>
-                      <p className="party-name">{contract.buyer?.name}</p>
-                      <p className="party-contact">{contract.buyer?.email}</p>
-                      <p className="party-contact">{contract.buyer?.phone}</p>
-                    </div>
-                    <div className="party-card">
-                      <h4>Vendeur</h4>
-                      <p className="party-name">{contract.seller?.name}</p>
-                      <p className="party-contact">{contract.seller?.email}</p>
-                      <p className="party-contact">{contract.seller?.phone}</p>
-                    </div>
-                  </>
-                )}
-                <div className="party-card">
-                  <h4>Agent immobilier</h4>
-                  <p className="party-name">{contract.agent?.name}</p>
-                  <p className="party-contact">{contract.agent?.email}</p>
-                  <p className="party-contact">{contract.agent?.phone}</p>
+          {/* Conditions financières */}
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
+              <CurrencyEuroIcon className="w-5 h-5 text-primary" />
+              Conditions {isRentContract ? 'financières' : 'de vente'}
+            </h2>
+            {isRentContract ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                  <span className="text-sm text-text-sub font-medium">Loyer mensuel</span>
+                  <span className="font-bold text-text-main">{contract.monthly_rent?.toLocaleString('fr-FR')} DH</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                  <span className="text-sm text-text-sub font-medium">Charges mensuelles</span>
+                  <span className="font-bold text-text-main">{contract.charges?.toLocaleString('fr-FR')} DH</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-primary/10 rounded-xl border border-primary/20 md:col-span-2">
+                  <span className="text-sm font-bold text-primary">Total mensuel</span>
+                  <span className="font-black text-primary text-lg">{(contract.monthly_rent + (contract.charges || 0)).toLocaleString('fr-FR')} DH</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
+                  <span className="text-sm text-text-sub font-medium">Dépôt de garantie</span>
+                  <span className="font-bold text-text-main">{contract.security_deposit?.toLocaleString('fr-FR')} DH</span>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex justify-between items-center p-4 bg-primary/10 rounded-xl border border-primary/20 md:col-span-2">
+                  <span className="text-sm font-bold text-primary">Prix de vente</span>
+                  <span className="font-black text-primary text-lg">{contract.sale_price?.toLocaleString('fr-FR')} DH</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                  <span className="text-sm text-text-sub font-medium">Date de vente</span>
+                  <span className="font-bold text-text-main">{new Date(contract.sale_date).toLocaleDateString('fr-FR')}</span>
+                </div>
+                {contract.charges > 0 && (
+                  <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                    <span className="text-sm text-text-sub font-medium">Frais annexes</span>
+                    <span className="font-bold text-text-main">{contract.charges?.toLocaleString('fr-FR')} DH</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-            {/* Conditions financières */}
-            <div className="info-card">
-              <h2>
-                <CurrencyEuroIcon style={{ width: '1rem', height: '1rem' }} />
-                Conditions {isRentContract ? 'financières' : 'de vente'}
-              </h2>
+          {/* Période/Dates */}
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              {isRentContract ? 'Période de location' : 'Dates importantes'}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isRentContract ? (
-                <div className="financial-grid">
-                  <div className="financial-item">
-                    <span className="financial-label">Loyer mensuel</span>
-                    <span className="financial-value">{contract.monthly_rent?.toLocaleString('fr-FR')} DH</span>
+                <>
+                  <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de début</span>
+                    <span className="block font-bold text-text-main">{new Date(contract.start_date).toLocaleDateString('fr-FR')}</span>
                   </div>
-                  <div className="financial-item">
-                    <span className="financial-label">Charges mensuelles</span>
-                    <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} DH</span>
+                  <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main">
+                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de fin</span>
+                    <span className="block font-bold text-text-main">{new Date(contract.end_date).toLocaleDateString('fr-FR')}</span>
                   </div>
-                  <div className="financial-item total">
-                    <span className="financial-label">Total mensuel</span>
-                    <span className="financial-value">{(contract.monthly_rent + (contract.charges || 0)).toLocaleString('fr-FR')} DH</span>
-                  </div>
-                  <div className="financial-item">
-                    <span className="financial-label">Dépôt de garantie</span>
-                    <span className="financial-value">{contract.security_deposit?.toLocaleString('fr-FR')} DH</span>
-                  </div>
-                </div>
+                </>
               ) : (
-                <div className="financial-grid">
-                  <div className="financial-item">
-                    <span className="financial-label">Prix de vente</span>
-                    <span className="financial-value">{contract.sale_price?.toLocaleString('fr-FR')} DH</span>
-                  </div>
-                  <div className="financial-item">
-                    <span className="financial-label">Date de vente</span>
-                    <span className="financial-value">{new Date(contract.sale_date).toLocaleDateString('fr-FR')}</span>
-                  </div>
-                  {contract.charges > 0 && (
-                    <div className="financial-item">
-                      <span className="financial-label">Frais annexes</span>
-                      <span className="financial-value">{contract.charges?.toLocaleString('fr-FR')} DH</span>
-                    </div>
-                  )}
+                <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
+                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de signature</span>
+                  <span className="block font-bold text-text-main">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
+                </div>
+              )}
+              {isRentContract && (
+                <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
+                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de signature</span>
+                  <span className="block font-bold text-text-main">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Période/Dates */}
-            <div className="info-card">
-              <h2>
-                <CalendarIcon style={{ width: '1rem', height: '1rem' }} />
-                {isRentContract ? 'Période de location' : 'Dates importantes'}
-              </h2>
-              <div className="dates-grid">
-                {isRentContract ? (
-                  <>
-                    <div className="date-item">
-                      <span className="date-label">Date de début</span>
-                      <span className="date-value">{new Date(contract.start_date).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                    <div className="date-item">
-                      <span className="date-label">Date de fin</span>
-                      <span className="date-value">{new Date(contract.end_date).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="date-item full-width">
-                    <span className="date-label">Date de signature</span>
-                    <span className="date-value">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
-                  </div>
-                )}
-                <div className="date-item">
-                  <span className="date-label">Date de signature</span>
-                  <span className="date-value">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="actions-card">
-              <h2>Actions</h2>
-              <div className="action-buttons">
-                <button 
-                  onClick={handleDownload}
-                  className="btn-download"
-                  disabled={downloading}
-                >
-                  <ArrowDownTrayIcon style={{ width: '1rem', height: '1rem' }} />
-                  {downloading ? 'Téléchargement...' : 'Télécharger le contrat (PDF)'}
-                </button>
-                
-                {canManage && contract.status === 'active' && (
-                  <>
-                    {isRentContract ? (
-                      <>
-                        <button 
-                          onClick={() => handleStatusChange('terminated')}
-                          className="btn-terminate"
-                          disabled={updating}
-                        >
-                          Résilier le contrat
-                        </button>
-                        <button 
-                          onClick={() => handleStatusChange('expired')}
-                          className="btn-expire"
-                          disabled={updating}
-                        >
-                          Marquer comme expiré
-                        </button>
-                      </>
-                    ) : (
+          {/* Actions */}
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-text-main mb-6">Actions</h2>
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={handleDownload}
+                disabled={downloading}
+                className="px-6 py-3 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                {downloading ? 'Téléchargement...' : 'Télécharger (PDF)'}
+              </button>
+              
+              {canManage && contract.status === 'active' && (
+                <>
+                  {isRentContract ? (
+                    <>
                       <button 
-                        onClick={() => handleStatusChange('completed')}
-                        className="btn-complete"
+                        onClick={() => handleStatusChange('terminated')}
                         disabled={updating}
+                        className="px-6 py-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        Marquer comme terminé
+                        Résilier le contrat
                       </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Note */}
-            <div className="note-section">
-              <p>
-                Ce contrat a été généré automatiquement par la plateforme IMMORent.
-                Pour toute question, veuillez contacter votre agent immobilier.
-              </p>
+                      <button 
+                        onClick={() => handleStatusChange('expired')}
+                        disabled={updating}
+                        className="px-6 py-3 bg-bg-soft text-text-main border border-border-main hover:bg-bg-card rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        Marquer comme expiré
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={() => handleStatusChange('completed')}
+                      disabled={updating}
+                      className="px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      Marquer comme terminé
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
+
+          {/* Note */}
+          <p className="text-center text-xs font-medium text-text-muted p-4">
+            Ce contrat a été généré automatiquement par la plateforme IMMORent.
+            Pour toute question, veuillez contacter votre agent immobilier.
+          </p>
         </div>
       </div>
+    </div>
 
-      <style>{`
-        .contract-detail-page {
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-          padding: 2rem 1rem;
-        }
-
-        .detail-container {
-          max-width: 900px;
-          margin: 0 auto;
-        }
-
-        .back-button {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          font-size: 0.875rem;
-          margin-bottom: 1.5rem;
-          transition: color 0.3s;
-        }
-
-        .back-button:hover {
-          color: #d4af37;
-        }
-
-        .header {
-          margin-bottom: 2rem;
-        }
-
-        .header-left h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-          margin-bottom: 0.25rem;
-        }
-
-        .contract-number {
-          color: #6b7280;
-          font-size: 0.875rem;
-          margin-bottom: 1rem;
-        }
-
-        .badges {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        .content {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-        }
-
-        .info-card {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1.25rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .info-card h2 {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1rem;
-          color: #0f2b4d;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .info-card h3 {
-          font-size: 1rem;
-          margin-bottom: 0.5rem;
-          color: #0f2b4d;
-        }
-
-        .property-address {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          color: #6b7280;
-          font-size: 0.875rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .property-features {
-          display: flex;
-          gap: 1rem;
-          color: #4b5563;
-          font-size: 0.75rem;
-        }
-
-        .property-features span {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
-        .parties-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-        }
-
-        .party-card {
-          background: #f8f9fa;
-          padding: 1rem;
-          border-radius: 0.5rem;
-        }
-
-        .party-card h4 {
-          font-size: 0.875rem;
-          color: #0f2b4d;
-          margin-bottom: 0.5rem;
-        }
-
-        .party-name {
-          font-weight: 500;
-          color: #1f2937;
-          margin-bottom: 0.25rem;
-          font-size: 0.875rem;
-        }
-
-        .party-contact {
-          color: #6b7280;
-          font-size: 0.75rem;
-          margin: 0.125rem 0;
-        }
-
-        .financial-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-        }
-
-        .financial-item {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.75rem;
-          background: #f8f9fa;
-          border-radius: 0.5rem;
-        }
-
-        .financial-item.total {
-          background: #eff6ff;
-        }
-
-        .financial-item.total .financial-value {
-          color: #2563eb;
-          font-weight: 600;
-        }
-
-        .financial-label {
-          color: #6b7280;
-          font-size: 0.75rem;
-        }
-
-        .financial-value {
-          color: #1f2937;
-          font-weight: 500;
-          font-size: 0.75rem;
-        }
-
-        .dates-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-        }
-
-        .date-item {
-          text-align: center;
-          padding: 0.75rem;
-          background: #f8f9fa;
-          border-radius: 0.5rem;
-        }
-
-        .date-item.full-width {
-          grid-column: span 2;
-        }
-
-        .date-label {
-          display: block;
-          color: #6b7280;
-          font-size: 0.625rem;
-          margin-bottom: 0.25rem;
-        }
-
-        .date-value {
-          display: block;
-          color: #1f2937;
-          font-weight: 500;
-          font-size: 0.875rem;
-        }
-
-        .actions-card {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1.25rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .actions-card h2 {
-          font-size: 1rem;
-          color: #0f2b4d;
-          margin-bottom: 1rem;
-        }
-
-        .action-buttons {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .btn-download,
-        .btn-terminate,
-        .btn-expire,
-        .btn-complete {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          padding: 0.625rem 1.25rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .btn-download {
-          background: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .btn-download:hover:not(:disabled) {
-          background: #c4a52e;
-        }
-
-        .btn-terminate {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .btn-terminate:hover:not(:disabled) {
-          background: #fecaca;
-        }
-
-        .btn-expire {
-          background: #f3f4f6;
-          color: #6b7280;
-        }
-
-        .btn-expire:hover:not(:disabled) {
-          background: #e5e7eb;
-        }
-
-        .btn-complete {
-          background: #dbeafe;
-          color: #2563eb;
-        }
-
-        .btn-complete:hover:not(:disabled) {
-          background: #bfdbfe;
-        }
-
-        button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .note-section {
-          text-align: center;
-          padding: 1rem;
-          color: #9ca3af;
-          font-size: 0.75rem;
-        }
-
-        .loading-container {
-          min-height: calc(100vh - 70px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #f8f9fa;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-          .parties-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .financial-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .dates-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .date-item.full-width {
-            grid-column: span 1;
-          }
-
-          .action-buttons {
-            flex-direction: column;
-          }
-        }
-      `}</style>
-    </>
   );
 };
 

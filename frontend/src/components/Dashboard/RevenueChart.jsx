@@ -19,45 +19,52 @@ const RevenueChart = ({ data, title }) => {
   }));
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm h-full">
+    <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-main h-full">
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{title}</h3>
-        <select className="text-xs font-semibold bg-slate-50 dark:bg-slate-700 border-none rounded-lg focus:ring-0 text-slate-500 dark:text-slate-300">
+        <h3 className="text-lg font-bold text-text-main tracking-tight">{title}</h3>
+        <select className="text-xs font-semibold bg-bg-soft border-none rounded-lg focus:ring-0 text-text-sub">
           <option>Derniers 12 mois</option>
           <option>2024</option>
         </select>
       </div>
       
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-64 w-full" style={{ minHeight: '250px' }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <AreaChart data={formattedData}>
             <defs>
               <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-main)" />
             <XAxis 
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{fill: '#94a3b8', fontSize: 12}}
+              tick={{fill: 'var(--color-text-sub)', fontSize: 12}}
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{fill: '#94a3b8', fontSize: 12}}
+              tick={{fill: 'var(--color-text-sub)', fontSize: 12}}
               tickFormatter={(value) => `${value} DH`}
             />
             <Tooltip 
-              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{ 
+                borderRadius: '16px', 
+                border: '1px solid var(--color-border-main)', 
+                boxShadow: 'var(--shadow-large)', 
+                backgroundColor: 'var(--color-bg-card)',
+                color: 'var(--color-text-main)'
+              }}
+              itemStyle={{ color: 'var(--color-primary)' }}
             />
             <Area 
               type="monotone" 
               dataKey="total" 
-              stroke="#3b82f6" 
+              stroke="var(--color-primary)" 
               strokeWidth={4}
               fillOpacity={1} 
               fill="url(#colorTotal)" 

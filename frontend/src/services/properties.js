@@ -50,7 +50,7 @@ export const propertyService = {
       formData.append('bathrooms', data.bathrooms || 0);
       formData.append('type', data.type);
       formData.append('category_id', data.category_id);
-      formData.append('features', JSON.stringify(data.features || []));
+      formData.append('features', Array.isArray(data.features) ? JSON.stringify(data.features) : (data.features || '[]'));
       
       if (data.images && data.images.length > 0) {
         data.images.forEach(image => {
@@ -88,7 +88,7 @@ export const propertyService = {
       formData.append('type', data.type);
       formData.append('category_id', data.category_id);
       formData.append('status', data.status || 'available');
-      formData.append('features', JSON.stringify(data.features || []));
+      formData.append('features', Array.isArray(data.features) ? JSON.stringify(data.features) : (data.features || '[]'));
       
       // Images déjà existantes à conserver
       if (data.existing_images && data.existing_images.length > 0) {
@@ -202,6 +202,46 @@ export const propertyService = {
       return response.data;
     } catch (error) {
       console.error('Erreur propertyService.toggleFeatured:', error);
+      throw error;
+    }
+  },
+
+  async getReviews(id) {
+    try {
+      const response = await api.get(`/properties/${id}/reviews`);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur propertyService.getReviews(${id}):`, error);
+      throw error;
+    }
+  },
+
+  async submitReview(id, data) {
+    try {
+      const response = await api.post(`/properties/${id}/reviews`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur propertyService.submitReview(${id}):`, error);
+      throw error;
+    }
+  },
+
+  async getAgentPendingReviews() {
+    try {
+      const response = await api.get('/agent/reviews');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur propertyService.getAgentPendingReviews:', error);
+      throw error;
+    }
+  },
+
+  async processReview(id, status) {
+    try {
+      const response = await api.put(`/reviews/${id}/process`, { status });
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur propertyService.processReview(${id}):`, error);
       throw error;
     }
   }

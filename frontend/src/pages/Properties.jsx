@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { useLanguage } from '../context/LanguageContext';
+import { useDebounce } from '../hooks/useDebounce';
 import { 
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -18,22 +19,31 @@ import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
 const Properties = () => {
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Initialisation des filtres depuis l'URL ou valeurs par défaut
   const [filters, setFilters] = useState({
-    city: '',
-    type: '',
-    min_price: '',
-    max_price: '',
-    rooms: ''
+    city: searchParams.get('city') || '',
+    type: searchParams.get('type') || '',
+    min_price: searchParams.get('min_price') || '',
+    max_price: searchParams.get('max_price') || '',
+    surface_min: searchParams.get('surface_min') || '',
+    rooms: searchParams.get('rooms') || ''
   });
+
   const [pagination, setPagination] = useState({
-    currentPage: 1,
+    currentPage: parseInt(searchParams.get('page')) || 1,
     lastPage: 1,
     total: 0
   });
+
+  // Version debouncée des filtres pour éviter trop d'appels API
+  const debouncedFilters = useDebounce(filters, 500);
 
   const propertyTypes = [
     { value: '', label: t('prop.filter.type') },
@@ -44,9 +54,22 @@ const Properties = () => {
     { value: 'land', label: t('home.lands') }
   ];
 
+  // Effet pour charger les biens quand les filtres ou la page changent
   useEffect(() => {
     fetchProperties();
-  }, [pagination.currentPage]);
+    updateUrlParams();
+  }, [debouncedFilters, pagination.currentPage]);
+
+  const updateUrlParams = () => {
+    const params = {};
+    if (pagination.currentPage > 1) params.page = pagination.currentPage;
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    
+    setSearchParams(params, { replace: true });
+  };
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -80,13 +103,10 @@ const Properties = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
-    fetchProperties();
-    setShowFilters(false);
+    // On remet à la page 1 si on change un filtre
+    if (pagination.currentPage !== 1) {
+      setPagination(prev => ({ ...prev, currentPage: 1 }));
+    }
   };
 
   const handleReset = () => {
@@ -95,16 +115,16 @@ const Properties = () => {
       type: '',
       min_price: '',
       max_price: '',
+      surface_min: '',
       rooms: ''
     });
     setPagination(prev => ({ ...prev, currentPage: 1 }));
-    setTimeout(() => fetchProperties(), 100);
   };
 
   const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 px-6 py-20 text-center overflow-hidden">
         {/* Abstract Background patterns */}
@@ -139,40 +159,40 @@ const Properties = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8">
         
         {/* Filters Sidebar */}
-        <aside className={`fixed md:relative top-0 ${showFilters ? 'start-0' : '-start-full'} md:start-0 w-80 md:w-1/4 h-full md:h-auto bg-white dark:bg-slate-800 z-50 md:z-0 shadow-2xl md:shadow-sm md:rounded-2xl border-e md:border border-slate-200 dark:border-slate-700 transition-all duration-300 overflow-y-auto md:overflow-visible`}>
-          <div className="p-6 sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center z-10">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+        <aside className={`fixed md:relative top-0 ${showFilters ? 'start-0' : '-start-full'} md:start-0 w-80 md:w-1/4 h-full md:h-auto bg-bg-card z-50 md:z-0 shadow-huge md:shadow-main md:rounded-2xl border-e md:border border-border-main transition-all duration-300 overflow-y-auto md:overflow-visible`}>
+          <div className="p-6 sticky top-0 bg-bg-card border-b border-border-main flex justify-between items-center z-10">
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
               <FunnelIcon className="w-5 h-5 text-primary dark:text-secondary" />
               Filtres
             </h2>
-            <button onClick={() => setShowFilters(false)} className="md:hidden p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+            <button onClick={() => setShowFilters(false)} className="md:hidden p-2 text-text-muted hover:text-red-500 rounded-lg hover:bg-bg-soft">
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Localisation</label>
+          <form onSubmit={(e) => e.preventDefault()} className="p-6 space-y-6">
+            <div className="space-y-1.5 border-b border-border-main pb-6">
+              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Localisation</label>
               <div className="relative">
-                <MapPinIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <MapPinIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input
                   type="text"
                   name="city"
                   value={filters.city}
                   onChange={handleFilterChange}
                   placeholder="Ex: Casablanca, Marrakech..."
-                  className="w-full ps-10 pe-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
+                  className="w-full ps-10 pe-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type de bien</label>
+            <div className="space-y-1.5 border-b border-border-main pb-6">
+              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Type de bien</label>
               <select
                 name="type"
                 value={filters.type}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all appearance-none cursor-pointer text-slate-700"
+                className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all appearance-none cursor-pointer"
               >
                 {propertyTypes.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -180,8 +200,8 @@ const Properties = () => {
               </select>
             </div>
 
-            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget (DH)</label>
+            <div className="space-y-1.5 border-b border-border-main pb-6">
+              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Budget (DH)</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -189,27 +209,42 @@ const Properties = () => {
                   value={filters.min_price}
                   onChange={handleFilterChange}
                   placeholder="Min"
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
+                  className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="text-slate-400 font-bold">-</span>
+                <span className="text-text-muted font-bold">-</span>
                 <input
                   type="number"
                   name="max_price"
                   value={filters.max_price}
                   onChange={handleFilterChange}
                   placeholder="Max"
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all"
+                  className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 border-b border-slate-100 dark:border-slate-700 pb-6">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pièces</label>
+            <div className="space-y-1.5 border-b border-border-main pb-6">
+              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Surface Min (m²)</label>
+              <div className="relative">
+                <ArrowsRightLeftIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                <input
+                  type="number"
+                  name="surface_min"
+                  value={filters.surface_min}
+                  onChange={handleFilterChange}
+                  placeholder="Ex: 50"
+                  className="w-full ps-10 pe-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 border-b border-border-main pb-6">
+              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Pièces</label>
               <select
                 name="rooms"
                 value={filters.rooms}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all appearance-none cursor-pointer text-slate-700"
+                className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all appearance-none cursor-pointer"
               >
                 <option value="">Toutes</option>
                 {[1,2,3,4].map(n => <option key={n} value={n}>{n} pièce{n>1?'s':''}</option>)}
@@ -218,11 +253,12 @@ const Properties = () => {
             </div>
 
             <div className="flex flex-col gap-3 pt-2">
-              <button type="submit" className="w-full py-3 bg-primary text-white hover:bg-primary-hover active:scale-95 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2">
-                <MagnifyingGlassIcon className="w-5 h-5" /> Rechercher
-              </button>
-              <button type="button" onClick={handleReset} className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 rounded-xl font-bold transition-all">
-                Réinitialiser
+              <button 
+                type="button" 
+                onClick={handleReset} 
+                className="w-full py-3 bg-bg-soft text-text-main hover:bg-border-main active:scale-95 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <ArrowPathIcon className="w-5 h-5" /> Réinitialiser les filtres
               </button>
             </div>
           </form>
@@ -237,7 +273,7 @@ const Properties = () => {
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {!loading && !error ? (
-              <h2 className="text-slate-800 dark:text-white text-lg font-bold">
+              <h2 className="text-text-main text-lg font-bold">
                 <span className="text-primary dark:text-secondary text-2xl me-2">{pagination.total}</span>
                 Résultat{pagination.total > 1 ? 's' : ''} trouvé{pagination.total > 1 ? 's' : ''}
               </h2>
@@ -247,7 +283,7 @@ const Properties = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400">
+            <div className="flex flex-col items-center justify-center py-20 text-text-muted">
               <ArrowPathIcon className="w-12 h-12 text-primary dark:text-secondary animate-spin mb-4" />
               <p className="font-semibold animate-pulse">Recherche des meilleurs biens...</p>
             </div>
@@ -258,12 +294,12 @@ const Properties = () => {
               <button onClick={fetchProperties} className="px-6 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-xl font-semibold transition-colors">Réessayer</button>
             </div>
           ) : properties.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 text-center px-4 shadow-sm">
-              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
-                <MagnifyingGlassIcon className="w-10 h-10 text-slate-400" />
+            <div className="flex flex-col items-center justify-center py-20 bg-bg-card rounded-2xl border border-border-main text-center px-4 shadow-sm">
+              <div className="w-20 h-20 bg-bg-soft rounded-full flex items-center justify-center mb-6">
+                <MagnifyingGlassIcon className="w-10 h-10 text-text-muted" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Aucun bien trouvé</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-sm">Nous n'avons trouvé aucun bien correspondant à vos critères de recherche actuels.</p>
+              <h3 className="text-xl font-bold text-text-main mb-2">Aucun bien trouvé</h3>
+              <p className="text-text-sub mb-6 max-w-sm">Nous n'avons trouvé aucun bien correspondant à vos critères de recherche actuels.</p>
               <button onClick={handleReset} className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
                 Réinitialiser les filtres
               </button>
@@ -272,8 +308,8 @@ const Properties = () => {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {properties.map(property => (
-                  <div key={property.id} className="group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-200 dark:bg-slate-700">
+                  <div key={property.id} className="group flex flex-col bg-bg-card rounded-2xl border border-border-main overflow-hidden hover:shadow-huge hover:-translate-y-2 transition-all duration-300">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-bg-soft">
                       <img 
                         src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage} 
                         alt={property.title}
@@ -290,7 +326,7 @@ const Properties = () => {
                       </div>
                       
                       <div className="absolute top-4 end-4">
-                        <span className="px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm text-primary dark:text-secondary text-xs font-bold rounded-full shadow-lg hidden md:block">
+                        <span className="px-3 py-1 bg-bg-glass backdrop-blur-sm text-text-main text-xs font-bold rounded-full shadow-large hidden md:block">
                           {property.type_label}
                         </span>
                       </div>
@@ -307,21 +343,21 @@ const Properties = () => {
                     <div className="p-5 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex flex-col">
-                           <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Prix</span>
+                           <span className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-1">Prix</span>
                            <div className="text-xl font-black text-primary dark:text-white">
-                             {property.price?.toLocaleString('fr-FR')} <span className="text-sm font-bold text-slate-400">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
+                             {property.price?.toLocaleString('fr-FR')} <span className="text-sm font-bold text-text-muted">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
                            </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 py-4 border-y border-slate-100 dark:border-slate-700 mb-4 mt-auto">
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 text-sm font-medium">
-                          <ArrowsRightLeftIcon className="w-4 h-4 text-slate-400" />
+                      <div className="flex items-center gap-4 py-4 border-y border-border-main mb-4 mt-auto">
+                        <div className="flex items-center gap-1.5 text-text-sub text-sm font-medium">
+                          <ArrowsRightLeftIcon className="w-4 h-4 text-text-muted" />
                           {property.surface} m²
                         </div>
-                        <div className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 text-sm font-medium">
-                          <BuildingOfficeIcon className="w-4 h-4 text-slate-400" />
+                        <div className="w-1 h-1 bg-border-main rounded-full"></div>
+                        <div className="flex items-center gap-1.5 text-text-sub text-sm font-medium">
+                          <BuildingOfficeIcon className="w-4 h-4 text-text-muted" />
                           {property.rooms} p.
                         </div>
                       </div>
@@ -336,23 +372,23 @@ const Properties = () => {
 
               {/* Pagination */}
               {pagination.lastPage > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-12 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm w-fit mx-auto">
+                <div className="flex justify-center items-center gap-2 mt-12 bg-bg-card p-2 rounded-2xl border border-border-main shadow-sm w-fit mx-auto">
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
                     disabled={pagination.currentPage === 1}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    className="px-4 py-2 border border-border-main rounded-xl text-sm font-semibold text-text-sub hover:bg-bg-soft disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   >
                     Précédent
                   </button>
                   
-                  <div className="px-4 py-2 text-sm font-bold text-slate-800 dark:text-white">
-                    {pagination.currentPage} <span className="text-slate-400 font-medium mx-1">/</span> {pagination.lastPage}
+                  <div className="px-4 py-2 text-sm font-bold text-text-main">
+                    {pagination.currentPage} <span className="text-text-muted font-medium mx-1">/</span> {pagination.lastPage}
                   </div>
                   
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
                     disabled={pagination.currentPage === pagination.lastPage}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    className="px-4 py-2 border border-border-main rounded-xl text-sm font-semibold text-text-sub hover:bg-bg-soft disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   >
                     Suivant
                   </button>

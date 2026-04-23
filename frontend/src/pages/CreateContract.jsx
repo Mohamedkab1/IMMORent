@@ -16,7 +16,8 @@ import {
   KeyIcon, 
   TagIcon,
   DocumentTextIcon,
-  ClockIcon
+  ClockIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 
 const CreateContract = () => {
@@ -56,10 +57,8 @@ const CreateContract = () => {
     fetchRequest();
   }, [requestId]);
 
-  // Formater la date au format YYYY-MM-DD
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
-    // Si la date est au format ISO avec Z
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
     const year = date.getFullYear();
@@ -77,25 +76,20 @@ const CreateContract = () => {
         if (propertyRes.success) {
           setProperty(propertyRes.data);
           
-          // Calculer le taux journalier
           const monthlyPrice = propertyRes.data.price;
           setMonthlyRate(monthlyPrice);
           const dailyPrice = monthlyPrice / 30;
           setDailyRate(dailyPrice);
           
-          // Formater les dates pour l'input date
           const startDate = formatDateForInput(res.data.start_date);
           const endDate = formatDateForInput(res.data.end_date);
           
-          // Calculer le nombre de jours
           if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
             const diffTime = Math.abs(end - start);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             setDaysCount(diffDays);
-            
-            // Calculer le montant total
             const total = dailyPrice * diffDays;
             setCalculatedTotal(total);
           }
@@ -129,7 +123,6 @@ const CreateContract = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Recalculer quand les dates changent
     if (name === 'start_date' || name === 'end_date') {
       const startDate = name === 'start_date' ? value : formData.start_date;
       const endDate = name === 'end_date' ? value : formData.end_date;
@@ -140,7 +133,6 @@ const CreateContract = () => {
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         setDaysCount(diffDays);
-        
         const total = dailyRate * diffDays;
         setCalculatedTotal(total);
       }
@@ -153,7 +145,6 @@ const CreateContract = () => {
     setDailyRate(value / 30);
     setFormData(prev => ({ ...prev, monthly_rent: value }));
     
-    // Recalculer le total
     if (formData.start_date && formData.end_date) {
       const total = (value / 30) * daysCount;
       setCalculatedTotal(total);
@@ -175,7 +166,6 @@ const CreateContract = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // Préparer les données à envoyer
       const submitData = {
         rental_request_id: parseInt(formData.rental_request_id),
         contract_type: formData.contract_type,
@@ -187,8 +177,6 @@ const CreateContract = () => {
         security_deposit: parseFloat(formData.security_deposit) || 0,
         charges: parseFloat(formData.charges) || 0
       };
-      
-      console.log('Données envoyées:', submitData);
       
       const res = await contractService.create(submitData);
       if (res.success) {
@@ -211,568 +199,262 @@ const CreateContract = () => {
     }
   };
 
-  if (loading) return <div className="loading"><div className="spinner"></div><p>Chargement...</p></div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-bg-soft">
+      <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
+      <p className="text-text-sub font-medium">Préparation du contrat...</p>
+    </div>
+  );
+
   if (!request || !property) return null;
 
   const isRent = property.transaction_type === 'rent';
   const contractTypeLabel = isRent ? 'Location' : 'Vente';
-  const contractIcon = isRent ? <KeyIcon /> : <TagIcon />;
   
-  // Formatage des dates pour l'affichage
   const formatDisplayDate = (date) => {
-    if (!date) return '';
+    if (!date) return 'Non définie';
     return new Date(date).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      day: 'numeric', month: 'long', year: 'numeric'
     });
   };
 
   return (
-    <>
-      <div className="create-contract-page">
-        <div className="create-container">
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowLeftIcon className="back-icon" />
-            Retour
-          </button>
-          <h1>Créer un contrat de {contractTypeLabel}</h1>
-          
-          <div className="contract-content">
-            <div className="request-summary">
-              <h2>
-                <DocumentTextIcon className="section-icon" />
-                Demande de {property.transaction_type === 'rent' ? 'location' : 'vente'}
+    <div className="min-h-screen bg-bg-soft transition-colors duration-300 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-2 text-text-sub hover:text-secondary transition-colors mb-6 font-medium group"
+        >
+          <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Retour au tableau de bord
+        </button>
+
+        <header className="mb-8">
+          <h1 className="text-3xl font-extrabold text-text-main tracking-tight">
+            Créer un <span className="text-secondary">contrat de {contractTypeLabel}</span>
+          </h1>
+          <p className="text-text-sub mt-2">Finalisation de la transaction pour le bien "{property.title}"</p>
+        </header>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Summary Sidebar */}
+          <aside className="lg:col-span-1 space-y-6">
+            <div className="bg-bg-card rounded-3xl p-6 shadow-main border border-border-main">
+              <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
+                <InformationCircleIcon className="w-5 h-5 text-secondary" /> Détails de la demande
               </h2>
-              <div className="summary-card">
-                <div className="summary-item">
-                  <UserIcon className="summary-icon" />
+              
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-5 h-5 text-primary" />
+                  </div>
                   <div>
-                    <span className="summary-label">Client</span>
-                    <p className="summary-value">{request.user?.name}</p>
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Client</span>
+                    <p className="text-sm font-bold text-text-main">{request.user?.name}</p>
+                    <p className="text-xs text-text-sub">{request.user?.email}</p>
                   </div>
                 </div>
-                <div className="summary-item">
-                  <HomeIcon className="summary-icon" />
+
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                    <HomeIcon className="w-5 h-5 text-secondary" />
+                  </div>
                   <div>
-                    <span className="summary-label">Bien</span>
-                    <p className="summary-value">{property.title}</p>
-                    <p className="summary-address">{property.city} {property.postal_code}</p>
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Bien Immobilier</span>
+                    <p className="text-sm font-bold text-text-main">{property.title}</p>
+                    <p className="text-xs text-text-sub flex items-center gap-1">
+                      <MapPinIcon className="w-3 h-3" /> {property.city}
+                    </p>
                   </div>
                 </div>
+
                 {isRent ? (
-                  <>
-                    <div className="summary-item">
-                      <CalendarIcon className="summary-icon" />
-                      <div>
-                        <span className="summary-label">Période souhaitée par le client</span>
-                        <p className="summary-value">
-                          Du {formatDisplayDate(formData.start_date)} au {formatDisplayDate(formData.end_date)}
-                        </p>
-                        <p className="summary-detail">
-                          <ClockIcon className="inline-icon" />
-                          Durée: {daysCount} jour{daysCount > 1 ? 's' : ''}
-                        </p>
-                      </div>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                      <CalendarIcon className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <div className="summary-item">
-                      <CurrencyEuroIcon className="summary-icon" />
-                      <div>
-                        <span className="summary-label">Prix journalier estimé</span>
-                        <p className="summary-value">{Math.round(dailyRate)}DH / jour</p>
-                        <p className="summary-detail">(basé sur {monthlyRate}DH/mois ÷ 30 jours)</p>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="summary-item">
-                    <CurrencyEuroIcon className="summary-icon" />
                     <div>
-                      <span className="summary-label">Prix de vente</span>
-                      <p className="summary-value">{property.price.toLocaleString()}DH</p>
+                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Période souhaitée</span>
+                      <p className="text-xs font-bold text-text-main mt-1">
+                        Du {formatDisplayDate(request.start_date)}
+                      </p>
+                      <p className="text-xs font-bold text-text-main">
+                        Au {formatDisplayDate(request.end_date)}
+                      </p>
+                      <div className="flex items-center gap-1 text-[10px] text-emerald-600 mt-1 font-bold">
+                        <ClockIcon className="w-3 h-3" /> Durée: {daysCount} jours
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                      <CurrencyEuroIcon className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Conditions de vente</span>
+                      <p className="text-sm font-bold text-text-main">{property.price.toLocaleString()} DH</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-
-            <div className="contract-form">
-              <h2>
-                <DocumentTextIcon className="section-icon" />
-                Informations du contrat de {contractTypeLabel}
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className="contract-type-badge">
-                  {contractIcon}
-                  <span>Contrat de {contractTypeLabel}</span>
+            
+            {isRent && (
+              <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10">
+                <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
+                  <CheckCircleIcon className="w-4 h-4" /> Estimation financière
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-text-sub">Loyer/mois</span>
+                    <span className="text-text-main font-bold">{monthlyRate.toLocaleString()} DH</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-text-sub">Base journalière</span>
+                    <span className="text-text-main font-bold">{Math.round(dailyRate).toLocaleString()} DH</span>
+                  </div>
+                  <div className="pt-3 border-t border-primary/10 flex justify-between items-center">
+                    <span className="text-sm font-bold text-text-main">Total estimé</span>
+                    <span className="text-xl font-black text-primary">{Math.round(calculatedTotal).toLocaleString()} DH</span>
+                  </div>
                 </div>
+              </div>
+            )}
+          </aside>
 
+          {/* Form Area */}
+          <main className="lg:col-span-2">
+            <div className="bg-bg-card rounded-3xl p-8 shadow-large border border-border-main">
+              <div className="flex items-center gap-3 mb-8">
+                <div className={`p-2 rounded-xl bg-secondary/20`}>
+                  {isRent ? <KeyIcon className="w-6 h-6 text-secondary" /> : <TagIcon className="w-6 h-6 text-secondary" />}
+                </div>
+                <h2 className="text-xl font-bold text-text-main uppercase tracking-tight">Configuration du contrat</h2>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {isRent ? (
                   <>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>
-                          <CalendarIcon className="input-icon" />
-                          Date de début *
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-secondary" /> Date de début
                         </label>
                         <input 
-                          type="date" 
-                          name="start_date" 
-                          value={formData.start_date} 
-                          onChange={handleChange} 
-                          required 
+                          type="date" name="start_date" 
+                          value={formData.start_date} onChange={handleChange} required 
+                          className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                         />
-                        <small className="field-hint">
-                          Date demandée par le client: {formatDisplayDate(request.start_date)}
-                        </small>
+                        <p className="text-[10px] text-text-muted italic px-1">Souhait client: {formatDisplayDate(request.start_date)}</p>
                       </div>
-                      <div className="form-group">
-                        <label>
-                          <CalendarIcon className="input-icon" />
-                          Date de fin *
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-secondary" /> Date de fin
                         </label>
                         <input 
-                          type="date" 
-                          name="end_date" 
-                          value={formData.end_date} 
-                          onChange={handleChange} 
-                          min={formData.start_date} 
-                          required 
+                          type="date" name="end_date" 
+                          value={formData.end_date} onChange={handleChange} required 
+                          min={formData.start_date}
+                          className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                         />
-                        <small className="field-hint">
-                          Date demandée par le client: {formatDisplayDate(request.end_date)}
-                        </small>
+                        <p className="text-[10px] text-text-muted italic px-1">Souhait client: {formatDisplayDate(request.end_date)}</p>
                       </div>
                     </div>
-                    
-                    <div className="info-card">
-                      <div className="info-row">
-                        <span className="info-label">Durée du séjour:</span>
-                        <span className="info-value"><strong>{daysCount}</strong> jour{daysCount > 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">Tarif journalier:</span>
-                        <span className="info-value">{Math.round(dailyRate)}DH / jour</span>
-                      </div>
-                      <div className="info-row total">
-                        <span className="info-label">Montant total estimé:</span>
-                        <span className="info-value total-amount">{Math.round(calculatedTotal).toLocaleString()}DH</span>
-                      </div>
-                    </div>
-                    
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>
-                          <CurrencyEuroIcon className="input-icon" />
-                          Loyer mensuel (base) *
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Loyer mensuel (DH)
                         </label>
                         <input 
-                          type="number" 
-                          name="monthly_rent" 
-                          value={formData.monthly_rent} 
-                          onChange={handleChange} 
-                          required 
+                          type="number" name="monthly_rent" 
+                          value={formData.monthly_rent} onChange={handleChange} required 
+                          className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm font-bold text-text-main"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>
-                          <CurrencyEuroIcon className="input-icon" />
-                          Dépôt de garantie *
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Caution / Dépôt (DH)
                         </label>
                         <input 
-                          type="number" 
-                          name="security_deposit" 
-                          value={formData.security_deposit} 
-                          onChange={handleChange} 
-                          required 
+                          type="number" name="security_deposit" 
+                          value={formData.security_deposit} onChange={handleChange} required 
+                          className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm font-bold text-text-main"
                         />
                       </div>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="form-group">
-                      <label>
-                        <CalendarIcon className="input-icon" />
-                        Date de vente *
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4 text-secondary" /> Date effective de la vente
                       </label>
                       <input 
-                        type="date" 
-                        name="sale_date" 
-                        value={formData.sale_date} 
-                        onChange={handleChange} 
-                        required 
+                        type="date" name="sale_date" 
+                        value={formData.sale_date} onChange={handleChange} required 
+                        className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                       />
                     </div>
-                    <div className="form-group">
-                      <label>
-                        <CurrencyEuroIcon className="input-icon" />
-                        Prix de vente *
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                        <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Prix de vente final (DH)
                       </label>
                       <input 
-                        type="number" 
-                        name="sale_price" 
-                        value={formData.sale_price} 
-                        onChange={handleChange} 
-                        required 
+                        type="number" name="sale_price" 
+                        value={formData.sale_price} onChange={handleChange} required 
+                        className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm font-bold text-text-main"
                       />
                     </div>
                   </>
                 )}
 
-                <div className="form-group">
-                  <label>
-                    <CurrencyEuroIcon className="input-icon" />
-                    Charges (optionnel)
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-text-main flex items-center gap-2">
+                    <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Frais annexes / Charges (DH)
                   </label>
-                  <input type="number" name="charges" value={formData.charges} onChange={handleChange} />
+                  <input 
+                    type="number" name="charges" 
+                    value={formData.charges} onChange={handleChange} 
+                    placeholder="0"
+                    className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
+                  />
                 </div>
 
-                <div className="info-box">
-                  <CheckCircleIcon className="info-icon" />
-                  <p>
-                    {isRent 
-                      ? `Le contrat de location sera établi pour une durée de ${daysCount} jours, du ${formatDisplayDate(formData.start_date)} au ${formatDisplayDate(formData.end_date)}. Montant total estimé: ${Math.round(calculatedTotal).toLocaleString()}DH.`
-                      : `Le contrat de vente sera établi pour un montant de ${formData.sale_price?.toLocaleString()}DH.`
-                    }
-                  </p>
-                </div>
-
-                <div className="form-actions">
-                  <button type="button" onClick={() => navigate(-1)} className="btn-cancel">
+                <div className="flex flex-col sm:flex-row gap-4 pt-8">
+                  <button 
+                    type="button" 
+                    onClick={() => navigate(-1)} 
+                    className="flex-1 px-8 py-4 bg-bg-soft text-text-main rounded-2xl font-bold hover:bg-border-main transition-colors border border-border-main"
+                  >
                     Annuler
                   </button>
-                  <button type="submit" className="btn-submit" disabled={submitting}>
-                    {submitting ? 'Création...' : `Créer le contrat de ${contractTypeLabel}`}
+                  <button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="flex-[2] px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-main disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Enregistrement...
+                      </span>
+                    ) : `Générer le contrat de ${contractTypeLabel}`}
                   </button>
                 </div>
               </form>
             </div>
-          </div>
+            
+            <div className="mt-8 flex items-start gap-3 p-4 bg-bg-card rounded-2xl border border-border-main text-[10px] text-text-muted leading-relaxed">
+              <InformationCircleIcon className="w-5 h-5 flex-shrink-0 text-secondary" />
+              <p>En générant ce contrat, vous confirmez que les informations ci-dessus ont été vérifiées and acceptées par toutes les parties. Le statut du bien sera automatiquement mis à jour en "{isRent ? 'Loué' : 'Vendu'}". Les documents PDF seront disponibles immédiatement après validation.</p>
+            </div>
+          </main>
         </div>
       </div>
-
-      <style>{`
-        .create-contract-page {
-          min-height: calc(100vh - 70px);
-          background: #f8f9fa;
-          padding: 2rem 1rem;
-        }
-
-        .create-container {
-          max-width: 1000px;
-          margin: 0 auto;
-        }
-
-        .back-button {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          margin-bottom: 1rem;
-          font-size: 0.875rem;
-        }
-
-        .back-icon {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .back-button:hover {
-          color: #d4af37;
-        }
-
-        h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-          margin-bottom: 2rem;
-        }
-
-        .contract-content {
-          display: grid;
-          grid-template-columns: 1fr 1.5fr;
-          gap: 2rem;
-        }
-
-        .request-summary,
-        .contract-form {
-          background: white;
-          border-radius: 0.75rem;
-          padding: 1.5rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .request-summary h2,
-        .contract-form h2 {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 1rem;
-          color: #0f2b4d;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .section-icon {
-          width: 1rem;
-          height: 1rem;
-          color: #d4af37;
-        }
-
-        .summary-card {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .summary-item {
-          display: flex;
-          gap: 0.75rem;
-          align-items: flex-start;
-        }
-
-        .summary-icon {
-          width: 1rem;
-          height: 1rem;
-          color: #d4af37;
-          margin-top: 0.125rem;
-        }
-
-        .summary-label {
-          display: block;
-          font-size: 0.7rem;
-          color: #6b7280;
-          margin-bottom: 0.25rem;
-        }
-
-        .summary-value {
-          font-weight: 500;
-          color: #0f2b4d;
-          margin: 0;
-          font-size: 0.875rem;
-        }
-
-        .summary-address,
-        .summary-detail {
-          font-size: 0.7rem;
-          color: #6b7280;
-          margin: 0.25rem 0 0;
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
-        .inline-icon {
-          width: 0.7rem;
-          height: 0.7rem;
-        }
-
-        .contract-type-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 1rem;
-          background: #d4af37;
-          color: #0f2b4d;
-          border-radius: 2rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin-bottom: 1.5rem;
-        }
-
-        .contract-type-badge svg {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .form-group {
-          margin-bottom: 1rem;
-        }
-
-        .form-group label {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          font-weight: 500;
-          margin-bottom: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .input-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-          color: #6b7280;
-        }
-
-        .field-hint {
-          display: block;
-          font-size: 0.65rem;
-          color: #9ca3af;
-          margin-top: 0.25rem;
-        }
-
-        .form-group input {
-          width: 100%;
-          padding: 0.625rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .form-group input:focus {
-          outline: none;
-          border-color: #d4af37;
-        }
-
-        .info-card {
-          background: #f8f9fa;
-          border-radius: 0.5rem;
-          padding: 1rem;
-          margin: 1rem 0;
-        }
-
-        .info-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.5rem 0;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .info-row:last-child {
-          border-bottom: none;
-        }
-
-        .info-row.total {
-          margin-top: 0.5rem;
-          padding-top: 0.5rem;
-          border-top: 2px solid #d4af37;
-          border-bottom: none;
-        }
-
-        .info-label {
-          color: #6b7280;
-          font-size: 0.75rem;
-        }
-
-        .info-value {
-          color: #1f2937;
-          font-weight: 500;
-          font-size: 0.875rem;
-        }
-
-        .info-value.total-amount {
-          color: #d4af37;
-          font-size: 1rem;
-          font-weight: 700;
-        }
-
-        .info-box {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem;
-          background: #f0f9ff;
-          border-radius: 0.5rem;
-          margin: 1rem 0;
-        }
-
-        .info-icon {
-          width: 1rem;
-          height: 1rem;
-          color: #10b981;
-        }
-
-        .info-box p {
-          color: #0369a1;
-          font-size: 0.75rem;
-          margin: 0;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 1rem;
-          margin-top: 1.5rem;
-        }
-
-        .btn-cancel,
-        .btn-submit {
-          flex: 1;
-          padding: 0.75rem;
-          border: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          cursor: pointer;
-          font-size: 0.875rem;
-        }
-
-        .btn-cancel {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .btn-cancel:hover {
-          background: #e5e7eb;
-        }
-
-        .btn-submit {
-          background: #d4af37;
-          color: #0f2b4d;
-        }
-
-        .btn-submit:hover:not(:disabled) {
-          background: #c4a52e;
-        }
-
-        .btn-submit:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .contract-content {
-            grid-template-columns: 1fr;
-          }
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

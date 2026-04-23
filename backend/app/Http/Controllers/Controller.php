@@ -1,8 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 abstract class Controller
 {
+    use AuthorizesRequests;
     protected function successResponse($data = null, string $message = 'Succès', int $code = 200)
     {
         return response()->json([

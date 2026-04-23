@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { HomeIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, BuildingOfficeIcon, UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, LockClosedIcon, ArrowRightIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +15,6 @@ const Register = () => {
     role: 'client'
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState('client');
@@ -91,589 +90,248 @@ const Register = () => {
         navigate('/dashboard/client');
       }
     } catch (error) {
-      console.error('Erreur inscription detail:', error.response?.data);
-      const errorMsg = error.response?.data?.message || "Erreur lors de l'inscription";
       const validationErrors = error.response?.data?.errors;
-      
       if (validationErrors) {
-        // Afficher tous les messages d'erreur de validation
         Object.values(validationErrors).forEach(errArray => {
           errArray.forEach(msg => toast.error(msg));
         });
       } else {
-        toast.error(errorMsg);
+        toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const passwordStrength = () => {
-    const password = formData.password;
-    if (!password) return { strength: 0, label: '' };
-    
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-    
-    const labels = ['', 'Faible', 'Moyen', 'Fort', 'Très fort'];
-    const colors = ['', '#ef4444', '#f59e0b', '#10b981', '#059669'];
-    
-    return { strength, label: labels[strength], color: colors[strength] };
-  };
-
-  const passwordMatch = () => {
-    if (!formData.password_confirmation) return null;
-    return formData.password === formData.password_confirmation;
-  };
-
   return (
-    <>
-      <div className="register-page">
-        <div className="register-container">
-          <div className="register-header">
-            <h2>Créer un compte</h2>
-            <p>Rejoignez IMMORent et découvrez tous nos services</p>
-          </div>
+    <div className="min-h-screen bg-bg-main flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute top-0 left-0 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl -z-10 animate-float"></div>
+      <div className="absolute bottom-0 right-0 translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl -z-10 animate-float-delayed"></div>
 
-          <div className="progress-bar">
-            <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
-              <span className="step-number">1</span>
-              <span className="step-label">Choix du rôle</span>
-            </div>
-            <div className={`progress-line ${currentStep >= 2 ? 'active' : ''}`}></div>
-            <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
-              <span className="step-number">2</span>
-              <span className="step-label">Informations</span>
-            </div>
-          </div>
+      <div className="w-full max-w-4xl">
+        <div className="text-center mb-10">
+          <Link to="/" className="text-3xl font-black text-text-main tracking-tight">
+            IMMO<span className="text-secondary">Rent</span>
+          </Link>
+          <h1 className="mt-6 text-4xl font-extrabold text-text-main tracking-tight">Créer un compte</h1>
+          <p className="mt-2 text-text-sub font-medium">Rejoignez la révolution immobilière au Maroc.</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="register-form">
-            {currentStep === 1 && (
-              <div className="step step-1">
-                <h3>Choisissez votre profil</h3>
-                <p className="step-description">Sélectionnez le rôle qui correspond à votre activité</p>
+        {/* Unified Progress Indicator */}
+        <div className="max-w-xs mx-auto mb-12">
+            <div className="flex items-center justify-between relative">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep >= 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>1</div>
+                <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-500 ${currentStep === 2 ? 'bg-primary' : 'bg-bg-soft'}`}></div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>2</div>
                 
-                <div className="role-selection">
+                <div className="absolute top-12 left-0 right-0 flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted px-2">
+                    <span className={currentStep >= 1 ? 'text-primary' : ''}>Profil</span>
+                    <span className={currentStep === 2 ? 'text-primary' : ''}>Détails</span>
+                </div>
+            </div>
+        </div>
+
+        <div className="bg-bg-card rounded-3xl shadow-huge border border-border-main p-8 md:p-12 backdrop-blur-xl">
+          <form onSubmit={handleSubmit}>
+            {currentStep === 1 ? (
+              <div className="animate-fade-in">
+                <div className="text-center mb-10">
+                  <h3 className="text-2xl font-bold text-text-main">Choisissez votre profil</h3>
+                  <p className="text-text-sub mt-1">Sélectionnez comment vous souhaitez utiliser la plateforme.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Client Card */}
                   <div 
-                    className={`role-card ${selectedRole === 'client' ? 'selected' : ''}`}
                     onClick={() => handleRoleSelect('client')}
+                    className={`relative group cursor-pointer p-8 rounded-2xl border-2 transition-all duration-300 ${selectedRole === 'client' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5' : 'border-border-main hover:border-primary/50 bg-bg-soft/50'}`}
                   >
-                    <HomeIcon className="role-icon" />
-                    <h3>Client / Locataire</h3>
-                    <p>Je recherche un logement à louer</p>
-                    <ul className="role-features">
-                      <li>✓ Consultation des biens</li>
-                      <li>✓ Demandes de location</li>
-                      <li>✓ Gestion des contrats</li>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'client' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
+                      <HomeIcon className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-xl font-bold text-text-main mb-2">Client / Locataire</h4>
+                    <p className="text-sm text-text-sub leading-relaxed mb-6">Je recherche un logement à louer et je souhaite gérer mes contrats en ligne.</p>
+                    <ul className="space-y-3">
+                      {['Recherche illimitée', 'Contrats numériques', 'Suivi des paiements'].map((f, i) => (
+                        <li key={i} className="flex items-center text-xs font-bold text-text-main/80 uppercase tracking-tight">
+                            <CheckCircleIcon className="w-4 h-4 mr-2 text-emerald-500" /> {f}
+                        </li>
+                      ))}
                     </ul>
-                    {selectedRole === 'client' && <div className="selected-badge">✓</div>}
+                    {selectedRole === 'client' && <div className="absolute top-4 right-4 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center animate-scale-in">✓</div>}
                   </div>
 
+                  {/* Agent Card */}
                   <div 
-                    className={`role-card ${selectedRole === 'agent' ? 'selected' : ''}`}
                     onClick={() => handleRoleSelect('agent')}
+                    className={`relative group cursor-pointer p-8 rounded-2xl border-2 transition-all duration-300 ${selectedRole === 'agent' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5' : 'border-border-main hover:border-primary/50 bg-bg-soft/50'}`}
                   >
-                    <BuildingOfficeIcon className="role-icon" />
-                    <h3>Agent immobilier</h3>
-                    <p>Je gère des biens immobiliers</p>
-                    <ul className="role-features">
-                      <li>✓ Gestion des biens</li>
-                      <li>✓ Traitement des demandes</li>
-                      <li>✓ Création de contrats</li>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'agent' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
+                      <BuildingOfficeIcon className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-xl font-bold text-text-main mb-2">Agent Immobilier</h4>
+                    <p className="text-sm text-text-sub leading-relaxed mb-6">Je gère un parc immobilier et je souhaite automatiser mes tâches professionnelles.</p>
+                    <ul className="space-y-3">
+                      {['Publication d\'annonces', 'Gestion des locataires', 'Génération PDF'].map((f, i) => (
+                        <li key={i} className="flex items-center text-xs font-bold text-text-main/80 uppercase tracking-tight">
+                            <CheckCircleIcon className="w-4 h-4 mr-2 text-emerald-500" /> {f}
+                        </li>
+                      ))}
                     </ul>
-                    <p className="text-[10px] mt-2 text-amber-600 font-bold uppercase tracking-tighter">Validation admin requise</p>
-                    {selectedRole === 'agent' && <div className="selected-badge">✓</div>}
+                    <div className="mt-6 inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg uppercase tracking-widest">Validation Admin requise</div>
+                    {selectedRole === 'agent' && <div className="absolute top-4 right-4 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center animate-scale-in">✓</div>}
                   </div>
                 </div>
 
-                <div className="form-navigation">
-                  <button type="button" className="btn-next" onClick={handleNext}>
-                    Suivant
+                <div className="mt-12 flex justify-center">
+                  <button 
+                    type="button" 
+                    onClick={handleNext}
+                    className="px-10 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center gap-3"
+                  >
+                    Continuer vers vos infos
+                    <ArrowRightIcon className="w-5 h-5" />
                   </button>
                 </div>
               </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="step step-2">
-                <h3>Informations personnelles</h3>
-                <p className="step-description">
-                  {selectedRole === 'agent' 
-                    ? 'Créez votre compte agent pour commencer à gérer des biens' 
-                    : 'Créez votre compte client pour trouver votre prochain logement'}
-                </p>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="name">Nom complet *</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Jean Dupont"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="email">Email *</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="jean.dupont@email.com"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
+            ) : (
+              <div className="animate-fade-in">
+                <div className="text-center mb-10">
+                  <h3 className="text-2xl font-bold text-text-main">Informations personnelles</h3>
+                  <p className="text-text-sub mt-1">Ces données seront utilisées pour vos futurs contrats.</p>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="phone">Téléphone</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="06 12 34 56 78"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="address">Adresse</label>
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder="123 rue Example, 75001 Paris"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="password">Mot de passe *</label>
-                    <div className="password-wrapper">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="••••••••"
-                        required
-                        disabled={loading}
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
-                      </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Nom Complet</label>
+                    <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Meryem Bennani"
+                            className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            required
+                        />
                     </div>
-                    {formData.password && (
-                      <div className="password-strength">
-                        <div className="strength-bars">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="strength-bar" style={{
-                              backgroundColor: i <= passwordStrength().strength ? passwordStrength().color : '#e5e7eb'
-                            }}></div>
-                          ))}
-                        </div>
-                        <span style={{ color: passwordStrength().color }}>{passwordStrength().label}</span>
-                      </div>
-                    )}
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="password_confirmation">Confirmer le mot de passe *</label>
-                    <div className="password-wrapper">
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        id="password_confirmation"
-                        name="password_confirmation"
-                        value={formData.password_confirmation}
-                        onChange={handleChange}
-                        placeholder="••••••••"
-                        required
-                        disabled={loading}
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                      </button>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Adresse Email</label>
+                    <div className="relative">
+                        <EnvelopeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="meryem@exemple.ma"
+                            className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            required
+                        />
                     </div>
-                    {formData.password_confirmation && (
-                      <div className="password-match">
-                        {passwordMatch() ? (
-                          <span style={{ color: '#10b981' }}>✓ Les mots de passe correspondent</span>
-                        ) : (
-                          <span style={{ color: '#ef4444' }}>✗ Les mots de passe ne correspondent pas</span>
-                        )}
-                      </div>
-                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Téléphone</label>
+                    <div className="relative">
+                        <PhoneIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="06 12 34 56 78"
+                            className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Adresse de résidence</label>
+                    <div className="relative">
+                        <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Gueliz, Marrakech"
+                            className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Mot de passe</label>
+                    <div className="relative">
+                        <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            className="w-full pl-12 pr-12 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            required
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main">
+                            {showPassword ? 'Hide' : 'Show'}
+                        </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-sub">Confirmer le mot de passe</label>
+                    <div className="relative">
+                        <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password_confirmation"
+                            value={formData.password_confirmation}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            required
+                        />
+                    </div>
                   </div>
                 </div>
 
-                <div className="form-navigation">
-                  <button type="button" className="btn-back" onClick={handleBack}>
-                    Retour
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button 
+                    type="button" 
+                    onClick={handleBack}
+                    className="flex-1 py-4 px-6 bg-bg-soft border border-border-main text-text-main rounded-xl font-bold hover:bg-bg-card hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeftIcon className="w-5 h-5" /> Retour
                   </button>
-                  <button type="submit" className="btn-submit" disabled={loading}>
-                    {loading ? 'Création du compte...' : 'Créer mon compte'}
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="flex-[2] py-4 px-6 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+                  >
+                    {loading ? (
+                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : 'Créer mon compte professionnel'}
                   </button>
                 </div>
               </div>
             )}
           </form>
+        </div>
 
-          <div className="register-footer">
-            <p>Déjà un compte ?</p>
-            <Link to="/login" className="login-link">Se connecter</Link>
-          </div>
+        <div className="mt-12 text-center">
+            <p className="text-text-sub font-medium">
+              Vous avez déjà un compte ?{' '}
+              <Link to="/login" className="text-primary font-extrabold hover:underline">Se connecter ici</Link>
+            </p>
         </div>
       </div>
-
-      <style>{`
-        .register-page {
-          min-height: calc(100vh - 70px);
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 2rem 1rem;
-        }
-
-        .register-container {
-          max-width: 800px;
-          margin: 0 auto;
-          background: white;
-          border-radius: 0.75rem;
-          padding: 2rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .register-header {
-          text-align: center;
-          margin-bottom: 1.5rem;
-        }
-
-        .register-header h2 {
-          color: #1f2937;
-          font-size: 1.75rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .register-header p {
-          color: #6b7280;
-        }
-
-        .progress-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 2rem;
-        }
-
-        .progress-step {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .step-number {
-          width: 2rem;
-          height: 2rem;
-          border-radius: 50%;
-          background: #e5e7eb;
-          color: #6b7280;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          margin-bottom: 0.25rem;
-        }
-
-        .progress-step.active .step-number {
-          background: #2563eb;
-          color: white;
-        }
-
-        .step-label {
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .progress-step.active .step-label {
-          color: #2563eb;
-        }
-
-        .progress-line {
-          width: 4rem;
-          height: 2px;
-          background: #e5e7eb;
-          margin: 0 1rem;
-        }
-
-        .progress-line.active {
-          background: #2563eb;
-        }
-
-        .step h3 {
-          color: #1f2937;
-          font-size: 1.25rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .step-description {
-          color: #6b7280;
-          margin-bottom: 1.5rem;
-        }
-
-        .role-selection {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .role-card {
-          position: relative;
-          padding: 1.5rem;
-          border: 2px solid #e5e7eb;
-          border-radius: 0.75rem;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .role-card:hover {
-          border-color: #2563eb;
-          transform: translateY(-2px);
-        }
-
-        .role-card.selected {
-          border-color: #2563eb;
-          background: #eff6ff;
-        }
-
-        .role-icon {
-          width: 2rem;
-          height: 2rem;
-          text-align: center;
-          margin-bottom: 1rem;
-          color: #d4af37;
-        }
-
-        .role-card h3 {
-          text-align: center;
-          font-size: 1rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .role-card p {
-          text-align: center;
-          color: #6b7280;
-          font-size: 0.75rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .role-features {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-
-        .role-features li {
-          color: #4b5563;
-          font-size: 0.7rem;
-          padding: 0.25rem 0;
-          text-align: center;
-        }
-
-        .selected-badge {
-          position: absolute;
-          top: 0.75rem;
-          right: 0.75rem;
-          width: 1.25rem;
-          height: 1.25rem;
-          background: #2563eb;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.75rem;
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .form-group {
-          margin-bottom: 1rem;
-        }
-
-        .form-group label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-          font-size: 0.875rem;
-        }
-
-        .form-group input {
-          width: 100%;
-          padding: 0.625rem;
-          border: 1px solid #d1d5db;
-          border-radius: 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .form-group input:focus {
-          outline: none;
-          border-color: #2563eb;
-        }
-
-        .password-wrapper {
-          position: relative;
-        }
-
-        .password-toggle {
-          position: absolute;
-          right: 0.75rem;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 1rem;
-        }
-
-        .password-strength {
-          margin-top: 0.5rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .strength-bars {
-          display: flex;
-          gap: 0.25rem;
-          flex: 1;
-        }
-
-        .strength-bar {
-          height: 4px;
-          flex: 1;
-          border-radius: 2px;
-        }
-
-        .password-match {
-          margin-top: 0.5rem;
-          font-size: 0.75rem;
-        }
-
-        .form-navigation {
-          display: flex;
-          gap: 1rem;
-          margin-top: 1.5rem;
-        }
-
-        .btn-next,
-        .btn-submit {
-          flex: 1;
-          padding: 0.75rem;
-          background: #2563eb;
-          color: white;
-          border: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .btn-next:hover,
-        .btn-submit:hover:not(:disabled) {
-          background: #1d4ed8;
-        }
-
-        .btn-back {
-          flex: 1;
-          padding: 0.75rem;
-          background: #f3f4f6;
-          color: #374151;
-          border: none;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .btn-back:hover {
-          background: #e5e7eb;
-        }
-
-        .btn-submit:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .register-footer {
-          margin-top: 1.5rem;
-          text-align: center;
-          padding-top: 1.5rem;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .register-footer p {
-          color: #6b7280;
-          margin-bottom: 0.5rem;
-        }
-
-        .login-link {
-          color: #2563eb;
-          text-decoration: none;
-          font-weight: 600;
-        }
-
-        .login-link:hover {
-          text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-          .register-container {
-            padding: 1.5rem;
-          }
-
-          .role-selection {
-            grid-template-columns: 1fr;
-          }
-
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-
-          .progress-line {
-            width: 2rem;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

@@ -25,6 +25,8 @@ import AgentDashboard from './pages/AgentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AddProperty from './pages/AddProperty';
 import Messages from './pages/Messages';
+import CreateContract from './pages/CreateContract';
+import Dashboard from './pages/Dashboard';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -35,9 +37,9 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <Router>
-            <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+            <div className="flex flex-col min-h-screen bg-bg-main text-text-main transition-colors duration-300">
               <Header />
-              <main className="flex-1 w-full">
+              <main className="flex-1 w-full animate-fade-in">
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
@@ -54,6 +56,8 @@ function App() {
 
                   {/* Protected Routes - Any logged user */}
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/contracts/new" element={<ProtectedRoute requiredRole="agent"><CreateContract /></ProtectedRoute>} />
                   <Route path="/contracts/:id" element={<ProtectedRoute><ContractDetail /></ProtectedRoute>} />
                   <Route path="/requests/new" element={<ProtectedRoute><NewRequest /></ProtectedRoute>} />
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

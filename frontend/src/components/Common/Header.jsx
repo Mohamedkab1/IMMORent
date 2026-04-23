@@ -97,7 +97,7 @@ const Header = () => {
   ];
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-lg border-b border-slate-200 dark:border-slate-800 py-2' : 'bg-white dark:bg-slate-900 py-4'}`}>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-bg-glass backdrop-blur-xl shadow-large border-b border-border-main py-2' : 'bg-bg-main py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           
@@ -107,7 +107,7 @@ const Header = () => {
                <img src={logo} alt="IMMORent Logo" className="w-10 h-10 object-cover group-hover:scale-110 transition-transform duration-500" />
                <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-xl"></div>
             </div>
-            <span className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">IMMO<span className="text-primary dark:text-secondary">Rent</span></span>
+            <span className="text-2xl font-black text-text-main tracking-tighter">IMMO<span className="text-primary dark:text-secondary">Rent</span></span>
           </Link>
 
           {/* Desktop Nav */}
@@ -116,7 +116,7 @@ const Header = () => {
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-200 ${location.pathname === link.path ? 'text-primary dark:text-secondary bg-primary/5 dark:bg-secondary/10' : 'text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-200 ${location.pathname === link.path ? 'text-primary dark:text-secondary bg-primary/5 dark:bg-secondary/10' : 'text-text-sub hover:text-primary dark:hover:text-white hover:bg-bg-secondary'}`}
               >
                 {link.name}
               </Link>
@@ -128,19 +128,22 @@ const Header = () => {
             {/* Theme Toggle */}
             <button 
               onClick={toggleTheme} 
-              className="p-2.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-secondary bg-slate-50 dark:bg-slate-800 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm hover:shadow-md active:scale-95"
+              className="group/theme relative p-2.5 bg-bg-soft hover:bg-bg-main rounded-xl border border-border-main transition-all shadow-main hover:shadow-large active:scale-95 overflow-hidden"
               aria-label="Toggle Theme"
             >
-              {theme === 'dark' ? <SunIcon className="w-5 h-5 text-amber-500" /> : <MoonIcon className="w-5 h-5 text-primary" />}
+              <div className="relative z-10 transition-transform duration-500 group-hover/theme:rotate-[360deg]">
+                {theme === 'dark' ? <SunIcon className="w-5 h-5 text-amber-400" /> : <MoonIcon className="w-5 h-5 text-primary" />}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-secondary/5 opacity-0 group-hover/theme:opacity-100 transition-opacity"></div>
             </button>
 
             {/* Language Switch */}
             <div className="relative group">
-              <button className="flex items-center gap-2 px-3 py-2.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white bg-slate-50 dark:bg-slate-800 rounded-xl border border-transparent group-hover:border-slate-200 dark:group-hover:border-slate-700 transition-all uppercase text-xs font-black tracking-widest leading-none">
+              <button className="flex items-center gap-2 px-3 py-2.5 text-text-sub hover:text-text-main bg-bg-secondary rounded-xl border border-transparent group-hover:border-border-main transition-all uppercase text-xs font-black tracking-widest leading-none">
                 <LanguageIcon className="w-5 h-5" />
                 {language}
               </button>
-              <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
+              <div className="absolute top-full right-0 mt-2 w-32 bg-bg-primary rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
                 {['fr', 'en', 'ar'].map((lang) => (
                   <button 
                     key={lang} 
@@ -153,7 +156,7 @@ const Header = () => {
               </div>
             </div>
 
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+            <div className="h-6 w-px bg-border-main mx-2"></div>
 
             {/* Auth section */}
             {isAuthenticated ? (
@@ -163,7 +166,7 @@ const Header = () => {
                 <div className="relative">
                   <button 
                     onClick={() => setNotifOpen(!notifOpen)}
-                    className="relative p-2.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-secondary bg-slate-50 dark:bg-slate-800 rounded-xl transition-all"
+                    className="relative p-2.5 text-text-sub hover:text-primary dark:hover:text-secondary bg-bg-secondary rounded-xl transition-all"
                   >
                     <BellIcon className="w-5 h-5" />
                     {unreadCount > 0 && (
@@ -173,7 +176,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-80 bg-bg-primary rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={() => notificationService.markAllRead().then(loadNotifications)} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -197,7 +200,7 @@ const Header = () => {
                 <div className="relative">
                   <button 
                     onClick={() => setDropdownOpen(!dropdownOpen)} 
-                    className="flex items-center gap-2 p-1.5 pe-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all"
+                    className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-2xl border border-transparent hover:border-border-main transition-all"
                   >
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-md">
                       {user?.name?.[0]?.toUpperCase()}
@@ -208,13 +211,13 @@ const Header = () => {
                     </div>
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-64 bg-bg-primary rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
-                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
+                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-text-sub hover:bg-bg-secondary hover:text-primary dark:hover:text-white transition-all">
                         <ChartBarIcon className="w-5 h-5 opacity-70" /> {t('nav.dashboard')}
                       </Link>
                       <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
@@ -242,10 +245,10 @@ const Header = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 text-slate-600 dark:text-slate-300">
+            <button onClick={toggleTheme} className="p-2 text-text-sub">
               {theme === 'dark' ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6 text-primary" />}
             </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-600 dark:text-slate-300 transition-colors">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-text-sub transition-colors">
               {mobileMenuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
             </button>
           </div>
@@ -253,7 +256,7 @@ const Header = () => {
       </div>
 
       {/* Mobile nav (Enhanced) */}
-      <div className={`md:hidden absolute inset-x-0 top-full bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 transition-all duration-300 origin-top shadow-2xl ${mobileMenuOpen ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-0'}`}>
+      <div className={`md:hidden absolute inset-x-0 top-full bg-bg-primary border-b border-border-main transition-all duration-300 origin-top shadow-2xl ${mobileMenuOpen ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-0'}`}>
         <div className="p-4 space-y-4">
            <nav className="flex flex-col gap-1">
              {navLinks.map((link) => (

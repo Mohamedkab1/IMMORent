@@ -52,6 +52,11 @@ class Property extends Model
         return $this->hasMany(Contract::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
     // Scopes
     public function scopeAvailable($query)
     {

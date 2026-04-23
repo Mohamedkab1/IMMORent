@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TestPdfController;
 
 /*
@@ -40,6 +41,7 @@ Route::post('/check-email', [AuthController::class, 'checkEmail']);
 // Biens immobiliers (consultation publique)
 Route::get('/properties', [PropertyController::class, 'index']);
 Route::get('/properties/{id}', [PropertyController::class, 'show']);
+Route::get('/properties/{id}/reviews', [ReviewController::class, 'index']);
 
 // Catégories de biens
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -126,6 +128,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/properties/{id}/images', [PropertyController::class, 'uploadImages']);
         Route::delete('/properties/{id}/images/{index}', [PropertyController::class, 'deleteImage']);
         Route::get('/my/properties', [PropertyController::class, 'myProperties']);
+    });
+    
+    // ========== AVIS ==========
+    Route::post('/properties/{id}/reviews', [ReviewController::class, 'store']);
+    
+    // Modération des avis (Agents)
+    Route::middleware(['agent'])->group(function () {
+        Route::get('/agent/reviews', [ReviewController::class, 'agentReviews']);
+        Route::put('/reviews/{id}/process', [ReviewController::class, 'process']);
     });
     
     // ========== DEMANDES DE LOCATION ==========

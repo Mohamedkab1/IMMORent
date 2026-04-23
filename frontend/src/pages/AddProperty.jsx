@@ -77,7 +77,9 @@ const AddProperty = () => {
   const propertyTypes = [
     { value: 'apartment', label: 'Appartement' },
     { value: 'house', label: 'Maison' },
+    { value: 'villa', label: 'Villa' },
     { value: 'studio', label: 'Studio' },
+    { value: 'office', label: 'Bureau' },
     { value: 'commercial', label: 'Local commercial' },
     { value: 'land', label: 'Terrain' }
   ];
@@ -191,12 +193,12 @@ const AddProperty = () => {
 
   if (!isAgent && !isAdmin) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex justify-center items-center px-4">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl text-center max-w-md w-full border border-slate-100 dark:border-slate-700">
+      <div className="min-h-screen bg-bg-soft flex justify-center items-center px-4">
+        <div className="bg-bg-card p-8 rounded-3xl shadow-xl text-center max-w-md w-full border border-border-main">
           <LockClosedIcon className="w-20 h-20 text-rose-500 mx-auto mb-6 bg-rose-50 dark:bg-rose-900/30 p-4 rounded-full" />
-          <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Accès restreint</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Vous n'avez pas les autorisations nécessaires pour accéder à cette interface de création.</p>
-          <button onClick={() => navigate('/dashboard')} className="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-xl font-bold transition-all shadow-md">
+          <h2 className="text-2xl font-black text-text-main mb-2">Accès restreint</h2>
+          <p className="text-text-muted mb-8 font-medium">Vous n'avez pas les autorisations nécessaires pour accéder à cette interface de création.</p>
+          <button onClick={() => navigate('/dashboard')} className="w-full py-3.5 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
             Retourner au tableau de bord
           </button>
         </div>
@@ -205,64 +207,64 @@ const AddProperty = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-slate-700">
-          <button onClick={() => navigate(-1)} className="p-2 text-slate-400 hover:text-primary dark:hover:text-secondary bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors shadow-sm">
+        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border-main">
+          <button onClick={() => navigate(-1)} className="p-2 text-text-muted hover:text-primary bg-bg-card border border-border-main hover:bg-bg-soft rounded-full transition-colors shadow-sm">
             <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
           </button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Ajouter un bien</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Remplissez les informations ci-dessous pour publier une nouvelle annonce.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">Ajouter un bien</h1>
+            <p className="text-sm text-text-muted mt-1 font-medium">Remplissez les informations ci-dessous pour publier une nouvelle annonce.</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
           {/* Section: Informations générales */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                  <DocumentTextIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Informations générales</h2>
+              <h2 className="text-lg font-bold text-text-main">Informations générales</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                   Titre de l'annonce <span className="text-rose-500">*</span>
                 </label>
                 <input 
                   type="text" name="title" value={formData.title} onChange={handleChange} 
                   placeholder="Ex: Superbe appartement lumineux en plein coeur de ville" 
-                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.title ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.title ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                 />
                 {validationErrors.title && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.title}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                   Description <span className="text-rose-500">*</span>
                 </label>
                 <textarea 
                   name="description" rows="5" value={formData.description} onChange={handleChange} 
                   placeholder="Décrivez les atouts de votre bien en détail..." 
-                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all resize-y ${validationErrors.description ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all resize-y ${validationErrors.description ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                 />
                 {validationErrors.description && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.description}</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                     Type de bien <span className="text-rose-500">*</span>
                   </label>
                   <select 
                     name="type" value={formData.type} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary hover:border-slate-300'}`}
+                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
                   >
                     {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -270,12 +272,12 @@ const AddProperty = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                     Catégorie <span className="text-rose-500">*</span>
                   </label>
                   <select 
                     name="category_id" value={formData.category_id} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all appearance-none cursor-pointer ${validationErrors.category_id ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary hover:border-slate-300'}`}
+                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.category_id ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
                   >
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -285,7 +287,7 @@ const AddProperty = () => {
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                     Type de transaction <span className="text-rose-500">*</span>
                   </label>
                   <div className="flex gap-4">
@@ -294,26 +296,26 @@ const AddProperty = () => {
                         key={type.value}
                         type="button"
                         onClick={() => handleTransactionTypeSelect(type.value)}
-                        className={`flex-1 flex flex-col justify-center items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.transaction_type === type.value ? 'border-primary bg-primary/5 dark:bg-primary/20 shadow-md shadow-primary/10' : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                        className={`flex-1 flex flex-col justify-center items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.transaction_type === type.value ? 'border-primary bg-primary/5 dark:bg-primary/20 shadow-md shadow-primary/10' : 'border-border-main bg-bg-card hover:border-primary/50'}`}
                       >
-                        <type.icon className={`w-6 h-6 ${formData.transaction_type === type.value ? 'text-primary' : 'text-slate-400'}`} />
-                        <span className={`font-bold text-sm ${formData.transaction_type === type.value ? 'text-primary dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{type.label}</span>
+                        <type.icon className={`w-6 h-6 ${formData.transaction_type === type.value ? 'text-primary' : 'text-text-muted'}`} />
+                        <span className={`font-bold text-sm ${formData.transaction_type === type.value ? 'text-primary dark:text-white' : 'text-text-sub'}`}>{type.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
-                    <CurrencyDollarIcon className="w-4 h-4 text-slate-400" /> Prix <span className="text-rose-500">*</span>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
+                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> Prix <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <input 
                       type="number" name="price" value={formData.price} onChange={handleChange} 
                       placeholder="Montant" 
-                      className={`w-full ps-4 pe-20 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                      className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
-                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-slate-500 font-bold text-sm">
+                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
                        DH {formData.transaction_type === 'rent' ? '/ ms' : ''}
                     </div>
                   </div>
@@ -325,48 +327,48 @@ const AddProperty = () => {
           </div>
 
           {/* Section: Localisation */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                  <MapPinIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Localisation</h2>
+              <h2 className="text-lg font-bold text-text-main">Localisation</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                   Adresse complète <span className="text-rose-500">*</span>
                 </label>
                 <input 
                   type="text" name="address" value={formData.address} onChange={handleChange} 
                   placeholder="Numéro, rue, bâtiment..." 
-                  className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                 />
                 {validationErrors.address && <p className="text-rose-500 text-xs font-semibold">{validationErrors.address}</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                     Ville <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="text" name="city" value={formData.city} onChange={handleChange} 
                     placeholder="Ville" 
-                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                   />
                   {validationErrors.city && <p className="text-rose-500 text-xs font-semibold">{validationErrors.city}</p>}
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                     Code postal <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} 
                     placeholder="Ex: 20000" 
-                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                   />
                   {validationErrors.postal_code && <p className="text-rose-500 text-xs font-semibold">{validationErrors.postal_code}</p>}
                 </div>
@@ -375,59 +377,59 @@ const AddProperty = () => {
           </div>
 
           {/* Section: Caractéristiques */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
                  <HomeIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Caractéristiques du bien</h2>
+              <h2 className="text-lg font-bold text-text-main">Caractéristiques du bien</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
                     Surface <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <input 
                       type="number" name="surface" value={formData.surface} onChange={handleChange} 
                       placeholder="Ex: 80" 
-                      className={`w-full ps-4 pe-10 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.surface ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                      className={`w-full ps-4 pe-10 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.surface ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
-                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-slate-400 font-bold text-sm">m²</div>
+                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">m²</div>
                   </div>
                   {validationErrors.surface && <p className="text-rose-500 text-xs font-semibold">{validationErrors.surface}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
                     Pièces <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="number" name="rooms" value={formData.rooms} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all ${validationErrors.rooms ? 'border-rose-500' : 'border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.rooms ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                   />
                   {validationErrors.rooms && <p className="text-rose-500 text-xs font-semibold">{validationErrors.rooms}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
                     Chambres
                   </label>
                   <input 
                     type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
                     Salles de bain
                   </label>
                   <input 
                     type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
@@ -435,12 +437,12 @@ const AddProperty = () => {
           </div>
 
           {/* Section: Équipements (Features) */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                  <StarIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Équipements & Prestations</h2>
+              <h2 className="text-lg font-bold text-text-main">Équipements & Prestations</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
@@ -448,11 +450,11 @@ const AddProperty = () => {
                  <input 
                    type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => {if(e.key === 'Enter') { e.preventDefault(); addFeature(); }}} 
                    placeholder="Ex: Climatisation, Garage, Piscine..." 
-                   className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 appearance-none outline-none rounded-xl text-slate-700 dark:text-white font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+                   className="flex-1 px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
                  />
                  <button 
                    type="button" onClick={addFeature} 
-                   className="px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
+                   className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
                  >
                    <PlusIcon className="w-5 h-5"/> Ajouter
                  </button>
@@ -461,9 +463,9 @@ const AddProperty = () => {
                {featuresList.length > 0 && (
                  <div className="flex flex-wrap gap-3 mt-4">
                    {featuresList.map((f, i) => (
-                     <span key={i} className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 dark:bg-primary/20 text-primary dark:text-blue-300 rounded-lg text-sm font-bold border border-primary/20 dark:border-primary/30 shadow-sm animate-fade-in-up">
+                     <span key={i} className="inline-flex items-center gap-2 px-4 py-2 bg-bg-soft text-primary rounded-lg text-sm font-bold border border-border-main shadow-sm animate-fade-in-up">
                        {f}
-                       <button type="button" onClick={() => removeFeature(i)} className="text-primary/70 hover:text-rose-500 transition-colors bg-white/50 dark:bg-black/20 rounded-full p-0.5">
+                       <button type="button" onClick={() => removeFeature(i)} className="text-primary/70 hover:text-rose-500 transition-colors bg-bg-card rounded-full p-0.5">
                          <XMarkIcon className="w-4 h-4" />
                        </button>
                      </span>
@@ -474,12 +476,12 @@ const AddProperty = () => {
           </div>
 
           {/* Section: Photos */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
+          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
                  <PhotoIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Galerie Photos <span className="text-rose-500">*</span></h2>
+              <h2 className="text-lg font-bold text-text-main">Galerie Photos <span className="text-rose-500">*</span></h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
@@ -488,19 +490,19 @@ const AddProperty = () => {
                    type="file" multiple accept="image/*" id="images-upload" 
                    onChange={handleImageChange} className="hidden" 
                  />
-                 <label htmlFor="images-upload" className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary dark:hover:border-secondary bg-slate-50 hover:bg-primary/5 dark:bg-slate-900/50 dark:hover:bg-slate-800 rounded-2xl cursor-pointer transition-all group">
-                   <div className="w-16 h-16 bg-white dark:bg-slate-800 shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                     <PhotoIcon className="w-8 h-8 text-primary dark:text-secondary" />
+                 <label htmlFor="images-upload" className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed border-border-main hover:border-primary bg-bg-soft hover:bg-bg-card rounded-2xl cursor-pointer transition-all group">
+                   <div className="w-16 h-16 bg-bg-card shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                     <PhotoIcon className="w-8 h-8 text-primary" />
                    </div>
-                   <span className="text-slate-800 dark:text-white font-bold text-lg mb-1">Cliquer pour importer</span>
-                   <span className="text-slate-500 dark:text-slate-400 text-sm font-medium px-4 text-center">PNG, JPG ou WEBP. Max 10 photos.</span>
+                   <span className="text-text-main font-bold text-lg mb-1">Cliquer pour importer</span>
+                   <span className="text-text-sub text-sm font-medium px-4 text-center">PNG, JPG ou WEBP. Max 10 photos.</span>
                  </label>
                </div>
 
                {imagePreviews.length > 0 && (
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                    {imagePreviews.map((preview, i) => (
-                     <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm group">
+                     <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main shadow-sm group">
                        <img src={preview} alt="Prévisualisation" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                        <button 
@@ -519,7 +521,7 @@ const AddProperty = () => {
 
           {/* Floating Actions Line */}
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
-            <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl font-bold shadow-sm transition-all text-center">
+            <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card hover:bg-bg-soft text-text-main border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
               Annuler
             </button>
             <button type="submit" disabled={loading} className="px-10 py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">

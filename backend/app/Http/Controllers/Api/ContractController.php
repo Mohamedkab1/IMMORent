@@ -8,7 +8,7 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPDF\Facades\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Requests\StoreContractRequest;
 
 class ContractController extends Controller
@@ -284,82 +284,98 @@ public function store(StoreContractRequest $request)
             $title = $isSale ? 'Contrat de vente' : 'Contrat de location';
             $party1Label = $isSale ? 'Vendeur' : 'Bailleur';
             $party2Label = $isSale ? 'Acquéreur' : 'Locataire';
+
+            // Préparer le contenu HTML avec des données formatées
+            $signedDate = $contract->signed_at ? $contract->signed_at->format('d/m/Y') : date('d/m/Y');
             
             $html = '<!DOCTYPE html>
             <html>
             <head>
-                <meta charset="UTF-8">
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
                 <title>' . $title . '</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                    * { font-family: "DejaVu Sans", sans-serif; }
+                    body { padding: 40px; color: #333; line-height: 1.5; }
                     .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
-                    .logo { color: #2563eb; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-                    .title { font-size: 22px; text-transform: uppercase; margin-top: 10px; }
-                    .info { margin: 20px 0; line-height: 1.6; }
-                    .label { font-weight: bold; display: inline-block; width: 180px; }
-                    .signature-section { margin-top: 60px; }
-                    .signature-box { display: inline-block; width: 45%; vertical-align: top; }
-                    .signature-line { border-top: 1px solid #000; width: 80%; margin-top: 60px; }
-                    footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: gray; }
+                    .logo { color: #2563eb; font-size: 28px; font-weight: bold; }
+                    .title { font-size: 22px; text-transform: uppercase; margin-top: 10px; font-weight: bold; }
+                    .info-block { margin: 20px 0; }
+                    .info-row { margin-bottom: 10px; }
+                    .label { font-weight: bold; display: inline-block; width: 180px; color: #4b5563; }
+                    .value { font-weight: normal; color: #1f2937; }
+                    .signature-section { margin-top: 80px; width: 100%; }
+                    .signature-box { display: inline-block; width: 45%; }
+                    .signature-line { border-top: 1px solid #9ca3af; width: 100%; margin-top: 60px; }
+                    footer { position: fixed; bottom: -20px; left: 0; right: 0; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 10px; }
                 </style>
             </head>
             <body>
                 <div class="header">
                     <div class="logo">IMMORent</div>
                     <div class="title">' . $title . '</div>
-                    <p>N° ' . $contract->contract_number . '</p>
+                    <p style="color: #6b7280;">N° ' . $contract->contract_number . '</p>
                 </div>
 
-                <div class="info">
-                    <p><span class="label">Référence:</span> ' . $contract->contract_number . '</p>
-                    <p><span class="label">Date de signature:</span> ' . date('d/m/Y', strtotime($contract->signed_at)) . '</p>
-                    <hr style="border: 0; border-top: 1px solid #eee;">
+                <div class="info-block">
+                    <div class="info-row"><span class="label">Référence:</span> <span class="value">' . $contract->contract_number . '</span></div>
+                    <div class="info-row"><span class="label">Date de signature:</span> <span class="value">' . $signedDate . '</span></div>
+                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
                     ';
 
             if ($isSale) {
+                $saleDate = $contract->sale_date ? $contract->sale_date->format('d/m/Y') : '-';
                 $html .= '
-                    <p><span class="label">Prix de vente:</span> ' . number_format($contract->sale_price, 2, ',', ' ') . ' DH</p>
-                    <p><span class="label">Date de vente:</span> ' . date('d/m/Y', strtotime($contract->sale_date)) . '</p>';
+                    <div class="info-row"><span class="label">Prix de vente:</span> <span class="value">' . number_format((float)$contract->sale_price, 2, ',', ' ') . ' DH</span></div>
+                    <div class="info-row"><span class="label">Date de vente:</span> <span class="value">' . $saleDate . '</span></div>';
             } else {
+                $startDate = $contract->start_date ? $contract->start_date->format('d/m/Y') : '-';
+                $endDate = $contract->end_date ? $contract->end_date->format('d/m/Y') : '-';
                 $html .= '
-                    <p><span class="label">Date de début:</span> ' . date('d/m/Y', strtotime($contract->start_date)) . '</p>
-                    <p><span class="label">Date de fin:</span> ' . date('d/m/Y', strtotime($contract->end_date)) . '</p>
-                    <p><span class="label">Loyer mensuel:</span> ' . number_format($contract->monthly_rent, 2, ',', ' ') . ' DH</p>
-                    <p><span class="label">Charges:</span> ' . number_format($contract->charges ?? 0, 2, ',', ' ') . ' DH</p>
-                    <p><span class="label">Dépôt de garantie:</span> ' . number_format($contract->security_deposit, 2, ',', ' ') . ' DH</p>';
+                    <div class="info-row"><span class="label">Date de début:</span> <span class="value">' . $startDate . '</span></div>
+                    <div class="info-row"><span class="label">Date de fin:</span> <span class="value">' . $endDate . '</span></div>
+                    <div class="info-row"><span class="label">Loyer mensuel:</span> <span class="value">' . number_format((float)$contract->monthly_rent, 2, ',', ' ') . ' DH</span></div>
+                    <div class="info-row"><span class="label">Charges:</span> <span class="value">' . number_format((float)($contract->charges ?? 0), 2, ',', ' ') . ' DH</span></div>
+                    <div class="info-row"><span class="label">Dépôt de garantie:</span> <span class="value">' . number_format((float)$contract->security_deposit, 2, ',', ' ') . ' DH</span></div>';
             }
 
             $html .= '
                 </div>
 
                 <div class="signature-section">
-                    <div class="signature-box">
-                        <p>Signature du ' . $party1Label . '</p>
-                        <div class="signature-line"></div>
-                    </div>
-                    <div class="signature-box" style="float: right;">
-                        <p>Signature du ' . $party2Label . '</p>
-                        <div class="signature-line"></div>
-                    </div>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="width: 45%; vertical-align: top;">
+                                <p style="font-weight: bold;">Signature du ' . $party1Label . '</p>
+                                <p style="font-size: 10px; color: #6b7280;">Lu et approuvé</p>
+                                <div class="signature-line"></div>
+                            </td>
+                            <td style="width: 10%;"></td>
+                            <td style="width: 45%; vertical-align: top; text-align: right;">
+                                <p style="font-weight: bold;">Signature du ' . $party2Label . '</p>
+                                <p style="font-size: 10px; color: #6b7280;">Lu et approuvé</p>
+                                <div class="signature-line"></div>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
 
                 <footer>
-                    IMMORent - Plateforme SaaS Immobilière Premium - ' . date('Y') . '
+                    IMMORent - Plateforme SaaS Immobilière Premium - Document généré le ' . date('d/m/Y H:i') . '
                 </footer>
             </body>
             </html>';
             
             $pdf = Pdf::loadHTML($html);
             $pdf->setPaper('A4', 'portrait');
+            $pdf->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
             
             return $pdf->download('contrat_' . $contract->contract_number . '.pdf');
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Erreur download PDF: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'message' => 'Erreur lors de la génération du PDF: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -4,7 +4,7 @@ import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon } from '@heroicons/r
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 py-20 px-4 text-center border-b border-primary/20 dark:border-slate-800 relative z-10 overflow-hidden">
@@ -39,9 +39,9 @@ const About = () => {
             />
           </div>
           <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Notre histoire</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main">Notre histoire</h2>
             <div className="w-20 h-1.5 bg-secondary rounded-full"></div>
-            <div className="prose dark:prose-invert prose-lg text-slate-600 dark:text-slate-300">
+            <div className="prose dark:prose-invert prose-lg text-text-sub">
               <p>
                 IMMORent est né d'un constat simple : la gestion immobilière est souvent complexe 
                 et chronophage. En 2020, notre fondateur, fort de 15 ans d'expérience dans l'immobilier, 
@@ -55,26 +55,25 @@ const About = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border-main">
+              <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">500+</span>
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Biens</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Biens</span>
               </div>
-              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">10k+</span>
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Clients</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Clients</span>
               </div>
-              <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+              <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">50+</span>
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Agences</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Agences</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Values Section */}
         <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-16">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-text-main inline-block relative mb-16">
             Nos valeurs
             <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-secondary rounded-full"></div>
           </h2>
@@ -86,12 +85,12 @@ const About = () => {
               { icon: StarIcon, title: 'Excellence', desc: 'Service de qualité supérieure à tous nos utilisateurs.', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
               { icon: HeartIcon, title: 'Passion', desc: 'Nous aimons profondément ce que nous faisons chaque jour.', color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' }
             ].map((v, i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-slate-100 dark:border-slate-700 transition-all duration-300">
+              <div key={i} className="bg-bg-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-border-main transition-all duration-300">
                 <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-6 rotate-3 ${v.bg} ${v.color}`}>
                   <v.icon className={`w-8 h-8 ${v.color}`} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{v.title}</h3>
-                <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{v.desc}</p>
+                <h3 className="text-xl font-bold text-text-main mb-3">{v.title}</h3>
+                <p className="text-text-sub leading-relaxed font-medium">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -111,16 +110,16 @@ const About = () => {
               { img: 'https://randomuser.me/api/portraits/men/3.jpg', name: 'Pierre Dubois', role: 'Directeur Technique' },
               { img: 'https://randomuser.me/api/portraits/women/4.jpg', name: 'Marie Lambert', role: 'Responsable Clientèle' }
             ].map((member, i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-slate-100 dark:border-slate-700 transition-all duration-300 group">
+              <div key={i} className="bg-bg-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-border-main transition-all duration-300 group">
                 <div className="relative w-32 h-32 mx-auto mb-6">
                   <div className="absolute inset-0 bg-primary/20 dark:bg-secondary/20 rounded-full scale-110 group-hover:scale-125 transition-transform duration-500"></div>
                   <img 
                     src={member.img} 
                     alt={member.name} 
-                    className="relative w-full h-full rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg" 
+                    className="relative w-full h-full rounded-full object-cover border-4 border-bg-card shadow-lg" 
                   />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{member.name}</h3>
+                <h3 className="text-xl font-bold text-text-main mb-1">{member.name}</h3>
                 <p className="text-sm font-semibold text-primary dark:text-secondary uppercase tracking-wider">{member.role}</p>
               </div>
             ))}

@@ -22,7 +22,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 py-20 px-4 text-center border-b border-primary/20 dark:border-slate-800 relative z-10 overflow-hidden">
@@ -53,15 +53,15 @@ const Contact = () => {
             { icon: EnvelopeIcon, title: 'Email', line1: 'contact@immorent.ma', line2: 'support@immorent.ma', note: 'Réponse sous 24h' },
             { icon: ClockIcon, title: 'Horaires', line1: 'Lun-Jeu : 9h-18h', line2: 'Ven: 9h-13h | Sam: 10h-14h', note: 'Dimanche : Fermé' }
           ].map((info, i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+            <div key={i} className="bg-bg-card p-6 rounded-3xl shadow-sm border border-border-main text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
               <div className="w-16 h-16 mx-auto bg-primary/10 dark:bg-secondary/10 rounded-2xl flex items-center justify-center mb-6 rotate-3">
                 <info.icon className="w-8 h-8 text-primary dark:text-secondary" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">{info.title}</h3>
-              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium">
+              <h3 className="text-lg font-bold text-text-main mb-3">{info.title}</h3>
+              <p className="text-text-sub text-sm leading-relaxed font-medium">
                 {info.line1} <br /> {info.line2}
               </p>
-              {info.note && <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4">{info.note}</p>}
+              {info.note && <p className="text-xs font-bold text-text-muted uppercase tracking-wider mt-4">{info.note}</p>}
             </div>
           ))}
         </div>
@@ -69,44 +69,44 @@ const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-20">
           
           {/* Form */}
-          <div className="bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
+          <div className="bg-bg-card p-8 md:p-12 rounded-3xl shadow-sm border border-border-main relative overflow-hidden">
              
              {/* Decorative blob */}
              <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-secondary/10 dark:bg-secondary/5 rounded-full blur-3xl rounded-full"></div>
 
-             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 relative z-10">Envoyez un message</h2>
-             <p className="text-slate-500 dark:text-slate-400 mb-8 relative z-10">Remplissez ce formulaire et nous vous recontacterons au plus vite.</p>
+             <h2 className="text-3xl font-extrabold text-text-main mb-2 relative z-10">Envoyez un message</h2>
+             <p className="text-text-sub mb-8 relative z-10">Remplissez ce formulaire et nous vous recontacterons au plus vite.</p>
              
              {submitted ? (
                <div className="flex flex-col items-center justify-center py-12 text-center relative z-10 animate-fade-in-up">
                  <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
-                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Message Envoyé !</h3>
-                 <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-sm">Merci de nous avoir contactés. Notre équipe reviendra vers vous très prochainement.</p>
-                 <button onClick={() => setSubmitted(false)} className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-xl font-bold transition-colors">
+                 <h3 className="text-2xl font-bold text-text-main mb-4">Message Envoyé !</h3>
+                 <p className="text-text-sub mb-8 max-w-sm">Merci de nous avoir contactés. Notre équipe reviendra vers vous très prochainement.</p>
+                 <button onClick={() => setSubmitted(false)} className="px-8 py-3 bg-text-main text-bg-card hover:opacity-90 rounded-xl font-bold transition-colors">
                    Envoyer un autre message
                  </button>
                </div>
              ) : (
                <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nom complet <span className="text-rose-500">*</span></label>
-                     <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Jean Dupont" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email <span className="text-rose-500">*</span></label>
-                     <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="jean@exemple.com" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
-                   </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-sub">Nom complet <span className="text-rose-500">*</span></label>
+                      <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Jean Dupont" className="w-full px-4 py-3 bg-bg-soft border appearance-none outline-none border-border-main rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-sub">Email <span className="text-rose-500">*</span></label>
+                      <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="jean@exemple.com" className="w-full px-4 py-3 bg-bg-soft border appearance-none outline-none border-border-main rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                    </div>
                  </div>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Téléphone</label>
-                     <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 00 00 00 00" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Sujet <span className="text-rose-500">*</span></label>
-                     <select name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-sub">Téléphone</label>
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 00 00 00 00" className="w-full px-4 py-3 bg-bg-soft border appearance-none outline-none border-border-main rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-text-sub">Sujet <span className="text-rose-500">*</span></label>
+                      <select name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 bg-bg-soft border outline-none border-border-main rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer">
                        <option value="">Sélectionnez un sujet</option>
                        <option value="info">Demande d'information</option>
                        <option value="support">Support technique</option>
@@ -118,13 +118,13 @@ const Contact = () => {
                  </div>
 
                  <div className="space-y-2">
-                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Votre message <span className="text-rose-500">*</span></label>
-                   <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder="Comment pouvons-nous vous aider ?" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border appearance-none outline-none border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y" />
+                   <label className="text-sm font-bold text-text-sub">Votre message <span className="text-rose-500">*</span></label>
+                   <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder="Comment pouvons-nous vous aider ?" className="w-full px-4 py-3 bg-bg-soft border appearance-none outline-none border-border-main rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y" />
                  </div>
 
                  <div className="flex items-start gap-3 mt-4">
-                   <input type="checkbox" id="consent" required className="mt-1 w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-700" />
-                   <label htmlFor="consent" className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                   <input type="checkbox" id="consent" required className="mt-1 w-5 h-5 rounded border-border-main text-primary focus:ring-primary transition-colors bg-bg-soft" />
+                   <label htmlFor="consent" className="text-sm text-text-sub font-medium">
                      J'accepte que mes données soient traitées conformément à la <a href="/confidentialite" className="text-primary hover:underline">politique de confidentialité</a> de la plateforme.
                    </label>
                  </div>
@@ -138,9 +138,9 @@ const Contact = () => {
           </div>
 
           {/* Map */}
-          <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 relative group">
+          <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-border-main relative group">
             {/* Map Placeholder or Google maps Embed */}
-            <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse pointer-events-none -z-10"></div>
+            <div className="absolute inset-0 bg-bg-soft animate-pulse pointer-events-none -z-10"></div>
             <iframe 
               title="Carte localisation agence Marrakech"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217009.8920852963!2d-8.04298672152276!3d31.646783331007564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5950b6534f87adb8!2sMarrakech%2C%20Maroc!5e0!3m2!1sfr!2sfr!4v1700000000000!5m2!1sfr!2sfr" 
@@ -155,9 +155,8 @@ const Contact = () => {
           
         </div>
 
-        {/* FAQ Section */}
         <div className="text-center max-w-4xl mx-auto">
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-12">
+          <h2 className="text-3xl font-extrabold text-text-main inline-block relative mb-12">
             Questions fréquentes
             <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-1.5 bg-secondary rounded-full"></div>
           </h2>
@@ -169,12 +168,12 @@ const Contact = () => {
               { q: 'Les transactions sont-elles sécurisées ?', a: 'Oui, tous les contrats et paiements (le cas échéant) sont gérés via des processus stricts et sécurisés.' },
               { q: 'Comment contacter un agent immobilier ?', a: 'Sur la fiche détaillée de chaque bien, vous trouverez les coordonnées complètes de l\'agent responsable pour le contacter.' }
             ].map((faq, i) => (
-              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-start gap-3">
+              <div key={i} className="bg-bg-card p-6 rounded-2xl border border-border-main shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-bold text-text-main mb-3 flex items-start gap-3">
                    <div className="mt-1 w-2 h-2 rounded-full bg-secondary flex-shrink-0"></div>
                    {faq.q}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 font-medium pl-5">{faq.a}</p>
+                <p className="text-text-sub font-medium pl-5">{faq.a}</p>
               </div>
             ))}
           </div>

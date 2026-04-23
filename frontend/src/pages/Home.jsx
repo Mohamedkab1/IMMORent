@@ -44,7 +44,7 @@ const Home = () => {
 
       {/* Statistiques */}
       <section className="relative z-30 -mt-16 sm:-mt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 p-8 sm:p-10 border border-slate-100 dark:border-slate-700 backdrop-blur-xl">
+        <div className="bg-bg-card rounded-2xl shadow-huge p-8 sm:p-10 border border-border-main backdrop-blur-xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[ 
               { num: '500+', label: t('home.stats.properties') }, 
@@ -64,10 +64,10 @@ const Home = () => {
       </section>
 
       {/* Services */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-24 bg-bg-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{t('footer.services')}</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-text-main mb-4">{t('footer.services')}</h2>
             <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
           </div>
           
@@ -78,12 +78,12 @@ const Home = () => {
               { icon: CurrencyDollarIcon, title: 'Paiements en Ligne', desc: 'Suivez vos loyers et consultez votre historique financier.' },
               { icon: ChartBarIcon, title: 'Tableaux de Bord', desc: 'Visualisez vos statistiques et suivez vos performances.' }
             ].map((Service, i) => (
-              <div key={i} className="group bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl border border-slate-100 dark:border-slate-700 transition-all duration-300 hover:-translate-y-2">
+              <div key={i} className="group bg-bg-card p-8 rounded-2xl shadow-main hover:shadow-large border border-border-main transition-all duration-300 hover:-translate-y-2">
                 <div className="w-14 h-14 bg-primary/5 dark:bg-primary/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white dark:group-hover:bg-secondary text-primary dark:text-secondary transition-colors duration-300">
                   <Service.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{Service.title}</h3>
-                <p className="text-slate-500 dark:text-slate-400 leading-relaxed">{Service.desc}</p>
+                <h3 className="text-xl font-bold text-text-main mb-3">{Service.title}</h3>
+                <p className="text-text-sub leading-relaxed">{Service.desc}</p>
               </div>
             ))}
           </div>
@@ -91,11 +91,11 @@ const Home = () => {
       </section>
 
       {/* Types de biens */}
-      <section className="py-24 bg-white dark:bg-slate-900">
+      <section className="py-24 bg-bg-main">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">Catégories</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-text-main mb-4">Catégories</h2>
               <div className="w-24 h-1 bg-secondary rounded-full"></div>
             </div>
             <Link to="/properties" className="hidden md:inline-flex items-center text-primary dark:text-secondary font-semibold hover:gap-2 transition-all">

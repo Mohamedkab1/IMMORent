@@ -49,15 +49,27 @@ class PropertyController extends Controller
                       ->orWhere('address', 'like', '%' . $searchTerm . '%');
                 });
             }
-            if ($request->has('min_price')) {
-                $query->where('price', '>=', $request->min_price);
+            if ($request->has('min_price') && !empty($request->min_price)) {
+                $query->where('price', '>=', (float) $request->min_price);
             }
-            if ($request->has('max_price')) {
-                $query->where('price', '<=', $request->max_price);
+            if ($request->has('max_price') && !empty($request->max_price)) {
+                $query->where('price', '<=', (float) $request->max_price);
             }
 
-            if ($request->has('rooms')) {
-                $query->where('rooms', '>=', $request->rooms);
+            if ($request->has('surface_min') && !empty($request->surface_min)) {
+                $query->where('surface', '>=', (float) $request->surface_min);
+            }
+            if ($request->has('surface_max') && !empty($request->surface_max)) {
+                $query->where('surface', '<=', (float) $request->surface_max);
+            }
+
+            if ($request->has('rooms') && !empty($request->rooms)) {
+                $rooms = (int) $request->rooms;
+                if ($rooms >= 5) {
+                    $query->where('rooms', '>=', 5);
+                } else {
+                    $query->where('rooms', $rooms);
+                }
             }
 
             // Tri

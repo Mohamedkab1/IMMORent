@@ -26,19 +26,22 @@ import {
   ArrowPathIcon,
   KeyIcon,
   TagIcon,
-  ClockIcon
+  ClockIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import StatsCard from '../components/Common/StatsCard';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 const AgentDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
   const [contracts, setContracts] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({ 
@@ -46,7 +49,8 @@ const AgentDashboard = () => {
     availableProperties: 0, 
     pendingRequests: 0, 
     activeContracts: 0, 
-    monthlyRevenue: 0 
+    monthlyRevenue: 0,
+    pendingReviews: 0
   });
 
   useEffect(() => {
@@ -62,7 +66,8 @@ const AgentDashboard = () => {
       loadBackendStats(),
       loadProperties(),
       loadRequests(),
-      loadContracts()
+      loadContracts(),
+      loadPendingReviews()
     ]);
     setLoading(false);
   };
@@ -91,7 +96,8 @@ const AgentDashboard = () => {
       loadBackendStats(),
       loadProperties(),
       loadRequests(),
-      loadContracts()
+      loadContracts(),
+      loadPendingReviews()
     ]);
     setRefreshing(false);
     toast.success('Données actualisées');
@@ -141,6 +147,18 @@ const AgentDashboard = () => {
     }
   };
 
+  const loadPendingReviews = async () => {
+    try {
+      const response = await propertyService.getAgentPendingReviews();
+      if (response.success) {
+        setReviews(response.data || []);
+        setStats(prev => ({ ...prev, pendingReviews: response.data?.length || 0 }));
+      }
+    } catch (error) {
+      console.error('Erreur chargement avis:', error);
+    }
+  };
+
   const handleDeleteProperty = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce bien ?')) {
       try {
@@ -184,6 +202,21 @@ const AgentDashboard = () => {
       }
     } catch (error) {
       toast.error('Erreur lors du traitement de la demande');
+    }
+  };
+
+  const handleProcessReview = async (reviewId, status) => {
+    const actionText = status === 'approved' ? 'approuver' : 'rejeter';
+    if (!window.confirm(`Voulez-vous vraiment ${actionText} cet avis ?`)) return;
+
+    try {
+      const response = await propertyService.processReview(reviewId, status);
+      if (response.success) {
+        toast.success(response.message);
+        loadPendingReviews();
+      }
+    } catch (error) {
+      toast.error('Erreur lors du traitement de l\'avis');
     }
   };
 
@@ -231,23 +264,23 @@ const AgentDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 dark:text-slate-400">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-text-muted">
+        <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
         <p className="font-medium animate-pulse">Chargement de votre espace...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-slate-50 dark:bg-slate-900">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-bg-soft">
       
       {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-white dark:bg-slate-800 border-e border-slate-200 dark:border-slate-700 flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700 text-center relative pt-12">
-           <div className="w-20 h-20 absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-primary/30 border-4 border-white dark:border-slate-800">
+      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300">
+        <div className="p-6 border-b border-border-main text-center relative pt-12">
+           <div className="w-20 h-20 absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-huge border-4 border-bg-card">
             {user?.name?.charAt(0)}
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white truncate mt-2">{user?.name}</h3>
+          <h3 className="text-xl font-bold text-text-main truncate mt-2">{user?.name}</h3>
           <p className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
             <UserIcon className="w-3 h-3" /> Agent Immobilier
           </p>
@@ -256,22 +289,22 @@ const AgentDashboard = () => {
         <nav className="flex-1 p-4 space-y-2">
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <BuildingOfficeIcon className="w-5 h-5" /> {t('Dashboard')}
           </button>
           
           <button 
             onClick={() => setActiveTab('properties')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'properties' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'properties' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <HomeIcon className="w-5 h-5" /> {t('nav.properties')}
-            {stats.totalProperties > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-full font-bold">{stats.totalProperties}</span>}
+            {stats.totalProperties > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-bg-soft text-text-main text-xs rounded-full font-bold">{stats.totalProperties}</span>}
           </button>
 
           <button 
             onClick={() => setActiveTab('requests')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.pending_requests')}
             {stats.pendingRequests > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full font-bold">{stats.pendingRequests}</span>}
@@ -279,13 +312,21 @@ const AgentDashboard = () => {
           
           <button 
             onClick={() => setActiveTab('contracts')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentDuplicateIcon className="w-5 h-5" /> {t('dash.stats.active_contracts')}
           </button>
+
+          <button 
+            onClick={() => setActiveTab('reviews')}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'reviews' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+          >
+            <ChatBubbleLeftRightIcon className="w-5 h-5" /> Modération avis
+            {stats.pendingReviews > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold">{stats.pendingReviews}</span>}
+          </button>
         </nav>
         
-        <div className="p-4 border-t border-slate-100 dark:border-slate-700">
+        <div className="p-4 border-t border-border-main">
           <Link to="/properties/new" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
             <PlusIcon className="w-5 h-5" /> {t('common.save')}
           </Link>
@@ -296,15 +337,15 @@ const AgentDashboard = () => {
       <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('dash.agent.welcome')}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('agent.dashboard.subtitle')}</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-text-main tracking-tight">{t('dash.agent.welcome')}</h1>
+            <p className="text-sm text-text-sub mt-1">{t('agent.dashboard.subtitle')}</p>
           </div>
           
           <div className="flex items-center gap-3">
             <button 
               onClick={refreshData} 
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-bg-card text-text-sub hover:text-primary border border-border-main rounded-lg text-sm font-medium transition-all shadow-main"
             >
               <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                {refreshing ? t('common.loading') : t('agent.dashboard.refresh', 'Actualiser')}
@@ -345,9 +386,9 @@ const AgentDashboard = () => {
           <div className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Dernières Demandes */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 overflow-hidden">
+              <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm p-6 overflow-hidden">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <BellIcon className="w-5 h-5 text-amber-500" />
                     {t('dash.stats.pending_requests')}
                   </h2>
@@ -358,10 +399,10 @@ const AgentDashboard = () => {
                 
                 <div className="space-y-4">
                   {requests.filter(r => r.status?.toLowerCase() === 'pending').slice(0, 3).map(request => (
-                    <div key={request.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700 gap-4">
+                    <div key={request.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-bg-soft rounded-xl border border-border-main gap-4">
                        <div>
-                         <h4 className="font-bold text-slate-800 dark:text-white text-sm">{request.user?.name || t('agent.requests.client_unknown', 'Client Inconnu')}</h4>
-                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{request.property?.title}</p>
+                         <h4 className="font-bold text-text-main text-sm">{request.user?.name || t('agent.requests.client_unknown', 'Client Inconnu')}</h4>
+                         <p className="text-xs text-text-muted mb-1">{request.property?.title}</p>
                        </div>
                        <div className="flex gap-2 text-right">
                          <button onClick={() => handleProcessRequest(request.id, 'approved')} className="text-xs font-bold text-green-600 hover:underline">{t('common.approve')}</button>
@@ -370,7 +411,7 @@ const AgentDashboard = () => {
                     </div>
                   ))}
                   {requests.filter(r => r.status?.toLowerCase() === 'pending').length === 0 && (
-                    <div className="p-6 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                    <div className="p-6 text-center text-text-muted border-2 border-dashed border-border-main rounded-xl">
                       {t('agent.requests.no_data')}
                     </div>
                   )}
@@ -378,9 +419,9 @@ const AgentDashboard = () => {
               </section>
 
               {/* Derniers Contrats */}
-              <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 overflow-hidden">
+              <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm p-6 overflow-hidden">
                  <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <DocumentDuplicateIcon className="w-5 h-5 text-blue-500" />
                     {t('dash.stats.active_contracts')}
                   </h2>
@@ -388,19 +429,19 @@ const AgentDashboard = () => {
 
                 <div className="space-y-4">
                   {contracts.slice(0, 3).map(contract => (
-                    <div key={contract.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <div key={contract.id} className="flex items-center justify-between p-4 bg-bg-soft rounded-xl border border-border-main">
                        <div>
-                         <h4 className="font-bold text-slate-800 dark:text-white text-sm">{contract.property?.title}</h4>
-                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('agent.contracts.table.tenant')}: {contract.tenant?.name}</p>
+                         <h4 className="font-bold text-text-main text-sm">{contract.property?.title}</h4>
+                         <p className="text-xs text-text-muted mt-1">{t('agent.contracts.table.tenant')}: {contract.tenant?.name}</p>
                        </div>
                        <div className="text-right">
-                         <div className="font-bold text-slate-800 dark:text-white text-sm">{contract.monthly_rent?.toLocaleString()} DH</div>
+                         <div className="font-bold text-text-main text-sm">{contract.monthly_rent?.toLocaleString()} DH</div>
                          <div className="mt-1">{getStatusBadge(contract.status)}</div>
                        </div>
                     </div>
                   ))}
                   {contracts.length === 0 && (
-                    <div className="p-6 text-center text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                    <div className="p-6 text-center text-text-muted border-2 border-dashed border-border-main rounded-xl">
                       {t('agent.contracts.no_data')}
                     </div>
                   )}
@@ -410,11 +451,11 @@ const AgentDashboard = () => {
           </div>
         )}
 
-{/* Properties Tab */}
+        {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.properties.title')}</h2>
+          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+             <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
+                <h2 className="text-lg font-bold text-text-main">{t('agent.properties.title')}</h2>
                 <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
                   <PlusIcon className="w-4 h-4" /> {t('agent.properties.add')}
                 </Link>
@@ -422,7 +463,7 @@ const AgentDashboard = () => {
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <tr className="bg-bg-soft border-b border-border-main text-xs uppercase tracking-wider text-text-muted">
                       <th className="p-4 font-semibold">{t('agent.properties.table.title')}</th>
                       <th className="p-4 font-semibold">{t('agent.properties.table.attrs')}</th>
                       <th className="p-4 font-semibold text-right">{t('prop.details.price')}</th>
@@ -430,21 +471,21 @@ const AgentDashboard = () => {
                       <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
                     </tr>
                  </thead>
-                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                 <tbody className="divide-y divide-border-main">
                    {properties.map(property => (
-                     <tr key={property.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                     <tr key={property.id} className="hover:bg-bg-soft/50 transition-colors">
                        <td className="p-4">
-                         <div className="font-bold text-slate-800 dark:text-white text-sm line-clamp-1">{property.title}</div>
-                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                         <div className="font-bold text-text-main text-sm line-clamp-1">{property.title}</div>
+                         <div className="text-xs text-text-muted mt-1 flex items-center gap-1">
                            <MapPinIcon className="w-3 h-3" /> {property.city}
                          </div>
                        </td>
                        <td className="p-4">
-                         <div className="text-xs text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded inline-block">
+                         <div className="text-xs text-text-main bg-bg-soft px-2 py-1 rounded inline-block border border-border-main">
                            {property.surface} m² • {property.rooms} p.
                          </div>
                        </td>
-                       <td className="p-4 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">
+                       <td className="p-4 text-sm font-bold text-text-main text-right">
                          {(property.price || 0).toLocaleString()} DH
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(property.status)}</td>
@@ -465,7 +506,7 @@ const AgentDashboard = () => {
                    ))}
                    {properties.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.properties.no_data')}</td>
+                        <td colSpan="5" className="p-8 text-center text-text-muted">{t('agent.properties.no_data')}</td>
                       </tr>
                    )}
                  </tbody>
@@ -476,9 +517,9 @@ const AgentDashboard = () => {
 
         {/* Requests Tab */}
         {activeTab === 'requests' && (
-          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.requests.title')}</h2>
+          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
+              <h2 className="text-lg font-bold text-text-main">{t('agent.requests.title')}</h2>
               <div className="flex gap-2">
                 <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-500 rounded-full text-xs font-bold">
                   {t('agent.requests.pending_count', { count: requests.filter(r => r.status === 'pending').length })}
@@ -488,7 +529,7 @@ const AgentDashboard = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <tr className="bg-bg-soft border-b border-border-main text-xs uppercase tracking-wider text-text-muted">
                     <th className="p-4 font-semibold">{t('agent.requests.table.client')}</th>
                     <th className="p-4 font-semibold">{t('agent.requests.table.property')}</th>
                     <th className="p-4 font-semibold">{t('agent.requests.table.date')}</th>
@@ -496,19 +537,19 @@ const AgentDashboard = () => {
                     <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                <tbody className="divide-y divide-border-main">
                   {requests.map(request => (
-                    <tr key={request.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                    <tr key={request.id} className="hover:bg-bg-soft/50 transition-colors">
                       <td className="p-4">
-                        <div className="font-bold text-slate-800 dark:text-white text-sm">{request.user?.name}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{request.user?.email}</div>
+                        <div className="font-bold text-text-main text-sm">{request.user?.name}</div>
+                        <div className="text-xs text-text-muted">{request.user?.email}</div>
                       </td>
                       <td className="p-4">
-                        <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">{request.property?.title}</div>
-                        <div className="text-xs text-slate-500">{request.property?.city}</div>
+                        <div className="text-sm text-text-main font-medium">{request.property?.title}</div>
+                        <div className="text-xs text-text-muted">{request.property?.city}</div>
                       </td>
-                      <td className="p-4 text-sm text-slate-600 dark:text-slate-400">
-                        {new Date(request.created_at).toLocaleDateString(t('common.locale', 'fr-FR'))}
+                      <td className="p-4 text-sm text-text-sub">
+                        {new Date(request.created_at).toLocaleDateString(language)}
                       </td>
                       <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
                       <td className="p-4 text-right">
@@ -528,14 +569,14 @@ const AgentDashboard = () => {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400 italic">{t('agent.requests.processed_at', { date: new Date(request.processed_at || request.updated_at).toLocaleDateString(t('common.locale', 'fr-FR')) })}</span>
+                          <span className="text-xs text-text-muted italic">{t('agent.requests.processed_at', { date: new Date(request.processed_at || request.updated_at).toLocaleDateString(language) })}</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {requests.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.requests.no_data')}</td>
+                        <td colSpan="5" className="p-8 text-center text-text-muted">{t('agent.requests.no_data')}</td>
                       </tr>
                   )}
                 </tbody>
@@ -545,15 +586,15 @@ const AgentDashboard = () => {
         )}
         {/* Contracts Tab - Full View */}
         {activeTab === 'contracts' && (
-          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('agent.contracts.title')}</h2>
-                <span className="text-sm text-slate-500 dark:text-slate-400">{t('agent.contracts.active_count', { count: stats.activeContracts })}</span>
+          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+             <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
+                <h2 className="text-lg font-bold text-text-main">{t('agent.contracts.title')}</h2>
+                <span className="text-sm text-text-muted">{t('agent.contracts.active_count', { count: stats.activeContracts })}</span>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                  <thead>
-                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                   <tr className="bg-bg-soft border-b border-border-main text-xs uppercase tracking-wider text-text-muted">
                     <th className="p-4 font-semibold">{t('agent.contracts.table.property')}</th>
                     <th className="p-4 font-semibold">{t('agent.contracts.table.tenant')}</th>
                     <th className="p-4 font-semibold text-right">{t('agent.contracts.table.rent')}</th>
@@ -561,17 +602,17 @@ const AgentDashboard = () => {
                     <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
                   </tr>
                  </thead>
-                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                 <tbody className="divide-y divide-border-main">
                    {contracts.map(contract => (
-                     <tr key={contract.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                     <tr key={contract.id} className="hover:bg-bg-soft/50 transition-colors">
                        <td className="p-4">
-                         <div className="font-bold text-slate-800 dark:text-white text-sm">{contract.property?.title}</div>
-                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{contract.property?.city}</div>
+                         <div className="font-bold text-text-main text-sm">{contract.property?.title}</div>
+                         <div className="text-xs text-text-muted mt-1">{contract.property?.city}</div>
                        </td>
                        <td className="p-4">
-                         <div className="text-sm text-slate-800 dark:text-white">{contract.tenant?.name}</div>
+                         <div className="text-sm text-text-main">{contract.tenant?.name}</div>
                        </td>
-                       <td className="p-4 text-sm font-bold text-slate-800 dark:text-slate-200 text-right">
+                       <td className="p-4 text-sm font-bold text-text-main text-right">
                          {(contract.monthly_rent || 0).toLocaleString()} DH
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(contract.status)}</td>
@@ -582,15 +623,89 @@ const AgentDashboard = () => {
                        </td>
                      </tr>
                    ))}
-                   {contracts.length === 0 && (
+                    {contracts.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="p-8 text-center text-slate-500 dark:text-slate-400">{t('agent.contracts.no_data')}</td>
+                        <td colSpan="5" className="p-8 text-center text-text-muted">{t('agent.contracts.no_data')}</td>
                       </tr>
                    )}
                  </tbody>
                </table>
              </div>
            </section>
+        )}
+
+        {/* Reviews Moderation Tab */}
+        {activeTab === 'reviews' && (
+          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden animate-fade-in">
+            <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
+              <h2 className="text-lg font-bold text-text-main">Modération des avis</h2>
+              <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500 rounded-full text-xs font-bold uppercase">
+                {stats.pendingReviews} en attente
+              </span>
+            </div>
+            
+            <div className="divide-y divide-border-main">
+              {reviews.map(review => (
+                <div key={review.id} className="p-6 hover:bg-bg-soft/50 transition-colors">
+                  <div className="flex flex-col md:flex-row justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-bg-soft flex items-center justify-center font-bold text-text-sub border border-border-main">
+                          {review.user?.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-bold text-text-main">{review.user?.name}</div>
+                          <div className="text-xs text-text-sub flex items-center gap-1">
+                            sur <span className="font-semibold text-primary">{review.property?.title}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex mb-2">
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <StarIconSolid key={star} className={`w-4 h-4 ${star <= review.rating ? 'text-amber-500' : 'text-border-main'}`} />
+                          ))}
+                        </div>
+                        <p className="text-text-sub text-sm italic leading-relaxed">
+                          "{review.comment}"
+                        </p>
+                      </div>
+                      
+                      <div className="text-xs text-text-muted">
+                        Posté le {new Date(review.created_at).toLocaleDateString(language, { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col justify-end gap-2 shrink-0">
+                      <button 
+                        onClick={() => handleProcessReview(review.id, 'approved')}
+                        className="flex-1 px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 transition-all shadow-sm flex items-center justify-center gap-2"
+                      >
+                        <CheckCircleIcon className="w-4 h-4" /> Approuver
+                      </button>
+                      <button 
+                        onClick={() => handleProcessReview(review.id, 'rejected')}
+                        className="flex-1 px-4 py-2 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all shadow-sm flex items-center justify-center gap-2"
+                      >
+                        <XCircleIcon className="w-4 h-4" /> Rejeter
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {reviews.length === 0 && (
+                <div className="p-12 text-center">
+                  <div className="w-20 h-20 bg-bg-soft rounded-full flex items-center justify-center mx-auto mb-6 text-text-muted border border-border-main">
+                    <ChatBubbleLeftRightIcon className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-lg font-bold text-text-main mb-2">Tout est à jour !</h3>
+                  <p className="text-text-muted italic">Aucun avis en attente de modération pour le moment.</p>
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
       </main>

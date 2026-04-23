@@ -357,15 +357,15 @@ const AdminDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row font-outfit">
+    <div className="min-h-screen bg-bg-soft flex flex-col md:flex-row font-outfit">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-8 sticky top-0 h-screen overflow-y-auto z-50 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+      <aside className="w-full md:w-80 bg-bg-card border-r border-border-main p-6 flex flex-col gap-8 sticky top-0 h-screen overflow-y-auto z-50 shadow-large">
         <div className="flex items-center gap-3 px-2">
           <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
             <BuildingOfficeIcon className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">IMMORent</h1>
+            <h1 className="text-xl font-black text-text-main tracking-tight">IMMORent</h1>
             <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">Administration</p>
           </div>
         </div>
@@ -373,67 +373,67 @@ const AdminDashboard = () => {
         <nav className="flex flex-col gap-1.5">
           <Link 
             to="/dashboard/admin" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-large scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <ChartBarIcon className="w-5 h-5" /> {t('admin.tabs.overview')}
           </Link>
           <Link 
             to="/dashboard/admin/users" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserGroupIcon className="w-5 h-5" /> {t('admin.tabs.users')}
           </Link>
           <Link 
             to="/dashboard/admin/properties" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <HomeIcon className="w-5 h-5" /> {t('admin.tabs.properties')}
           </Link>
           <Link 
             to="/dashboard/admin/contracts" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentTextIcon className="w-5 h-5" /> {t('admin.tabs.contracts')}
           </Link>
           <Link 
             to="/dashboard/admin/payments" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <CurrencyDollarIcon className="w-5 h-5" /> {t('admin.tabs.payments')}
           </Link>
-          <div className="h-px bg-slate-100 dark:bg-slate-800 my-4 mx-4"></div>
+          <div className="h-px bg-border-main my-4 mx-4"></div>
           <Link 
             to="/dashboard/admin/agent-requests" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserIcon className="w-5 h-5" /> {t('admin.tabs.agent_requests')}
             {stats?.requests?.pending > 0 && (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 bg-rose-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 animate-pulse">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 bg-rose-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-bg-card animate-pulse">
                 {stats.requests.pending}
               </span>
             )}
           </Link>
           <Link 
             to="/dashboard/admin/settings" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <Cog6ToothIcon className="w-5 h-5" /> {t('admin.tabs.settings')}
           </Link>
         </nav>
 
-        <div className="mt-auto p-5 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+        <div className="mt-auto p-5 bg-bg-soft rounded-3xl border border-border-main">
            <div className="flex items-center gap-3 mb-3">
              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black">
                {user.name.charAt(0)}
              </div>
              <div>
-               <p className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[120px]">{user.name}</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('auth.role.admin')}</p>
+               <p className="text-xs font-bold text-text-main truncate max-w-[120px]">{user.name}</p>
+                <p className="text-[10px] text-text-sub">{t('auth.role.admin')}</p>
              </div>
            </div>
            <button 
              onClick={() => navigate('/')}
-             className="w-full py-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+             className="w-full py-2 bg-bg-card text-text-sub text-xs font-bold rounded-xl border border-border-main hover:bg-bg-soft hover:text-text-main transition-all flex items-center justify-center gap-2"
            >
              <HomeIcon className="w-3.5 h-3.5" /> {t('admin.back_to_site', 'Retour au site')}
            </button>
@@ -445,7 +445,7 @@ const AdminDashboard = () => {
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
-            <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
+            <h2 className="text-3xl font-black text-text-main tracking-tight">
               {activeTab === 'dashboard' && t('admin.tabs.overview')}
               {activeTab === 'users' && t('admin.tabs.users')}
               {activeTab === 'properties' && t('admin.tabs.properties')}
@@ -454,7 +454,7 @@ const AdminDashboard = () => {
               {activeTab === 'agent-requests' && t('admin.tabs.agent_requests')}
               {activeTab === 'settings' && t('admin.tabs.settings')}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
+            <p className="text-text-sub font-medium mt-1">
               {t('dash.client.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
             </p>
           </div>
@@ -466,13 +466,13 @@ const AdminDashboard = () => {
                 else if (activeTab === 'dashboard') loadDashboardStats();
                 toast.info('Actualisation...');
               }}
-              className="p-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:scale-105 active:scale-95 transition-all"
+              className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:scale-105 active:scale-95 transition-all"
             >
               <ArrowPathIcon className="w-5 h-5" />
             </button>
-            <div className="p-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative cursor-pointer hover:scale-105 transition-all">
+            <div className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm relative cursor-pointer hover:scale-105 transition-all">
               <BellIcon className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-bg-card"></span>
             </div>
           </div>
         </header>
@@ -483,7 +483,7 @@ const AdminDashboard = () => {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-32 bg-white dark:bg-slate-900 rounded-3xl animate-pulse"></div>
+                  <div key={i} className="h-32 bg-bg-card rounded-3xl animate-pulse border border-border-main"></div>
                 ))}
               </div>
             ) : (
@@ -524,13 +524,13 @@ const AdminDashboard = () => {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none p-8">
+              <div className="lg:col-span-2 bg-bg-card rounded-[2.5rem] border border-border-main shadow-main p-8">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.overview.performance')}</h3>
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">{t('admin.overview.evolution')}</p>
+                    <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.overview.performance')}</h3>
+                    <p className="text-sm text-text-muted font-bold uppercase tracking-wider mt-1">{t('admin.overview.evolution')}</p>
                   </div>
-                  <select className="bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs font-bold text-slate-600 px-4 py-2 outline-none">
+                  <select className="bg-bg-soft border-none rounded-xl text-xs font-bold text-text-sub px-4 py-2 outline-none">
                     <option>Année 2024</option>
                     <option>Année 2023</option>
                   </select>
@@ -540,8 +540,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none p-8">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight mb-8">{t('admin.overview.alerts')}</h3>
+              <div className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-main p-8">
+                <h3 className="text-xl font-black text-text-main tracking-tight mb-8">{t('admin.overview.alerts')}</h3>
                 <div className="space-y-4">
                    <div className="p-5 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-3xl flex gap-4">
                       <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
@@ -569,31 +569,31 @@ const AdminDashboard = () => {
 
         {/* Users Tab */}
         {activeTab === 'users' && (
-          <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/20 dark:shadow-none overflow-hidden">
-             <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+             <div className="p-8 border-b border-border-main flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.users.title')}</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{users.length} {t('admin.users.count')}</p>
+                  <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.users.title')}</h3>
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-widest">{users.length} {t('admin.users.count')}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 lg:w-64 lg:flex-none">
                        {loadingUsers ? (
                          <ArrowPathIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
                        ) : (
-                         <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                         <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                        )}
                        <input 
                          type="text" 
                          placeholder="Rechercher par nom, email ou ID..." 
                          value={userSearch}
                          onChange={(e) => setUserSearch(e.target.value)}
-                         className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:bg-white dark:focus:bg-slate-800 border-slate-100 dark:border-slate-800 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white"
+                         className="w-full pl-11 pr-4 py-3 bg-bg-soft border border-transparent focus:bg-bg-card border-border-main rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-text-main"
                        />
                     </div>
                    <select 
                      value={userRoleFilter}
                      onChange={(e) => setUserRoleFilter(e.target.value)}
-                     className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl text-xs font-bold text-slate-600 dark:text-slate-400 outline-none"
+                     className="px-4 py-3 bg-bg-soft border-border-main border rounded-2xl text-xs font-bold text-text-sub outline-none"
                    >
                      <option value="">{t('admin.users.filter.all_roles')}</option>
                      <option value="admin">{t('auth.role.admin', 'Administrateurs')}</option>
@@ -608,7 +608,7 @@ const AdminDashboard = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                    <tr className="bg-bg-soft border-b border-border-main text-[10px] uppercase font-black tracking-[0.2em] text-text-muted">
                       <th className="px-8 py-5">{t('admin.users.table.user')}</th>
                       <th className="px-8 py-5">{t('admin.users.table.role')}</th>
                       <th className="px-8 py-5 text-center">{t('admin.users.table.status')}</th>
@@ -616,44 +616,44 @@ const AdminDashboard = () => {
                       <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                  <tbody className="divide-y divide-border-main">
                     {loadingUsers ? (
                       [1, 2, 3, 4, 5].map(i => (
                         <tr key={i} className="animate-pulse">
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-4">
-                              <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-800"></div>
+                              <div className="w-11 h-11 rounded-2xl bg-bg-soft border border-border-main"></div>
                               <div className="space-y-2">
-                                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded"></div>
-                                <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800/50 rounded"></div>
+                                <div className="h-4 w-32 bg-bg-soft border border-border-main rounded"></div>
+                                <div className="h-3 w-24 bg-bg-soft border border-border-main rounded"></div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-8 py-5"><div className="h-6 w-16 bg-slate-100 dark:bg-slate-800 rounded-md"></div></td>
-                          <td className="px-8 py-5 text-center"><div className="mx-auto h-5 w-12 bg-slate-100 dark:bg-slate-800 rounded-full"></div></td>
-                          <td className="px-8 py-5"><div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded"></div></td>
-                          <td className="px-8 py-5 text-right"><div className="ml-auto h-8 w-16 bg-slate-100 dark:bg-slate-800 rounded-xl"></div></td>
+                          <td className="px-8 py-5"><div className="h-6 w-16 bg-bg-soft border border-border-main rounded-md"></div></td>
+                          <td className="px-8 py-5 text-center"><div className="mx-auto h-5 w-12 bg-bg-soft border border-border-main rounded-full"></div></td>
+                          <td className="px-8 py-5"><div className="h-4 w-24 bg-bg-soft border border-border-main rounded"></div></td>
+                          <td className="px-8 py-5 text-right"><div className="ml-auto h-8 w-16 bg-bg-soft border border-border-main rounded-xl"></div></td>
                         </tr>
                       ))
                     ) : (
                       <>
                         {users.map(u => (
-                          <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                          <tr key={u.id} className="hover:bg-bg-soft/50 transition-colors group">
                             <td className="px-8 py-5">
                               <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-primary font-black shadow-sm group-hover:scale-110 transition-transform">
+                                <div className="w-11 h-11 rounded-2xl bg-bg-card border border-border-main flex items-center justify-center text-primary font-black shadow-sm group-hover:scale-110 transition-transform">
                                   {u.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-slate-800 dark:text-white text-sm">{u.name}</div>
-                                  <div className="text-[11px] text-slate-400 font-medium mt-0.5">{u.email}</div>
+                                  <div className="font-bold text-text-main text-sm">{u.name}</div>
+                                  <div className="text-[11px] text-text-muted font-medium mt-0.5">{u.email}</div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-8 py-5">{getRoleBadge(u.role)}</td>
                             <td className="px-8 py-5 text-center">{getStatusBadge(u.is_active)}</td>
                             <td className="px-8 py-5">
-                              <div className="text-xs text-slate-600 dark:text-slate-400 font-bold">
+                              <div className="text-xs text-text-sub font-bold">
                                 {new Date(u.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </div>
                             </td>
@@ -661,14 +661,14 @@ const AdminDashboard = () => {
                               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                   onClick={() => handleToggleUserStatus(u.id)}
-                                  className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+                                  className="p-2 bg-bg-soft text-text-sub rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
                                   title={u.is_active ? "Désactiver" : "Activer"}
                                 >
                                   <ArrowPathIcon className="w-4 h-4" />
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteUser(u.id)}
-                                  className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-rose-100 hover:text-rose-600 transition-all"
+                                  className="p-2 bg-bg-soft text-text-sub rounded-xl hover:bg-rose-100 hover:text-rose-600 transition-all"
                                   title="Supprimer"
                                 >
                                   <TrashIcon className="w-4 h-4" />
@@ -679,7 +679,7 @@ const AdminDashboard = () => {
                         ))}
                         {users.length === 0 && (
                           <tr>
-                            <td colSpan="5" className="p-20 text-center text-slate-400 italic">Aucun utilisateur correspondant</td>
+                            <td colSpan="5" className="p-20 text-center text-text-muted italic">Aucun utilisateur correspondant</td>
                           </tr>
                         )}
                       </>
@@ -691,16 +691,16 @@ const AdminDashboard = () => {
 
         {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
-             <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/20">
+          <section className="bg-bg-card rounded-3xl border border-border-main shadow-xl overflow-hidden">
+             <div className="p-8 border-b border-border-main flex justify-between items-center bg-bg-soft">
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.properties.title')}</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{properties.length} {t('admin.properties.subtitle', 'Biens sous surveillance')}</p>
+                  <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.properties.title')}</h3>
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-widest">{properties.length} {t('admin.properties.subtitle', 'Biens sous surveillance')}</p>
                 </div>
                 <select 
                   value={propStatusFilter}
                   onChange={(e) => setPropStatusFilter(e.target.value)}
-                  className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 outline-none"
+                  className="px-4 py-2.5 bg-bg-card border border-border-main rounded-xl text-xs font-bold text-text-sub outline-none"
                 >
                   <option value="">{t('admin.properties.filter.all', 'Tous les statuts')}</option>
                   <option value="available">{t('prop.status.available')}</option>
@@ -711,11 +711,11 @@ const AdminDashboard = () => {
              
              <div className="overflow-x-auto">
                {loadingProperties ? (
-                 <div className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Chargement...</div>
+                 <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">Chargement...</div>
                ) : (
                  <table className="w-full text-left border-collapse">
                    <thead>
-                     <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                     <tr className="bg-bg-soft border-b border-border-main text-[10px] uppercase font-black tracking-[0.2em] text-text-muted">
                        <th className="px-8 py-5">{t('admin.properties.table.reference')}</th>
                        <th className="px-8 py-5">{t('admin.properties.table.agent')}</th>
                        <th className="px-8 py-5 text-center">{t('admin.properties.table.approval')}</th>
@@ -723,27 +723,27 @@ const AdminDashboard = () => {
                        <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
-                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                   <tbody className="divide-y divide-border-main">
                      {properties.map(p => (
-                       <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                       <tr key={p.id} className="hover:bg-bg-soft/50 transition-colors group">
                          <td className="px-8 py-5">
                            <div className="flex items-center gap-4">
-                             <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-100 dark:border-slate-700">
+                             <div className="w-14 h-14 rounded-2xl bg-bg-soft overflow-hidden shrink-0 border border-border-main">
                                {p.images && p.images[0] ? (
                                  <img src={p.images[0].startsWith('http') ? p.images[0] : `${import.meta.env.VITE_API_URL}/storage/${p.images[0]}`} className="w-full h-full object-cover" />
                                ) : (
-                                 <div className="w-full h-full flex items-center justify-center text-slate-400"><HomeIcon className="w-6 h-6" /></div>
+                                 <div className="w-full h-full flex items-center justify-center text-text-muted"><HomeIcon className="w-6 h-6" /></div>
                                )}
                              </div>
                              <div>
-                               <div className="font-bold text-slate-800 dark:text-white text-sm truncate max-w-[200px]">{p.title}</div>
-                               <div className="text-[11px] text-slate-400 font-bold mt-0.5">{p.city} • {p.price_display}</div>
+                               <div className="font-bold text-text-main text-sm truncate max-w-[200px]">{p.title}</div>
+                               <div className="text-[11px] text-text-muted font-bold mt-0.5">{p.city} • {p.price_display}</div>
                              </div>
                            </div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.user?.name || t('common.unknown', 'Inconnu')}</div>
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">{p.user?.email}</div>
+                            <div className="text-sm font-bold text-text-sub">{p.user?.name || t('common.unknown', 'Inconnu')}</div>
+                            <div className="text-[10px] text-text-muted uppercase tracking-wider">{p.user?.email}</div>
                          </td>
                          <td className="px-8 py-5 text-center">
                             {p.is_approved ? (
@@ -761,13 +761,13 @@ const AdminDashboard = () => {
                             <div className="flex justify-center gap-2">
                                <button 
                                  onClick={() => handleTogglePropertyFeatured(p.id)}
-                                 className={`p-1.5 rounded-lg transition-all ${p.is_featured ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'text-slate-300 hover:text-amber-500'}`}
+                                 className={`p-1.5 rounded-lg transition-all ${p.is_featured ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'text-text-sub hover:text-amber-500'}`}
                                >
                                  <StarIcon className={`w-5 h-5 ${p.is_featured ? 'fill-current' : ''}`} />
                                </button>
                                <button 
                                  onClick={() => handleTogglePropertyArchive(p.id)}
-                                 className={`p-1.5 rounded-lg transition-all ${p.is_archived ? 'text-slate-700 bg-slate-100 dark:bg-slate-800' : 'text-slate-300 hover:text-slate-600'}`}
+                                 className={`p-1.5 rounded-lg transition-all ${p.is_archived ? 'text-text-main bg-bg-soft' : 'text-text-sub hover:text-text-main'}`}
                                >
                                  <ArchiveBoxIcon className={`w-5 h-5 ${p.is_archived ? 'fill-current' : ''}`} />
                                </button>
@@ -780,7 +780,7 @@ const AdminDashboard = () => {
                      ))}
                      {properties.length === 0 && (
                        <tr>
-                         <td colSpan="5" className="p-20 text-center text-slate-400 italic">{t('admin.properties.no_data', 'Aucun bien à afficher')}</td>
+                         <td colSpan="5" className="p-20 text-center text-text-muted italic">{t('admin.properties.no_data', 'Aucun bien à afficher')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -792,19 +792,19 @@ const AdminDashboard = () => {
 
         {/* Contracts Tab */}
         {activeTab === 'contracts' && (
-          <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
-             <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.contracts.title')}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.contracts.subtitle')}</p>
+          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+             <div className="p-8 border-b border-border-main bg-bg-soft">
+                <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.contracts.title')}</h3>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mt-1">{t('admin.contracts.subtitle')}</p>
              </div>
              
              <div className="overflow-x-auto">
                {loadingContracts ? (
-                 <div className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Chargement des contrats...</div>
+                 <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">Chargement des contrats...</div>
                ) : (
                  <table className="w-full text-left border-collapse">
                    <thead>
-                     <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                     <tr className="bg-bg-soft border-b border-border-main text-[10px] uppercase font-black tracking-[0.2em] text-text-muted">
                        <th className="px-8 py-5">{t('admin.contracts.table.number')}</th>
                        <th className="px-8 py-5">{t('admin.contracts.table.parties')}</th>
                        <th className="px-8 py-5">{t('admin.contracts.table.period')}</th>
@@ -812,33 +812,33 @@ const AdminDashboard = () => {
                        <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
-                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                   <tbody className="divide-y divide-border-main">
                      {contracts.map(c => (
-                       <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                       <tr key={c.id} className="hover:bg-bg-soft/50 transition-colors group">
                          <td className="px-8 py-5">
-                           <div className="font-black text-slate-800 dark:text-white text-sm">{c.contract_number}</div>
+                           <div className="font-black text-text-main text-sm">{c.contract_number}</div>
                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-0.5">{c.contract_type === 'sale' ? t('admin.contracts.type.sale', 'Vente') : t('admin.contracts.type.rent', 'Location')}</div>
                          </td>
                          <td className="px-8 py-5">
                             <div className="flex flex-col gap-1">
-                               <div className="text-xs font-bold text-slate-700 dark:text-slate-300"><span className="text-slate-400 font-medium">C:</span> {c.tenant?.name || c.buyer?.name}</div>
-                               <div className="text-xs font-bold text-slate-700 dark:text-slate-300"><span className="text-slate-400 font-medium">A:</span> {c.agent?.name}</div>
+                               <div className="text-xs font-bold text-text-main"><span className="text-text-muted font-medium">C:</span> {c.tenant?.name || c.buyer?.name}</div>
+                               <div className="text-xs font-bold text-text-main"><span className="text-text-muted font-medium">A:</span> {c.agent?.name}</div>
                             </div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                            <div className="text-[11px] font-bold text-text-sub">
                                {c.start_date ? `Du ${new Date(c.start_date).toLocaleDateString()} au ${new Date(c.end_date).toLocaleDateString()}` : `Le ${new Date(c.sale_date).toLocaleDateString()}`}
                             </div>
                          </td>
                          <td className="px-8 py-5">
-                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 dark:bg-slate-800 text-text-muted'}`}>
                                {c.status === 'active' ? t('admin.contracts.status.active', 'Actif') : c.status}
                             </span>
                          </td>
                          <td className="px-8 py-5 text-right">
                             <button 
                               onClick={() => handleDownloadContract(c.id)}
-                              className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm"
+                              className="p-2.5 bg-bg-soft text-text-sub rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm"
                             >
                                <ArrowDownTrayIcon className="w-4 h-4" />
                             </button>
@@ -847,7 +847,7 @@ const AdminDashboard = () => {
                      ))}
                      {contracts.length === 0 && (
                        <tr>
-                         <td colSpan="5" className="p-20 text-center text-slate-400 italic font-bold">{t('admin.contracts.no_data', 'Aucun contrat enregistré')}</td>
+                         <td colSpan="5" className="p-20 text-center text-text-muted italic font-bold">{t('admin.contracts.no_data', 'Aucun contrat enregistré')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -859,19 +859,19 @@ const AdminDashboard = () => {
 
         {/* Payments Tab */}
         {activeTab === 'payments' && (
-          <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
-             <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.payments.title')}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.payments.subtitle')}</p>
+          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+             <div className="p-8 border-b border-border-main bg-bg-soft">
+                <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.payments.title')}</h3>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mt-1">{t('admin.payments.subtitle')}</p>
              </div>
              
              <div className="overflow-x-auto">
                {loadingPayments ? (
-                 <div className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Chargement des paiements...</div>
+                 <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">Chargement des paiements...</div>
                ) : (
                  <table className="w-full text-left border-collapse">
                    <thead>
-                     <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                     <tr className="bg-bg-soft border-b border-border-main text-[10px] uppercase font-black tracking-[0.2em] text-text-muted">
                        <th className="px-8 py-5">{t('admin.payments.table.ref')}</th>
                        <th className="px-8 py-5">{t('admin.contracts.table.parties')}</th>
                        <th className="px-8 py-5">{t('common.amount')}</th>
@@ -880,22 +880,22 @@ const AdminDashboard = () => {
                        <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
-                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                   <tbody className="divide-y divide-border-main">
                      {payments.map(pay => (
-                       <tr key={pay.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                       <tr key={pay.id} className="hover:bg-bg-soft/50 transition-colors group">
                          <td className="px-8 py-5">
-                            <div className="font-black text-slate-800 dark:text-white text-sm">{pay.payment_number}</div>
-                            <div className="text-[10px] font-bold text-slate-400 mt-0.5">{new Date(pay.payment_date).toLocaleDateString()}</div>
+                            <div className="font-black text-text-main text-sm">{pay.payment_number}</div>
+                            <div className="text-[10px] font-bold text-text-muted mt-0.5">{new Date(pay.payment_date).toLocaleDateString()}</div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{t('admin.contracts.table.number')}: {pay.contract?.contract_number}</div>
+                            <div className="text-xs font-bold text-text-main">{t('admin.contracts.table.number')}: {pay.contract?.contract_number}</div>
                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">{pay.tenant?.name}</div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-sm font-black text-slate-800 dark:text-white">{number_format(pay.amount)} DH</div>
+                            <div className="text-sm font-black text-text-main">{number_format(pay.amount)} DH</div>
                          </td>
                          <td className="px-8 py-5 text-center">
-                            <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[9px] font-bold uppercase tracking-tighter">
+                            <span className="px-2 py-1 bg-bg-soft text-text-sub rounded-lg text-[9px] font-bold uppercase tracking-tighter">
                                {pay.payment_method === 'bank_transfer' ? t('admin.payments.method.bank', 'Virement') : pay.payment_method}
                             </span>
                          </td>
@@ -918,7 +918,7 @@ const AdminDashboard = () => {
                      ))}
                      {payments.length === 0 && (
                        <tr>
-                         <td colSpan="6" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">{t('admin.payments.no_data', 'Aucun flux financier enregistré')}</td>
+                         <td colSpan="6" className="p-20 text-center text-text-muted font-bold uppercase tracking-widest">{t('admin.payments.no_data', 'Aucun flux financier enregistré')}</td>
                        </tr>
                      )}
                    </tbody>
@@ -931,11 +931,11 @@ const AdminDashboard = () => {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl space-y-8">
-            <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl p-10">
+            <section className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-large p-10">
                <div className="flex justify-between items-start mb-10">
                   <div>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.tabs.settings')}</h3>
-                    <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-widest">{t('admin.settings.subtitle', 'Configurez les règles métier de la plateforme')}</p>
+                    <h3 className="text-2xl font-black text-text-main tracking-tight">{t('admin.tabs.settings')}</h3>
+                    <p className="text-text-muted font-bold text-sm mt-1 uppercase tracking-widest">{t('admin.settings.subtitle', 'Configurez les règles métier de la plateforme')}</p>
                   </div>
                   <button 
                     onClick={handleSaveSettings}
@@ -947,9 +947,9 @@ const AdminDashboard = () => {
                   </button>
                </div>
 
-               {loadingSettings ? (
+                {loadingSettings ? (
                  <div className="space-y-6">
-                    {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl animate-pulse"></div>)}
+                    {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-bg-soft rounded-3xl animate-pulse"></div>)}
                  </div>
                ) : (
                  <div className="space-y-8">
@@ -957,14 +957,14 @@ const AdminDashboard = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        {settings.map(setting => (
                          <div key={setting.key} className="flex flex-col gap-2">
-                            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{setting.label || setting.key}</label>
+                            <label className="text-xs font-black text-text-muted uppercase tracking-widest ml-1">{setting.label || setting.key}</label>
                             <input 
                               type={setting.type === 'integer' ? 'number' : 'text'}
                               value={setting.value}
                               onChange={(e) => handleUpdateSetting(setting.key, e.target.value)}
-                              className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                              className="w-full px-5 py-4 bg-bg-soft border border-border-main rounded-2xl text-sm font-bold text-text-main outline-none focus:ring-2 focus:ring-primary/20 focus:bg-bg-card transition-all"
                             />
-                            {setting.description && <p className="text-[11px] text-slate-400 italic ml-1">{setting.description}</p>}
+                            {setting.description && <p className="text-[11px] text-text-sub italic ml-1">{setting.description}</p>}
                          </div>
                        ))}
                     </div>
@@ -984,38 +984,38 @@ const AdminDashboard = () => {
 
         {/* Agent Requests Tab (kept for compatibility) */}
         {activeTab === 'agent-requests' && (
-          <section className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
-             <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20">
-                <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('admin.agent_requests.title')}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('admin.agent_requests.subtitle', 'Examinez les demandes de passage au rôle Agent')}</p>
+          <section className="bg-bg-card rounded-3xl border border-border-main shadow-xl overflow-hidden">
+             <div className="p-8 border-b border-border-main bg-bg-soft">
+                <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.agent_requests.title')}</h3>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mt-1">{t('admin.agent_requests.subtitle', 'Examinez les demandes de passage au rôle Agent')}</p>
              </div>
              
              <div className="overflow-x-auto">
                {loadingRequests ? (
-                 <div className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">Chargement des demandes...</div>
+                 <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">Chargement des demandes...</div>
                ) : (
                  <table className="w-full text-left border-collapse">
                    <thead>
-                     <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
+                     <tr className="bg-bg-soft border-b border-border-main text-[10px] uppercase font-black tracking-[0.2em] text-text-muted">
                        <th className="px-8 py-5">{t('admin.agent_requests.table.candidate', 'Candidat')}</th>
                        <th className="px-8 py-5">{t('admin.agent_requests.table.contact', 'Contact')}</th>
                        <th className="px-8 py-5">{t('admin.agent_requests.table.date', 'Date Demande')}</th>
                        <th className="px-8 py-5 text-right">{t('common.actions')}</th>
                      </tr>
                    </thead>
-                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                   <tbody className="divide-y divide-border-main">
                      {agentRequests.map(req => (
-                       <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                       <tr key={req.id} className="hover:bg-bg-soft/50 transition-colors group">
                          <td className="px-8 py-5">
-                            <div className="font-black text-slate-800 dark:text-white text-sm">{req.name}</div>
-                            <div className="text-[10px] font-bold text-slate-400 mt-0.5">ID: #{req.id}</div>
+                            <div className="font-black text-text-main text-sm">{req.name}</div>
+                            <div className="text-[10px] font-bold text-text-muted mt-0.5">ID: #{req.id}</div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{req.email}</div>
-                            <div className="text-[10px] font-bold text-slate-400 mt-0.5">{req.phone || t('common.no_phone', 'Pas de téléphone')}</div>
+                            <div className="text-xs font-bold text-text-main">{req.email}</div>
+                            <div className="text-[10px] font-bold text-text-muted mt-0.5">{req.phone || t('common.no_phone', 'Pas de téléphone')}</div>
                          </td>
                          <td className="px-8 py-5">
-                            <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                            <div className="text-xs font-bold text-text-sub">
                                {new Date(req.updated_at).toLocaleDateString()}
                             </div>
                          </td>
@@ -1039,7 +1039,7 @@ const AdminDashboard = () => {
                      ))}
                      {agentRequests.length === 0 && (
                        <tr>
-                         <td colSpan="4" className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">{t('admin.agent_requests.no_data', 'Aucune candidature en attente')}</td>
+                         <td colSpan="4" className="p-20 text-center text-text-muted font-bold uppercase tracking-widest">{t('admin.agent_requests.no_data', 'Aucune candidature en attente')}</td>
                        </tr>
                      )}
                    </tbody>

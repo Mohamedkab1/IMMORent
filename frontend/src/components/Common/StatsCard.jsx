@@ -19,11 +19,11 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-lg transition-all duration-300 group overflow-hidden relative">
+    <div className="bg-bg-card rounded-3xl p-6 shadow-main border border-border-main hover:shadow-large transition-all duration-300 group overflow-hidden relative">
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-tight">{title}</p>
-          <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter leading-none mb-4">{value}</h3>
+          <p className="text-sm font-semibold text-text-sub mb-1 uppercase tracking-tight">{title}</p>
+          <h3 className="text-3xl font-black text-text-main tracking-tighter leading-none mb-4">{value}</h3>
           
           {trend && (
             <div className="flex items-center gap-1">

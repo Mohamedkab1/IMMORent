@@ -10,15 +10,16 @@ import {
   DocumentTextIcon, 
   CurrencyDollarIcon, 
   BellIcon, 
-  CalendarIcon, 
-  MagnifyingGlassIcon, 
   HeartIcon, 
   ClockIcon, 
   CheckCircleIcon, 
   XCircleIcon, 
   ArrowPathIcon,
   KeyIcon,
-  TagIcon
+  TagIcon,
+  MagnifyingGlassIcon,
+  ClipboardDocumentListIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import StatsCard from '../components/Common/StatsCard';
 
@@ -37,13 +38,12 @@ const ClientDashboard = () => {
     totalPayments: 0, 
     favoriteProperties: 0 
   });
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestsError, setRequestsError] = useState(null);
 
   useEffect(() => {
     loadAllData();
-    if (location.search.includes('refresh')) {
-      setTimeout(() => loadAllData(), 500);
-    }
-  }, [location.search]);
+  }, []);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -65,6 +65,8 @@ const ClientDashboard = () => {
   };
 
   const loadRequests = async () => {
+    setRequestsLoading(true);
+    setRequestsError(null);
     try {
       const response = await requestService.getMyRequests();
       if (response.success) {
@@ -74,9 +76,14 @@ const ClientDashboard = () => {
           ...prev, 
           activeRequests: data.filter(r => r.status === 'pending' || r.status === 'approved').length 
         }));
+      } else {
+        setRequestsError(response.message || 'Erreur lors du chargement des demandes');
       }
     } catch (error) {
       console.error('Erreur chargement demandes:', error);
+      setRequestsError('Erreur de chargement');
+    } finally {
+      setRequestsLoading(false);
     }
   };
 
@@ -86,13 +93,8 @@ const ClientDashboard = () => {
       if (response.success) {
         const data = response.data.data || [];
         setContracts(data);
-        
         const activeContracts = data.filter(c => c.status === 'active');
-        const total = activeContracts.reduce((sum, c) => {
-          const monthlyRent = parseFloat(c.monthly_rent) || 0;
-          return sum + monthlyRent;
-        }, 0);
-        
+        const total = activeContracts.reduce((sum, c) => sum + (parseFloat(c.monthly_rent) || 0), 0);
         setStats(prev => ({ 
           ...prev, 
           activeContracts: activeContracts.length,
@@ -105,37 +107,31 @@ const ClientDashboard = () => {
   };
 
   const cancelRequest = async (id) => {
-    if (!window.confirm(t('client.requests.cancel_confirm'))) {
-      return;
-    }
+    if (!window.confirm(t('client.requests.cancel_confirm'))) return;
     try {
       const response = await requestService.cancel(id);
       if (response.success) {
-        toast.success(t('client.requests.cancelled_success', 'Demande annulée avec succès'));
+        toast.success(t('client.requests.cancelled_success'));
         loadRequests();
       } else {
-        toast.error(response.message || 'Erreur lors de l\'annulation');
+        toast.error(response.message);
       }
     } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur lors de l\'annulation de la demande');
+      toast.error('Erreur lors de l\'annulation');
     }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('En attente', 'En attente'), icon: ClockIcon },
-      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Approuvée', 'Approuvée'), icon: CheckCircleIcon },
-      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Refusée', 'Refusée'), icon: XCircleIcon },
-      cancelled: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('Annulée', 'Annulée'), icon: XCircleIcon },
-      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Actif', 'Actif'), icon: CheckCircleIcon },
-      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Résilié', 'Résilié'), icon: XCircleIcon },
-      expired: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('Expiré', 'Expiré'), icon: ClockIcon },
-      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('Terminé', 'Terminé'), icon: CheckCircleIcon }
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('En attente'), icon: ClockIcon },
+      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Approuvée'), icon: CheckCircleIcon },
+      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Refusée'), icon: XCircleIcon },
+      cancelled: { bg: 'bg-bg-card border border-border-main', text: 'text-text-muted', label: t('Annulée'), icon: XCircleIcon },
+      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Actif'), icon: CheckCircleIcon },
+      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Résilié'), icon: XCircleIcon },
     };
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
-    
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}>
         <Icon className="w-3.5 h-3.5" />
@@ -149,239 +145,200 @@ const ClientDashboard = () => {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500">
           <KeyIcon className="w-3.5 h-3.5" />
-          {t('prop.filter.rent', 'Location')}
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-500">
-          <TagIcon className="w-3.5 h-3.5" />
-          {t('prop.filter.sale', 'Achat')}
+          {t('prop.filter.rent')}
         </span>
       );
     }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-500">
+        <TagIcon className="w-3.5 h-3.5" />
+        {t('prop.filter.sale')}
+      </span>
+    );
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 dark:text-slate-400">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="font-medium animate-pulse">{t('client.dashboard.loading')}</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
+        <p className="text-text-sub font-medium animate-pulse">{t('client.dashboard.loading')}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-slate-50 dark:bg-slate-900">
-      
-      {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-white dark:bg-slate-800 border-e border-slate-200 dark:border-slate-700 flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700 text-center">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-secondary to-yellow-200 rounded-full flex items-center justify-center text-primary text-2xl font-black shadow-lg shadow-secondary/30 mb-4">
-            {user?.name?.charAt(0)}
-          </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate">{user?.name}</h3>
-          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">{t('auth.role.client_short', 'Client')}</p>
+    <div className="min-h-screen bg-bg-soft transition-colors duration-300 pb-12">
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-primary to-primary-light h-48 md:h-64 flex items-center justify-center text-white px-4">
+        <div className="max-w-4xl w-full">
+          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up">
+            {t('dashboard.welcome')}, <span className="text-secondary">{user?.name}</span>
+          </h1>
+          <p className="text-white/70 font-medium animate-slide-up animation-delay-100">
+            {t('dashboard.client_desc', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
+          </p>
         </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          <button 
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md shadow-primary/20 dark:shadow-secondary/20' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-          >
-            <HomeIcon className="w-5 h-5" /> {t('admin.tabs.overview', 'Dashboard')}
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('requests')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-          >
-            <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.pending_requests')}
-            {stats.activeRequests > 0 && (
-              <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold leading-none min-w-[1.25rem] text-center">
-                {stats.activeRequests}
-              </span>
-            )}
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('contracts')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-          >
-            <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.active_contracts')}
-          </button>
-        </nav>
-        
-        <div className="p-4 border-t border-slate-100 dark:border-slate-700">
-          <Link to="/properties" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-md">
-            <MagnifyingGlassIcon className="w-5 h-5" /> {t('nav.properties')}
-          </Link>
-        </div>
-      </aside>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('dash.client.welcome')}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('client.dashboard.subtitle')}</p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={refreshData} 
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium transition-all shadow-sm disabled:opacity-50"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-16">
+        {/* Navigation Tabs */}
+        <div className="glass-panel rounded-3xl p-2 flex flex-wrap gap-2 mb-8 animate-fade-in rtl:flex-row-reverse">
+          {[
+            { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
+            { id: 'requests', label: t('request.title'), icon: ClipboardDocumentListIcon || BellIcon },
+            { id: 'contracts', label: t('contract.my_contracts'), icon: DocumentTextIcon },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-primary text-white shadow-lg dark:bg-secondary dark:text-primary shadow-primary/20' 
+                  : 'text-text-sub hover:bg-bg-soft hover:text-text-main'
+              }`}
             >
-              <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? t('common.loading') : t('common.refresh', 'Actualiser')}
+              <tab.icon className="w-5 h-5" />
+              {tab.label}
+            </button>
+          ))}
+          <div className="ms-auto flex items-center gap-2 pr-2">
+            <button 
+              onClick={refreshData}
+              disabled={refreshing}
+              className={`p-3 text-text-sub hover:text-primary hover:bg-bg-soft rounded-2xl transition-all ${refreshing ? 'animate-spin' : ''}`}
+            >
+              <ArrowPathIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-          <StatsCard 
-            title={t('dash.stats.pending_requests')} 
-            value={stats.activeRequests} 
-            icon={DocumentTextIcon} 
-            color="amber" 
-          />
-          <StatsCard 
-            title={t('dash.stats.active_contracts')} 
-            value={stats.activeContracts} 
-            icon={CheckCircleIcon} 
-            color="green" 
-          />
-          <StatsCard 
-            title={t('client.dashboard.stats.expenses')} 
-            value={`${stats.totalPayments.toLocaleString(t('common.locale', 'fr-FR'))} DH`} 
-            icon={CurrencyDollarIcon} 
-            color="blue" 
-          />
-          <StatsCard 
-            title={t('client.dashboard.stats.favorites')} 
-            value={stats.favoriteProperties} 
-            icon={HeartIcon} 
-            color="rose" 
-          />
-        </div>
-
-        {/* Dynamic Content */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.requests.recent')}</h2>
-                <button onClick={() => setActiveTab('requests')} className="text-sm font-semibold text-primary dark:text-secondary hover:underline">
-                  {t('agent.dashboard.see_all', 'Voir tout')} ({requests.length})
-                </button>
+        {/* Content Area */}
+        <div className="animate-fade-in">
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard title={t('dashboard.active_requests')} value={stats.activeRequests} icon={BellIcon} color="blue" />
+                <StatsCard title={t('dashboard.active_contracts')} value={stats.activeContracts} icon={DocumentTextIcon} color="green" />
+                <StatsCard title={t('dashboard.total_payments')} value={`${stats.totalPayments.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" />
+                <StatsCard title={t('dashboard.favorites')} value={stats.favoriteProperties} icon={HeartIcon} color="rose" />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {requests.slice(0, 3).map(request => (
-                  <div key={request.id} className="group border border-slate-100 dark:border-slate-700 rounded-xl p-5 hover:border-secondary dark:hover:border-secondary/50 hover:shadow-md transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-bold text-slate-800 dark:text-white line-clamp-2 pr-2">{request.property?.title}</h3>
-                      <div className="flex-shrink-0">{getRequestTypeBadge(request.type)}</div>
-                    </div>
-                    {request.type === 'rent' && (
-                      <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
-                        <ClockIcon className="w-4 h-4 text-slate-400" />
-                        {new Date(request.start_date).toLocaleDateString(t('common.locale', 'fr-FR'))}
-                      </p>
-                    )}
-                    <p className="flex items-center gap-2 text-lg font-bold text-primary dark:text-slate-200 mb-6">
-                      <CurrencyDollarIcon className="w-5 h-5 text-secondary" />
-                      {(request.property?.price || 0).toLocaleString(t('common.locale', 'fr-FR'))} DH {request.type === 'rent' ? '/ mois' : ''}
-                    </p>
-                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
-                       {getStatusBadge(request.status)}
-                    </div>
-                  </div>
-                ))}
-                {requests.length === 0 && (
-                  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                    <p className="text-slate-500 dark:text-slate-400 mb-3">{t('client.requests.no_data')}</p>
-                    <Link to="/properties" className="inline-flex items-center text-primary font-semibold hover:text-secondary">{t('home.hero.title')} ➔</Link>
-                  </div>
-                )}
-              </div>
-            </section>
-          </div>
-        )}
 
-        {/* Requests Tab */}
-        {activeTab === 'requests' && (
-          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.requests.history')}</h2>
-             </div>
-             <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse">
-                 <thead>
-                   <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                     <th className="p-4 font-semibold">{t('client.requests.table.target')}</th>
-                     <th className="p-4 font-semibold text-center">{t('common.status')}</th>
-                     <th className="p-4 font-semibold text-right">{t('common.actions')}</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                   {requests.map(request => (
-                     <tr key={request.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
-                       <td className="p-4">
-                         <div className="font-bold text-slate-800 dark:text-white text-sm">{request.property?.title}</div>
-                         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{request.property?.city}</div>
-                       </td>
-                       <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
-                       <td className="p-4 text-right">
-                         {request.status === 'pending' && (
-                           <button onClick={() => cancelRequest(request.id)} className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg">
-                             {t('common.delete')}
-                           </button>
-                         )}
-                       </td>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 bg-bg-card rounded-3xl border border-border-main p-8 shadow-main">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-text-main">{t('client.requests.recent')}</h2>
+                    <button onClick={() => setActiveTab('requests')} className="text-sm font-bold text-primary dark:text-secondary hover:underline">Voir tout</button>
+                  </div>
+                  <div className="space-y-4">
+                    {requests.slice(0, 3).map(request => (
+                      <div key={request.id} className="flex items-center justify-between p-4 bg-bg-soft rounded-2xl border border-border-main group hover:border-primary transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-bg-card rounded-xl flex items-center justify-center text-primary dark:text-secondary border border-border-main">
+                            <HomeIcon className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-text-main line-clamp-1">{request.property?.title}</p>
+                            <p className="text-xs text-text-muted mt-0.5">{request.property?.city} • {getRequestTypeBadge(request.type).props.children[1]}</p>
+                          </div>
+                        </div>
+                        <div className="text-end">
+                           {getStatusBadge(request.status)}
+                        </div>
+                      </div>
+                    ))}
+                    {requests.length === 0 && <p className="text-center py-8 text-text-muted italic">{t('client.requests.no_data')}</p>}
+                  </div>
+                </div>
+
+                <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main h-fit">
+                   <h2 className="text-xl font-bold text-text-main mb-6">Support & Aide</h2>
+                   <div className="space-y-4">
+                      <Link to="/contact" className="flex items-center gap-4 p-4 bg-bg-soft rounded-2xl hover:bg-primary/5 transition-all group">
+                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                            <p className="text-sm font-bold text-text-main">Besoin d'aide ?</p>
+                            <p className="text-xs text-text-muted">Contactez un conseiller</p>
+                         </div>
+                      </Link>
+                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'requests' && (
+            <div className="bg-bg-card rounded-3xl border border-border-main shadow-main overflow-hidden">
+               <div className="p-8 border-b border-border-main flex justify-between items-center">
+                  <h2 className="text-2xl font-black text-text-main">{t('request.title')}</h2>
+               </div>
+               <div className="overflow-x-auto">
+                 <table className="w-full text-left">
+                   <thead>
+                     <tr className="bg-bg-soft border-b border-border-main text-xs uppercase font-black text-text-muted tracking-widest">
+                       <th className="p-6">ID</th>
+                       <th className="p-6">Bien</th>
+                       <th className="p-6 text-center">Statut</th>
+                       <th className="p-6 text-right">Actions</th>
                      </tr>
-                   ))}
-                 </tbody>
-               </table>
-             </div>
-          </section>
-        )}
+                   </thead>
+                   <tbody className="divide-y divide-border-main">
+                     {requests.map(request => (
+                       <tr key={request.id} className="hover:bg-bg-soft/50 transition-colors">
+                         <td className="p-6 text-sm font-mono text-text-muted">#{request.id}</td>
+                         <td className="p-6">
+                           <p className="font-bold text-text-main">{request.property?.title}</p>
+                           <p className="text-xs text-text-muted">{request.property?.city}</p>
+                         </td>
+                         <td className="p-6 text-center">{getStatusBadge(request.status)}</td>
+                         <td className="p-6 text-right">
+                            <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">Détails</Link>
+                            {request.status === 'pending' && (
+                              <button onClick={() => cancelRequest(request.id)} className="ms-4 text-rose-500 font-bold text-sm hover:underline">Annuler</button>
+                            )}
+                         </td>
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
+            </div>
+          )}
 
-        {/* Contracts Tab */}
-        {activeTab === 'contracts' && (
-          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('client.contracts.active_title')}</h2>
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-                {contracts.map(contract => (
-                  <div key={contract.id} className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800">
-                    <div className="flex justify-between mb-4">
-                      <h3 className="font-bold text-slate-800 dark:text-white">{contract.property?.title}</h3>
+          {activeTab === 'contracts' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {contracts.map(contract => (
+                 <div key={contract.id} className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main hover:border-primary transition-all group">
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">{contract.property?.title}</h3>
+                        <p className="text-sm text-text-muted">{contract.property?.address}</p>
+                      </div>
                       {getStatusBadge(contract.status)}
                     </div>
-                    <div className="space-y-2 mb-6 text-sm text-slate-600 dark:text-slate-400">
-                      <p className="flex justify-between"><span>{t('agent.contracts.table.rent')}:</span> <span className="font-bold text-primary dark:text-white">{contract.monthly_rent?.toLocaleString(t('common.locale', 'fr-FR'))} DH</span></p>
-                      <p className="flex justify-between"><span>{t('admin.contracts.table.period')}:</span> <span>{new Date(contract.start_date).toLocaleDateString(t('common.locale', 'fr-FR'))}</span></p>
-                      <p className="flex justify-between"><span>Fin:</span> <span>{new Date(contract.end_date).toLocaleDateString(t('common.locale', 'fr-FR'))}</span></p>
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                       <div className="p-4 bg-bg-soft rounded-2xl">
+                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">Loyer Mensuel</p>
+                          <p className="text-lg font-black text-text-main">{contract.monthly_rent?.toLocaleString()} DH</p>
+                       </div>
+                       <div className="p-4 bg-bg-soft rounded-2xl">
+                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">Date Signature</p>
+                          <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
+                       </div>
                     </div>
-                    <Link to={`/contracts/${contract.id}`} className="block w-full py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all">
-                      {t('admin.properties.table.details', 'Voir les détails')}
-                    </Link>
-                  </div>
-                ))}
-                {contracts.length === 0 && (
-                  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                    <p className="text-slate-500 dark:text-slate-400">{t('client.contracts.no_data')}</p>
-                  </div>
-                )}
-             </div>
-          </section>
-        )}
-
-      </main>
+                    <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block">Consulter le contrat</Link>
+                 </div>
+               ))}
+               {contracts.length === 0 && (
+                 <div className="col-span-full py-20 text-center bg-bg-card rounded-3xl border-2 border-dashed border-border-main">
+                    <p className="text-text-muted font-bold italic">{t('client.contracts.no_data')}</p>
+                 </div>
+               )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

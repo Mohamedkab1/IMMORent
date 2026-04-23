@@ -7,6 +7,20 @@
     <title>IMMORent - Gestion Immobilière et Location en Ligne</title>
     <meta name="description" content="IMMORent - Plateforme de gestion immobilière et location en ligne. Trouvez votre prochain logement ou gérez vos biens en toute simplicité." />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        try {
+          const saved = localStorage.getItem('theme');
+          const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          const theme = saved || preferred;
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

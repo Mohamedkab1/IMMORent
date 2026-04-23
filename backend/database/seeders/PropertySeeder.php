@@ -40,7 +40,7 @@ class PropertySeeder extends Seeder
                 'category_id' => $apartmentCat->id,
                 'features' => json_encode(['Piscine', 'Sécurité 24/7', 'Parking', 'Climatisation', 'Ascenseur']),
                 'images' => json_encode(['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80']),
-                'transaction_type' => 'rent',
+                'listing_type' => 'for_rent',
             ],
             [
                 'title' => 'Villa Contemporaine à Anfa',
@@ -57,7 +57,7 @@ class PropertySeeder extends Seeder
                 'category_id' => $houseCat->id,
                 'features' => json_encode(['Piscine', 'Jardin', 'Garage', 'Système Alarme', 'Vue sur mer']),
                 'images' => json_encode(['https://images.unsplash.com/photo-1613490491584-38f2130eb5a1?auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80']),
-                'transaction_type' => 'rent',
+                'listing_type' => 'for_rent',
             ],
             [
                 'title' => 'Plateau de bureaux à Agdal',
@@ -74,7 +74,7 @@ class PropertySeeder extends Seeder
                 'category_id' => Category::where('slug', 'office')->first()?->id ?? $apartmentCat->id,
                 'features' => json_encode(['Fibre Optique', 'Climatisation', 'Gardiennage', 'Ascenseur']),
                 'images' => json_encode(['https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80']),
-                'transaction_type' => 'rent',
+                'listing_type' => 'for_rent',
             ],
             [
                 'title' => 'Studio Moderne au Maârif',
@@ -91,7 +91,7 @@ class PropertySeeder extends Seeder
                 'category_id' => $studioCat->id,
                 'features' => json_encode(['Meublé', 'Cuisine équipée', 'Parking sous-sol', 'Balcon']),
                 'images' => json_encode(['https://images.unsplash.com/photo-1536376074432-ad64903347bb?auto=format&fit=crop&q=80']),
-                'transaction_type' => 'rent',
+                'listing_type' => 'for_rent',
             ],
             [
                 'title' => 'Duplex avec Vue sur Mer à Malabata',
@@ -108,7 +108,7 @@ class PropertySeeder extends Seeder
                 'category_id' => $apartmentCat->id,
                 'features' => json_encode(['Vue sur mer', 'Terrasse', 'Piscine', 'Parking', 'Double vitrage']),
                 'images' => json_encode(['https://images.unsplash.com/photo-1512918766675-ed406e3e7f0d?auto=format&fit=crop&q=80']),
-                'transaction_type' => 'rent',
+                'listing_type' => 'for_rent',
             ],
         ];
 

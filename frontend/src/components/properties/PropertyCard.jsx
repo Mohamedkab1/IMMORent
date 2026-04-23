@@ -17,7 +17,7 @@ const PropertyCard = ({ property }) => {
     <div className="property-card">
       <div className="property-image">
         <img
-          src={property.images?.[0] ? `/storage/${property.images[0]}` : defaultImage}
+          src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage}
           alt={property.title}
         />
         <span className="property-type">{property.type_label || property.type}</span>
