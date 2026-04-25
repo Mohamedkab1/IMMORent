@@ -69,19 +69,60 @@ class RentalRequestController extends Controller
                 ], 404);
             }
             
+            // ✅ FIX: Normaliser transaction_type (for_rent => rent, for_sale => sale)
+            $propertyType = match($property->listing_type ?? $property->transaction_type) {
+                'for_rent' => 'rent',
+                'for_sale' => 'sale',
+                default    => $property->transaction_type ?? 'rent',
+            };
+            
             // Vérifier que le type de demande correspond au type de bien
-            if ($request->type !== $property->transaction_type) {
+            if ($request->type !== $propertyType) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Le type de demande ne correspond pas au type de bien'
                 ], 400);
             }
             
-            if ($property->status !== 'available') {
+            // ✅ Seuls les biens vendus ou indisponibles sont totalement bloqués
+            if ($property->status === 'sold') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ce bien n\'est plus disponible'
+                    'message' => 'Ce bien a déjà été vendu et n\'est plus disponible.',
+                    'property_status' => 'sold'
                 ], 400);
+            }
+
+            if ($property->status === 'unavailable') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce bien n\'est plus disponible à la réservation.',
+                    'property_status' => 'unavailable'
+                ], 400);
+            }
+
+            // Les biens 'available', 'rented' et 'reserved' peuvent être réservés
+            // à condition que les dates ne chevauchent pas une réservation existante
+
+            // ✅ Vérifier chevauchement de dates pour les locations
+            if ($request->type === 'rent' && $request->start_date && $request->end_date) {
+                $overlap = RentalRequest::where('property_id', $request->property_id)
+                    ->whereIn('status', ['pending', 'approved'])
+                    ->where(function ($q) use ($request) {
+                        $q->where(function ($q2) use ($request) {
+                            $q2->where('start_date', '<=', $request->end_date)
+                               ->where('end_date', '>=', $request->start_date);
+                        });
+                    })
+                    ->exists();
+
+                if ($overlap) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ces dates sont déjà réservées ou en attente de confirmation pour ce bien. Veuillez choisir d\'autres dates.',
+                        'property_status' => 'date_conflict'
+                    ], 400);
+                }
             }
 
             $rentalRequest = RentalRequest::create([
@@ -96,7 +137,7 @@ class RentalRequestController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $request->type === 'rent' ? 'Demande de location envoyée' : 'Demande d\'achat envoyée',
+                'message' => $request->type === 'rent' ? 'Demande de location envoyée avec succès !' : 'Demande d\'achat envoyée avec succès !',
                 'data' => $rentalRequest->load(['property', 'user'])
             ], 201);
 

@@ -20,7 +20,11 @@ class PropertyController extends Controller
     {
         try {
             $query = Property::with(['category', 'user', 'owner'])
-                ->where('status', 'available');
+                // Afficher tous les biens publiés (available, reserved, rented, sold)
+                // sauf les biens archivés ou non approuvés
+                ->where('is_archived', false)
+                ->where('is_approved', true)
+                ->whereIn('status', ['available', 'reserved', 'rented', 'sold']);
 
             // Filtre par type de transaction (sale/rent) via listing_type
             if ($request->has('transaction_type') && !empty($request->transaction_type)) {
