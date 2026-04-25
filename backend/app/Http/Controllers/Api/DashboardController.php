@@ -167,8 +167,32 @@ class DashboardController extends Controller
     private function getMonthlyRevenue()
     {
         try {
-            // Return empty array for monthly data - chart will show total only
-            return [];
+            $months = [];
+            // Retrieve data for the last 12 months
+            for ($i = 11; $i >= 0; $i--) {
+                $date = \Carbon\Carbon::now()->subMonths($i);
+                $months[$date->format('Y-m')] = [
+                    'month' => $date->format('n'), // n returns numeric month without leading zero (1-12)
+                    'total' => 0
+                ];
+            }
+
+            // Fetch paid payments from the last 12 months
+            $payments = \App\Models\Payment::where('status', 'paid')
+                ->where('created_at', '>=', \Carbon\Carbon::now()->subMonths(11)->startOfMonth())
+                ->get()
+                ->groupBy(function($val) {
+                    return \Carbon\Carbon::parse($val->created_at)->format('Y-m');
+                });
+
+            // Sum amounts for each month
+            foreach ($payments as $monthYear => $monthPayments) {
+                if (isset($months[$monthYear])) {
+                    $months[$monthYear]['total'] = $monthPayments->sum('amount');
+                }
+            }
+
+            return array_values($months);
         } catch (\Exception $e) {
             return [];
         }

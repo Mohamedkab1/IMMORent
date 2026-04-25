@@ -284,6 +284,21 @@ const PropertyDetail = () => {
                   {t('prop.status.available')}
                 </span>
               )}
+              {property.status === 'reserved' && (
+                <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded-full text-xs font-bold border border-rose-200 dark:border-rose-800/30">
+                  🚫 Déjà réservé
+                </span>
+              )}
+              {property.status === 'rented' && (
+                <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30">
+                  🔑 Loué
+                </span>
+              )}
+              {property.status === 'sold' && (
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 rounded-full text-xs font-bold border border-gray-200 dark:border-gray-800/30">
+                  🏷️ Vendu
+                </span>
+              )}
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-text-main mb-2 tracking-tight">{property.title}</h1>
             <div className="flex items-center gap-4 mb-3 text-text-sub">
@@ -538,12 +553,42 @@ const PropertyDetail = () => {
                     <button onClick={handleContact} className="w-full py-4 bg-bg-card border-2 border-border-main text-text-main hover:bg-bg-soft rounded-xl font-bold transition-all shadow-sm">
                       Envoyer un message
                     </button>
-                    {property.transaction_type === 'rent' && property.status === 'available' && isAuthenticated && user?.role?.slug === 'client' && (
+                    {property.transaction_type === 'rent'
+                      && ['available', 'rented', 'reserved'].includes(property.status)
+                      && isAuthenticated
+                      && user?.role?.slug === 'client' && (
                       <button onClick={handleRequestRental} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
-                        Demander la location
+                        Réserver pour des dates disponibles
                       </button>
                     )}
-                    {property.transaction_type === 'sale' && (
+                    {/* Info : bien loué mais dates futures réservables */}
+                    {property.status === 'rented' && property.transaction_type === 'rent' && (
+                      <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 text-blue-700 dark:text-blue-400 rounded-xl text-sm font-medium">
+                        <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold mb-0.5">Bien actuellement loué</p>
+                          <p className="text-xs opacity-90">Ce bien est en cours de location. Vous pouvez néanmoins le réserver pour des dates futures libres — le système vérifiera automatiquement les disponibilités.</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Info : bien réservé mais d'autres dates peuvent être libres */}
+                    {property.status === 'reserved' && property.transaction_type === 'rent' && (
+                      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-400 rounded-xl text-sm font-medium">
+                        <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold mb-0.5">Déjà réservé sur certaines dates</p>
+                          <p className="text-xs opacity-90">Ce bien a une réservation en cours. Choisissez d'autres dates et le système vérifiera la disponibilité.</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Vendu : totalement bloqué */}
+                    {property.status === 'sold' && (
+                      <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800/30 text-gray-700 dark:text-gray-400 rounded-xl text-sm font-medium">
+                        <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <p>Ce bien a déjà été vendu et n'est plus disponible.</p>
+                      </div>
+                    )}
+                    {property.transaction_type === 'sale' && ['available', 'reserved'].includes(property.status) && (
                       <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-500 rounded-xl text-sm font-medium">
                         <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
                         <p>Ce bien est à vendre. Veuillez contacter l'agent pour convenir d'une visite.</p>

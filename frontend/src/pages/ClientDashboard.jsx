@@ -172,10 +172,10 @@ const ClientDashboard = () => {
       <div className="bg-gradient-to-r from-primary to-primary-light h-48 md:h-64 flex items-center justify-center text-white px-4">
         <div className="max-w-4xl w-full">
           <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up">
-            {t('dashboard.welcome')}, <span className="text-secondary">{user?.name}</span>
+            {t('dash.client.welcome')}, <span className="text-secondary">{user?.name}</span>
           </h1>
           <p className="text-white/70 font-medium animate-slide-up animation-delay-100">
-            {t('dashboard.client_desc', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
+            {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
           </p>
         </div>
       </div>
@@ -185,8 +185,8 @@ const ClientDashboard = () => {
         <div className="glass-panel rounded-3xl p-2 flex flex-wrap gap-2 mb-8 animate-fade-in rtl:flex-row-reverse">
           {[
             { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
-            { id: 'requests', label: t('request.title'), icon: ClipboardDocumentListIcon || BellIcon },
-            { id: 'contracts', label: t('contract.my_contracts'), icon: DocumentTextIcon },
+            { id: 'requests', label: t('client.requests.history', 'Demandes'), icon: ClipboardDocumentListIcon || BellIcon },
+            { id: 'contracts', label: t('client.contracts.active_title', 'Contrats'), icon: DocumentTextIcon },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -217,10 +217,10 @@ const ClientDashboard = () => {
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard title={t('dashboard.active_requests')} value={stats.activeRequests} icon={BellIcon} color="blue" />
-                <StatsCard title={t('dashboard.active_contracts')} value={stats.activeContracts} icon={DocumentTextIcon} color="green" />
-                <StatsCard title={t('dashboard.total_payments')} value={`${stats.totalPayments.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" />
-                <StatsCard title={t('dashboard.favorites')} value={stats.favoriteProperties} icon={HeartIcon} color="rose" />
+                <StatsCard title={t('dash.stats.pending_requests')} value={stats.activeRequests} icon={BellIcon} color="blue" />
+                <StatsCard title={t('dash.stats.active_contracts')} value={stats.activeContracts} icon={DocumentTextIcon} color="green" />
+                <StatsCard title={t('client.dashboard.stats.expenses')} value={`${stats.totalPayments.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" />
+                <StatsCard title={t('client.dashboard.stats.favorites')} value={stats.favoriteProperties} icon={HeartIcon} color="rose" />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

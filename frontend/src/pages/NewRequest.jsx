@@ -141,14 +141,35 @@ const NewRequest = () => {
       if (response.success) {
         toast.success(response.message);
         navigate('/dashboard/client?refresh=true');
+      } else {
+        // Cas où l'API retourne success: false sans exception
+        toast.error(response.message || 'Erreur lors de l\'envoi');
       }
     } catch (error) {
       if (error.response?.status === 422) {
-        const validationErrors = error.response.data.errors;
+        // Erreurs de validation Laravel
+        const validationErrors = error.response.data.errors || {};
         setErrors(validationErrors);
-        Object.values(validationErrors).forEach(err => toast.error(err[0]));
+        Object.values(validationErrors).forEach(err => toast.error(Array.isArray(err) ? err[0] : err));
+      } else if (error.response?.status === 400) {
+        // ✅ Erreur métier : bien réservé, dates conflictuelles, etc.
+        const serverMessage = error.response.data?.message || 'Cette réservation est impossible.';
+        const propertyStatus = error.response.data?.property_status;
+
+        // Afficher un toast d'erreur rouge bien visible
+        toast.error(serverMessage, { autoClose: 6000 });
+
+        // Si c'est un conflit de dates, surligner les champs
+        if (propertyStatus === 'date_conflict') {
+          setErrors({
+            start_date: 'Ces dates sont déjà prises',
+            end_date: 'Ces dates sont déjà prises'
+          });
+        }
+      } else if (error.response?.status === 404) {
+        toast.error('Bien introuvable. Veuillez réessayer.');
       } else {
-        toast.error('Erreur lors de l\'envoi');
+        toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
       }
     } finally {
       setSubmitting(false);
@@ -169,6 +190,20 @@ const NewRequest = () => {
   const isRent = property.transaction_type === 'rent';
   const requestType = isRent ? 'location' : 'achat';
   const TypeIcon = isRent ? KeyIcon : TagIcon;
+
+  // ✅ Seuls 'sold' et 'unavailable' bloquent totalement la réservation
+  const blockedStatuses = {
+    sold:        { color: 'gray', icon: '🏷️', msg: 'Ce bien a déjà été vendu et n\'est plus disponible.' },
+    unavailable: { color: 'gray', icon: '⛔', msg: 'Ce bien n\'est plus disponible à la réservation.' },
+  };
+  const blockedInfo = blockedStatuses[property.status];
+
+  // ✅ Infos pour biens loués/réservés (réservables sur dates libres)
+  const infoStatuses = {
+    rented:   { color: 'blue',  icon: 'ℹ️', msg: 'Ce bien est actuellement loué. Vous pouvez quand même le réserver pour des dates futures libres — le système vérifiera les conflits automatiquement.' },
+    reserved: { color: 'amber', icon: '⚠️', msg: 'Ce bien a déjà une réservation en cours. Choisissez des dates différentes et le système vérifiera la disponibilité.' },
+  };
+  const infoStatus = infoStatuses[property.status];
 
   return (
     <div className="min-h-screen bg-bg-main py-12 px-4 sm:px-6 lg:px-8">
@@ -208,6 +243,7 @@ const NewRequest = () => {
                     src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400'} 
                     alt={property.title} 
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400'; }}
                 />
                 <div className="absolute top-4 right-4">
                   <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-lg ${isRent ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
@@ -238,6 +274,37 @@ const NewRequest = () => {
           {/* Request Form */}
           <div className="lg:col-span-3">
             <div className="bg-bg-card rounded-3xl p-8 md:p-10 border border-border-main shadow-huge">
+
+              {/* ✅ Alerte blocante : vendu / indisponible */}
+              {blockedInfo && (
+                <div className="flex items-start gap-4 p-5 mb-8 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl">
+                  <span className="text-2xl flex-shrink-0">{blockedInfo.icon}</span>
+                  <div>
+                    <h4 className="font-bold text-rose-700 dark:text-rose-400 mb-1">Réservation impossible</h4>
+                    <p className="text-sm text-rose-600 dark:text-rose-300">{blockedInfo.msg}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ✅ Info : bien loué/réservé mais dates libres disponibles */}
+              {!blockedInfo && infoStatus && (
+                <div className={`flex items-start gap-4 p-5 mb-8 rounded-2xl border ${
+                  infoStatus.color === 'blue'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30'
+                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/30'
+                }`}>
+                  <span className="text-2xl flex-shrink-0">{infoStatus.icon}</span>
+                  <div>
+                    <h4 className={`font-bold mb-1 ${infoStatus.color === 'blue' ? 'text-blue-700 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                      {infoStatus.color === 'blue' ? 'Bien actuellement loué' : 'Bien déjà réservé sur certaines dates'}
+                    </h4>
+                    <p className={`text-sm ${infoStatus.color === 'blue' ? 'text-blue-600 dark:text-blue-300' : 'text-amber-600 dark:text-amber-300'}`}>
+                      {infoStatus.msg}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 text-primary rounded-xl font-bold mb-8">
                 <TypeIcon className="w-5 h-5" />
                 Détails de la demande
@@ -312,7 +379,8 @@ const NewRequest = () => {
                   </button>
                   <button 
                     type="submit" 
-                    disabled={submitting}
+                    disabled={submitting || !!blockedInfo}
+                    title={blockedInfo ? blockedInfo.msg : ''}
                     className="flex-[2] py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {submitting ? (

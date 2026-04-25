@@ -218,7 +218,7 @@ const Header = () => {
                 <LanguageIcon className="w-5 h-5" />
                 {language}
               </button>
-              <div className="absolute top-full right-0 mt-2 w-32 bg-bg-primary rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
+              <div className="absolute top-full right-0 mt-2 w-32 bg-bg-main rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
                 {['fr', 'en', 'ar'].map((lang) => (
                   <button
                     key={lang}
@@ -239,8 +239,11 @@ const Header = () => {
 
                 {/* Notifications */}
                 <div className="relative">
-                  <button
-                    onClick={() => setNotifOpen(!notifOpen)}
+                  <button 
+                    onClick={() => {
+                      setNotifOpen(!notifOpen);
+                      setDropdownOpen(false);
+                    }}
                     className="relative p-2.5 text-text-sub hover:text-primary dark:hover:text-secondary bg-bg-secondary rounded-xl transition-all"
                   >
                     <BellIcon className="w-5 h-5" />
@@ -251,7 +254,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-80 bg-bg-primary rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-80 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={handleMarkAllRead} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -298,8 +301,12 @@ const Header = () => {
                 </div>
 
                 <div className="relative">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
+
+                  <button 
+                    onClick={() => {
+                      setDropdownOpen(!dropdownOpen);
+                      setNotifOpen(false);
+                    }} 
                     className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-2xl border border-transparent hover:border-border-main transition-all"
                   >
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-md">
@@ -311,10 +318,11 @@ const Header = () => {
                     </div>
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-64 bg-bg-primary rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
-                    <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
-                      <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
+
+                  <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                    <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
+                       <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
                       <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-text-sub hover:bg-bg-secondary hover:text-primary dark:hover:text-white transition-all">
@@ -356,7 +364,7 @@ const Header = () => {
       </div>
 
       {/* Mobile nav (Enhanced) */}
-      <div className={`md:hidden absolute inset-x-0 top-full bg-bg-primary border-b border-border-main transition-all duration-300 origin-top shadow-2xl ${mobileMenuOpen ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-0'}`}>
+      <div className={`md:hidden absolute inset-x-0 top-full bg-bg-main border-b border-border-main transition-all duration-300 origin-top shadow-2xl ${mobileMenuOpen ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-0'}`}>
         <div className="p-4 space-y-4">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (

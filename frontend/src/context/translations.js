@@ -67,6 +67,9 @@ const translations = {
     'prop.details.description': 'Description',
     'prop.details.location': 'Localisation',
     'prop.details.contact': 'Contacter l\'agent',
+    'prop.details.price': 'Prix / Loyer',
+    'prop.transaction.rent': 'Location',
+    'prop.transaction.sale': 'Vente',
     'prop.add.title': 'Ajouter un nouveau bien',
     'prop.edit.title': 'Modifier le bien',
 
@@ -109,6 +112,20 @@ const translations = {
     'admin.properties.table.agent': 'Agent Responsable',
     'admin.properties.table.approval': 'Approbation',
     'admin.properties.table.flags': 'Flags',
+    'admin.contracts.title': 'Registre des Contrats',
+    'admin.contracts.subtitle': 'Consultez et gérez l\'ensemble des contrats de location et de vente',
+    'admin.contracts.table.number': 'N° Contrat',
+    'admin.contracts.table.parties': 'Parties concernées',
+    'admin.contracts.table.period': 'Période',
+    'admin.contracts.table.status': 'Statut',
+    'admin.payments.title': 'Suivi des Paiements',
+    'admin.payments.subtitle': 'Visualisez les flux financiers, loyers et commissions',
+    'admin.payments.table.ref': 'Référence',
+    'admin.payments.table.method': 'Méthode',
+    'admin.payments.status.pending': 'En attente',
+    'admin.payments.status.paid': 'Payé',
+    'admin.payments.status.late': 'En retard',
+    'admin.payments.status.cancelled': 'Annulé',
     'admin.settings.title': 'Configuration du Système',
     'admin.settings.agency_name': 'Nom de l\'agence',
     'admin.settings.contact_email': 'Email de contact',
@@ -136,6 +153,10 @@ const translations = {
     'common.amount': 'Montant',
     'common.refresh': 'Actualiser',
     'common.new': 'Nouveau',
+    'common.prev': 'Retour',
+    'common.unknown': 'Inconnu',
+    'common.approve': 'Approuver',
+    'common.reject': 'Refuser',
 
     // Auth
     'auth.login.title': 'Bon retour parmi nous',
@@ -149,66 +170,40 @@ const translations = {
     'auth.role.admin': 'Administrateur',
     'auth.role.client': 'Client (Locataire/Acheteur)',
     'auth.role.agent': 'Agent / Propriétaire',
-    client: {
-      dashboard: {
-        subtitle: 'Gérez vos demandes et vos suivis en toute simplicité.',
-        loading: 'Chargement de votre espace...',
-        stats: {
-          expenses: 'Dépenses mensuelles',
-          favorites: 'Biens favoris'
-        }
-      },
-      requests: {
-        recent: 'Demandes Récentes',
-        history: 'Historique des demandes',
-        no_data: 'Aucune demande en cours',
-        cancel_confirm: 'Êtes-vous sûr de vouloir annuler cette demande ?',
-        table: {
-          target: 'Bien ciblé'
-        }
-      },
-      contracts: {
-        active_title: 'Mes Contrats Actifs',
-        no_data: 'Aucun contrat actif'
-      }
-    },
-    agent: {
-      dashboard: {
-        subtitle: 'Supervisez votre portfolio immobilier en temps réel.',
-        refresh: 'Actualiser',
-        see_all: 'Tout voir'
-      },
-      properties: {
-        title: 'Gestion de mes biens',
-        add: 'Ajouter',
-        no_data: 'Aucun bien enregistré',
-        table: {
-          title: 'Titre & Ville',
-          attrs: 'Attributs'
-        }
-      },
-      requests: {
-        title: 'Gestion des demandes',
-        no_data: 'Aucune demande reçue',
-        pending_count: '{{count}} en attente',
-        processed_at: 'Traitée le {{date}}',
-        table: {
-          client: 'Client',
-          property: 'Bien concerné',
-          date: 'Date demande'
-        }
-      },
-      contracts: {
-        title: 'Mes Contrats',
-        no_data: 'Aucun contrat trouvé',
-        active_count: '{{count}} actif(s)',
-        table: {
-          property: 'Propriété',
-          tenant: 'Locataire',
-          rent: 'Loyer'
-        }
-      }
-    }
+    'client.dashboard.subtitle': 'Gérez vos demandes et vos suivis en toute simplicité.',
+    'client.dashboard.loading': 'Chargement de votre espace...',
+    'client.dashboard.stats.expenses': 'Dépenses mensuelles',
+    'client.dashboard.stats.favorites': 'Biens favoris',
+    'client.requests.recent': 'Demandes Récentes',
+    'client.requests.history': 'Historique des demandes',
+    'client.requests.no_data': 'Aucune demande en cours',
+    'client.requests.cancel_confirm': 'Êtes-vous sûr de vouloir annuler cette demande ?',
+    'client.requests.table.target': 'Bien ciblé',
+    'client.contracts.active_title': 'Mes Contrats Actifs',
+    'client.contracts.no_data': 'Aucun contrat actif',
+
+    'agent.dashboard.subtitle': 'Supervisez votre portfolio immobilier en temps réel.',
+    'agent.dashboard.refresh': 'Actualiser',
+    'agent.dashboard.see_all': 'Tout voir',
+    'agent.properties.title': 'Gestion de mes biens',
+    'agent.properties.add': 'Ajouter',
+    'agent.properties.no_data': 'Aucun bien enregistré',
+    'agent.properties.table.title': 'Titre & Ville',
+    'agent.properties.table.attrs': 'Attributs',
+    'agent.requests.title': 'Gestion des demandes',
+    'agent.requests.no_data': 'Aucune demande reçue',
+    'agent.requests.pending_count': '{{count}} en attente',
+    'agent.requests.processed_at': 'Traitée le {{date}}',
+    'agent.requests.client_unknown': 'Client Inconnu',
+    'agent.requests.table.client': 'Client',
+    'agent.requests.table.property': 'Bien concerné',
+    'agent.requests.table.date': 'Date demande',
+    'agent.contracts.title': 'Mes Contrats',
+    'agent.contracts.no_data': 'Aucun contrat trouvé',
+    'agent.contracts.active_count': '{{count}} actif(s)',
+    'agent.contracts.table.property': 'Propriété',
+    'agent.contracts.table.tenant': 'Locataire',
+    'agent.contracts.table.rent': 'Loyer'
   },
   en: {
     // Navigation
@@ -278,6 +273,9 @@ const translations = {
     'prop.details.description': 'Description',
     'prop.details.location': 'Location',
     'prop.details.contact': 'Contact Agent',
+    'prop.details.price': 'Price / Rent',
+    'prop.transaction.rent': 'Rent',
+    'prop.transaction.sale': 'Sale',
     'prop.add.title': 'Add new property',
     'prop.edit.title': 'Edit property',
 
@@ -320,6 +318,20 @@ const translations = {
     'admin.properties.table.agent': 'Responsible Agent',
     'admin.properties.table.approval': 'Approval',
     'admin.properties.table.flags': 'Flags',
+    'admin.contracts.title': 'Contracts Register',
+    'admin.contracts.subtitle': 'View and manage all rental and sale contracts',
+    'admin.contracts.table.number': 'Contract No.',
+    'admin.contracts.table.parties': 'Parties Involved',
+    'admin.contracts.table.period': 'Period',
+    'admin.contracts.table.status': 'Status',
+    'admin.payments.title': 'Payment Tracking',
+    'admin.payments.subtitle': 'View financial flows, rents, and commissions',
+    'admin.payments.table.ref': 'Reference',
+    'admin.payments.table.method': 'Method',
+    'admin.payments.status.pending': 'Pending',
+    'admin.payments.status.paid': 'Paid',
+    'admin.payments.status.late': 'Late',
+    'admin.payments.status.cancelled': 'Cancelled',
     'admin.settings.title': 'System Configuration',
     'admin.settings.agency_name': 'Agency Name',
     'admin.settings.contact_email': 'Contact Email',
@@ -347,6 +359,10 @@ const translations = {
     'common.amount': 'Amount',
     'common.refresh': 'Refresh',
     'common.new': 'New',
+    'common.prev': 'Back',
+    'common.unknown': 'Unknown',
+    'common.approve': 'Approve',
+    'common.reject': 'Reject',
 
     // Auth
     'auth.login.title': 'Welcome back',
@@ -360,66 +376,40 @@ const translations = {
     'auth.role.admin': 'Administrator',
     'auth.role.client': 'Client (Tenant/Buyer)',
     'auth.role.agent': 'Agent / Owner',
-    client: {
-      dashboard: {
-        subtitle: 'Manage your requests and follow-ups with ease.',
-        loading: 'Loading your space...',
-        stats: {
-          expenses: 'Monthly Expenses',
-          favorites: 'Favorite Properties'
-        }
-      },
-      requests: {
-        recent: 'Recent Requests',
-        history: 'Requests History',
-        no_data: 'No requests in progress',
-        cancel_confirm: 'Are you sure you want to cancel this request?',
-        table: {
-          target: 'Target Property'
-        }
-      },
-      contracts: {
-        active_title: 'My Active Contracts',
-        no_data: 'No active contracts'
-      }
-    },
-    agent: {
-      dashboard: {
-        subtitle: 'Oversee your real estate portfolio in real time.',
-        refresh: 'Refresh',
-        see_all: 'See all'
-      },
-      properties: {
-        title: 'My Properties',
-        add: 'Add',
-        no_data: 'No properties recorded',
-        table: {
-          title: 'Title & City',
-          attrs: 'Attributes'
-        }
-      },
-      requests: {
-        title: 'Requests Management',
-        no_data: 'No requests received',
-        pending_count: '{{count}} pending',
-        processed_at: 'Processed on {{date}}',
-        table: {
-          client: 'Client',
-          property: 'Property',
-          date: 'Request Date'
-        }
-      },
-      contracts: {
-        title: 'My Contracts',
-        no_data: 'No contracts found',
-        active_count: '{{count}} active',
-        table: {
-          property: 'Property',
-          tenant: 'Tenant',
-          rent: 'Rent'
-        }
-      }
-    }
+    'client.dashboard.subtitle': 'Manage your requests and follow-ups with ease.',
+    'client.dashboard.loading': 'Loading your space...',
+    'client.dashboard.stats.expenses': 'Monthly Expenses',
+    'client.dashboard.stats.favorites': 'Favorite Properties',
+    'client.requests.recent': 'Recent Requests',
+    'client.requests.history': 'Requests History',
+    'client.requests.no_data': 'No requests in progress',
+    'client.requests.cancel_confirm': 'Are you sure you want to cancel this request?',
+    'client.requests.table.target': 'Target Property',
+    'client.contracts.active_title': 'My Active Contracts',
+    'client.contracts.no_data': 'No active contracts',
+
+    'agent.dashboard.subtitle': 'Oversee your real estate portfolio in real time.',
+    'agent.dashboard.refresh': 'Refresh',
+    'agent.dashboard.see_all': 'See all',
+    'agent.properties.title': 'My Properties',
+    'agent.properties.add': 'Add',
+    'agent.properties.no_data': 'No properties recorded',
+    'agent.properties.table.title': 'Title & City',
+    'agent.properties.table.attrs': 'Attributes',
+    'agent.requests.title': 'Requests Management',
+    'agent.requests.no_data': 'No requests received',
+    'agent.requests.pending_count': '{{count}} pending',
+    'agent.requests.processed_at': 'Processed on {{date}}',
+    'agent.requests.client_unknown': 'Unknown Client',
+    'agent.requests.table.client': 'Client',
+    'agent.requests.table.property': 'Property',
+    'agent.requests.table.date': 'Request Date',
+    'agent.contracts.title': 'My Contracts',
+    'agent.contracts.no_data': 'No contracts found',
+    'agent.contracts.active_count': '{{count}} active',
+    'agent.contracts.table.property': 'Property',
+    'agent.contracts.table.tenant': 'Tenant',
+    'agent.contracts.table.rent': 'Rent'
   },
   ar: {
     // Navigation
@@ -489,6 +479,9 @@ const translations = {
     'prop.details.description': 'الوصف',
     'prop.details.location': 'الموقع',
     'prop.details.contact': 'اتصل بالوكيل',
+    'prop.details.price': 'السعر / الإيجار',
+    'prop.transaction.rent': 'إيجار',
+    'prop.transaction.sale': 'بيع',
     'prop.add.title': 'إضافة عقار جديد',
     'prop.edit.title': 'تعديل العقار',
 
@@ -531,6 +524,20 @@ const translations = {
     'admin.properties.table.agent': 'الوكيل المسؤول',
     'admin.properties.table.approval': 'الموافقة',
     'admin.properties.table.flags': 'الأعلام',
+    'admin.contracts.title': 'سجل العقود',
+    'admin.contracts.subtitle': 'عرض وإدارة جميع عقود الإيجار والبيع',
+    'admin.contracts.table.number': 'رقم العقد',
+    'admin.contracts.table.parties': 'الأطراف المعنية',
+    'admin.contracts.table.period': 'الفترة',
+    'admin.contracts.table.status': 'الحالة',
+    'admin.payments.title': 'تتبع المدفوعات',
+    'admin.payments.subtitle': 'عرض التدفقات المالية والإيجارات والعمولات',
+    'admin.payments.table.ref': 'المرجع',
+    'admin.payments.table.method': 'الطريقة',
+    'admin.payments.status.pending': 'قيد الانتظار',
+    'admin.payments.status.paid': 'مدفوع',
+    'admin.payments.status.late': 'متأخر',
+    'admin.payments.status.cancelled': 'ملغى',
     'admin.settings.title': 'إعدادات النظام',
     'admin.settings.agency_name': 'اسم الوكالة',
     'admin.settings.contact_email': 'البريد الإلكتروني',
@@ -558,6 +565,10 @@ const translations = {
     'common.amount': 'المبلغ',
     'common.refresh': 'تحديث',
     'common.new': 'جديد',
+    'common.prev': 'رجوع',
+    'common.unknown': 'غير معروف',
+    'common.approve': 'موافقة',
+    'common.reject': 'رفض',
 
     // Auth
     'auth.login.title': 'مرحباً بعودتك',
@@ -571,66 +582,40 @@ const translations = {
     'auth.role.admin': 'مشرف',
     'auth.role.client': 'عميل (مستأجر/مشتري)',
     'auth.role.agent': 'وكيل / مالك',
-    client: {
-      dashboard: {
-        subtitle: 'قم بإدارة طلباتك ومتابعاتك بكل سهولة.',
-        loading: 'جاري تحميل مساحتك...',
-        stats: {
-          expenses: 'المصاريف الشهرية',
-          favorites: 'العقارات المفضلة'
-        }
-      },
-      requests: {
-        recent: 'الطلبات الأخيرة',
-        history: 'سجل الطلبات',
-        no_data: 'لا توجد طلبات جارية',
-        cancel_confirm: 'هل أنت متأكد أنك تريد إلغاء هذا الطلب؟',
-        table: {
-          target: 'العقار المستهدف'
-        }
-      },
-      contracts: {
-        active_title: 'عقودي النشطة',
-        no_data: 'لا توجد عقود نشطة'
-      }
-    },
-    agent: {
-      dashboard: {
-        subtitle: 'أشرف على محفظتك العقارية في الوقت الفعلي.',
-        refresh: 'تحديث',
-        see_all: 'عرض الكل'
-      },
-      properties: {
-        title: 'إدارة عقاراتي',
-        add: 'إضافة',
-        no_data: 'لم يتم تسجيل أي عقارات',
-        table: {
-          title: 'العنوان والمدينة',
-          attrs: 'المواصفات'
-        }
-      },
-      requests: {
-        title: 'إدارة الطلبات',
-        no_data: 'لم يتم استلام أي طلبات',
-        pending_count: '{{count}} في الانتظار',
-        processed_at: 'تمت المعالجة في {{date}}',
-        table: {
-          client: 'العميل',
-          property: 'العقار المعني',
-          date: 'تاريخ الطلب'
-        }
-      },
-      contracts: {
-        title: 'عقودي',
-        no_data: 'لم يتم العثور على أي عقود',
-        active_count: '{{count}} نشط',
-        table: {
-          property: 'العقار',
-          tenant: 'المستأجر',
-          rent: 'الإيجار'
-        }
-      }
-    }
+    'client.dashboard.subtitle': 'قم بإدارة طلباتك ومتابعاتك بكل سهولة.',
+    'client.dashboard.loading': 'جاري تحميل مساحتك...',
+    'client.dashboard.stats.expenses': 'المصاريف الشهرية',
+    'client.dashboard.stats.favorites': 'العقارات المفضلة',
+    'client.requests.recent': 'الطلبات الأخيرة',
+    'client.requests.history': 'سجل الطلبات',
+    'client.requests.no_data': 'لا توجد طلبات جارية',
+    'client.requests.cancel_confirm': 'هل أنت متأكد أنك تريد إلغاء هذا الطلب؟',
+    'client.requests.table.target': 'العقار المستهدف',
+    'client.contracts.active_title': 'عقودي النشطة',
+    'client.contracts.no_data': 'لا توجد عقود نشطة',
+
+    'agent.dashboard.subtitle': 'أشرف على محفظتك العقارية في الوقت الفعلي.',
+    'agent.dashboard.refresh': 'تحديث',
+    'agent.dashboard.see_all': 'عرض الكل',
+    'agent.properties.title': 'إدارة عقاراتي',
+    'agent.properties.add': 'إضافة',
+    'agent.properties.no_data': 'لم يتم تسجيل أي عقارات',
+    'agent.properties.table.title': 'العنوان والمدينة',
+    'agent.properties.table.attrs': 'المواصفات',
+    'agent.requests.title': 'إدارة الطلبات',
+    'agent.requests.no_data': 'لم يتم استلام أي طلبات',
+    'agent.requests.pending_count': '{{count}} في الانتظار',
+    'agent.requests.processed_at': 'تمت المعالجة في {{date}}',
+    'agent.requests.client_unknown': 'عميل غير معروف',
+    'agent.requests.table.client': 'العميل',
+    'agent.requests.table.property': 'العقار المعني',
+    'agent.requests.table.date': 'تاريخ الطلب',
+    'agent.contracts.title': 'عقودي',
+    'agent.contracts.no_data': 'لم يتم العثور على أي عقود',
+    'agent.contracts.active_count': '{{count}} نشط',
+    'agent.contracts.table.property': 'العقار',
+    'agent.contracts.table.tenant': 'المستأجر',
+    'agent.contracts.table.rent': 'الإيجار'
   }
 };
 

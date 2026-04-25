@@ -313,7 +313,7 @@ const Properties = () => {
                       <img 
                         src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage} 
                         alt={property.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${property.status !== 'available' ? 'brightness-75' : ''}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60"></div>
                       
@@ -322,6 +322,16 @@ const Properties = () => {
                           <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">Vente</span>
                         ) : (
                            <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">Location</span>
+                        )}
+                        {/* ✅ Badge statut sur la photo */}
+                        {property.status === 'reserved' && (
+                          <span className="px-3 py-1 bg-rose-700 text-white text-xs font-bold rounded-full shadow-lg">🚫 Réservé</span>
+                        )}
+                        {property.status === 'rented' && (
+                          <span className="px-3 py-1 bg-orange-600 text-white text-xs font-bold rounded-full shadow-lg">🔑 Loué</span>
+                        )}
+                        {property.status === 'sold' && (
+                          <span className="px-3 py-1 bg-gray-700 text-white text-xs font-bold rounded-full shadow-lg">🏷️ Vendu</span>
                         )}
                       </div>
                       
@@ -348,6 +358,22 @@ const Properties = () => {
                              {property.price?.toLocaleString('fr-FR')} <span className="text-sm font-bold text-text-muted">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
                            </div>
                         </div>
+                        {/* ✅ Badge statut visible dans la carte */}
+                        {property.status === 'reserved' && (
+                          <span className="px-2.5 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-bold rounded-full border border-rose-200 dark:border-rose-800/40 whitespace-nowrap">
+                            🚫 Réservé
+                          </span>
+                        )}
+                        {property.status === 'rented' && (
+                          <span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-bold rounded-full border border-orange-200 dark:border-orange-800/40 whitespace-nowrap">
+                            🔑 Loué
+                          </span>
+                        )}
+                        {property.status === 'sold' && (
+                          <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-full border border-gray-200 dark:border-gray-800/40 whitespace-nowrap">
+                            🏷️ Vendu
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-4 py-4 border-y border-border-main mb-4 mt-auto">
@@ -362,8 +388,15 @@ const Properties = () => {
                         </div>
                       </div>
 
-                      <Link to={`/properties/${property.id}`} className="block w-full py-3 bg-secondary text-primary hover:bg-secondary-hover text-center font-bold rounded-xl transition-all shadow-md">
-                        Voir les détails
+                      <Link 
+                        to={`/properties/${property.id}`}
+                        className={`block w-full py-3 text-center font-bold rounded-xl transition-all shadow-md ${
+                          property.status === 'available'
+                            ? 'bg-secondary text-primary hover:bg-secondary-hover'
+                            : 'bg-bg-soft text-text-muted hover:bg-border-main border border-border-main'
+                        }`}
+                      >
+                        {property.status === 'available' ? 'Voir les détails' : 'Consulter le bien'}
                       </Link>
                     </div>
                   </div>

@@ -291,7 +291,7 @@ const AgentDashboard = () => {
             onClick={() => setActiveTab('dashboard')}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
-            <BuildingOfficeIcon className="w-5 h-5" /> {t('Dashboard')}
+            <BuildingOfficeIcon className="w-5 h-5" /> {t('nav.dashboard')}
           </button>
           
           <button 
