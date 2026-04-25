@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StorePropertyRequest;
 use App\Http\Requests\UpdatePropertyRequest;
+use App\Notifications\GeneralNotification;
 
 class PropertyController extends Controller
 {
@@ -589,6 +590,17 @@ class PropertyController extends Controller
         $property->is_approved = true;
         $property->save();
 
+        // Notifier l'agent
+        if ($property->user) {
+            $property->user->notify(new GeneralNotification([
+                'title' => 'Bien approuvé',
+                'message' => "Votre bien \"{$property->title}\" a été approuvé par l'administrateur.",
+                'type' => 'property_approved',
+                'link' => '/dashboard/agent',
+                'icon' => 'check-badge'
+            ]));
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Bien approuvé avec succès',
@@ -605,6 +617,17 @@ class PropertyController extends Controller
         $property->is_approved = false;
         $property->status = 'unavailable';
         $property->save();
+
+        // Notifier l'agent
+        if ($property->user) {
+            $property->user->notify(new GeneralNotification([
+                'title' => 'Bien rejeté',
+                'message' => "Votre bien \"{$property->title}\" a été rejeté par l'administrateur.",
+                'type' => 'property_rejected',
+                'link' => '/dashboard/agent',
+                'icon' => 'x-circle'
+            ]));
+        }
 
         return response()->json([
             'success' => true,

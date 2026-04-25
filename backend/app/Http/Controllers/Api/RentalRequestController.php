@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreRentalRequestRequest;
+use App\Notifications\GeneralNotification;
+use App\Models\User;
 
 class RentalRequestController extends Controller
 {
@@ -93,6 +95,18 @@ class RentalRequestController extends Controller
                 'message' => $request->message,
                 'status' => 'pending'
             ]);
+
+            // Notifier l'agent/propriétaire
+            $owner = $property->user; // Le créateur du bien
+            if ($owner) {
+                $owner->notify(new GeneralNotification([
+                    'title' => 'Nouvelle demande',
+                    'message' => "{$request->user()->name} a envoyé une demande pour {$property->title}",
+                    'type' => 'request',
+                    'link' => '/dashboard/agent',
+                    'icon' => 'document-text'
+                ]));
+            }
 
             return response()->json([
                 'success' => true,
@@ -183,6 +197,19 @@ class RentalRequestController extends Controller
                 if ($property) {
                     $property->update(['status' => 'reserved']);
                 }
+            }
+
+            // Notifier le client
+            $client = User::find($rentalRequest->user_id);
+            if ($client) {
+                $statusText = $request->status === 'approved' ? 'approuvée' : 'refusée';
+                $client->notify(new GeneralNotification([
+                    'title' => "Demande {$statusText}",
+                    'message' => "Votre demande pour {$rentalRequest->property->title} a été {$statusText}",
+                    'type' => 'request_update',
+                    'link' => '/dashboard/client',
+                    'icon' => $request->status === 'approved' ? 'check-circle' : 'x-circle'
+                ]));
             }
             
             Log::info('Demande traitée', [

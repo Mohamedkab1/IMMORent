@@ -8,6 +8,7 @@ use App\Models\Contract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\GeneralNotification;
 
 class PaymentController extends Controller
 {
@@ -81,6 +82,14 @@ class PaymentController extends Controller
             'notes' => $request->notes,
             'due_date' => $request->due_date ?? now(),
         ]);
+        
+        // Notify the tenant about the payment record
+        $contract->tenant->notify(new GeneralNotification([
+            'title' => 'Nouveau paiement enregistré',
+            'message' => "Un paiement de {$payment->amount} DH a été enregistré pour votre contrat.",
+            'type' => 'payment',
+            'link' => "/dashboard/client",
+        ]));
 
         return response()->json([
             'success' => true,
@@ -135,6 +144,15 @@ class PaymentController extends Controller
         }
 
         $payment->update(['status' => $request->status]);
+
+        // Notify the tenant about status update
+        $statusLabel = $request->status === 'paid' ? 'reçu' : ($request->status === 'late' ? 'en retard' : 'en attente');
+        $payment->tenant->notify(new GeneralNotification([
+            'title' => 'Mise à jour paiement',
+            'message' => "Le statut de votre paiement de {$payment->amount} DH est désormais : {$statusLabel}.",
+            'type' => 'payment',
+            'link' => "/dashboard/client",
+        ]));
 
         return response()->json([
             'success' => true,

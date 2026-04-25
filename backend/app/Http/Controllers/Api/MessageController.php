@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\GeneralNotification;
 
 class MessageController extends Controller
 {
@@ -125,8 +126,17 @@ class MessageController extends Controller
                     'body' => $request->body
                 ]);
 
-                // ICI: Déclencher l'événement Real-time (MessageSent)
-                // broadcast(new \App\Events\MessageSent($message))->toOthers();
+                // Déclencher l'événement Real-time (Notification)
+                $receiver = User::find($receiverId);
+                if ($receiver) {
+                    $receiver->notify(new GeneralNotification([
+                        'title' => 'Nouveau message',
+                        'message' => "Vous avez reçu un message de {$user->name}",
+                        'type' => 'message',
+                        'link' => '/messages',
+                        'icon' => 'chat'
+                    ]));
+                }
 
                 return response()->json([
                     'success' => true,

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Requests\StoreContractRequest;
+use App\Notifications\GeneralNotification;
 
 class ContractController extends Controller
 {
@@ -108,6 +109,24 @@ public function store(StoreContractRequest $request)
         // Mettre à jour le statut du bien et de la demande
         $property->update(['status' => $request->contract_type === 'rent' ? 'rented' : 'sold']);
         $rentalRequest->update(['status' => 'finalized']);
+        
+        // Notify the tenant/buyer
+        $rentalRequest->user->notify(new GeneralNotification([
+            'title' => 'Nouveau contrat disponible',
+            'message' => "Un nouveau contrat a été créé pour le bien : {$property->title}.",
+            'type' => 'contract',
+            'link' => "/contracts/{$contract->id}",
+        ]));
+
+        // Notify the owner/seller if different from agent
+        if ($property->owner_id && $property->owner_id !== $property->user_id) {
+            $property->owner->notify(new GeneralNotification([
+                'title' => 'Nouveau contrat signé',
+                'message' => "Votre bien {$property->title} a fait l'objet d'un nouveau contrat.",
+                'type' => 'contract',
+                'link' => "/contracts/{$contract->id}",
+            ]));
+        }
 
         return response()->json([
             'success' => true,
@@ -185,6 +204,19 @@ public function store(StoreContractRequest $request)
             }
 
             $contract->update(['status' => $request->status]);
+
+            // Notify parties about status change
+            $statusLabel = $request->status === 'terminated' ? 'résilié' : ($request->status === 'expired' ? 'expiré' : 'activé');
+            $message = "Le statut de votre contrat {$contract->contract_number} est désormais : {$statusLabel}.";
+            
+            if ($contract->tenant) {
+                $contract->tenant->notify(new GeneralNotification([
+                    'title' => 'Mise à jour contrat',
+                    'message' => $message,
+                    'type' => 'contract',
+                    'link' => "/contracts/{$contract->id}",
+                ]));
+            }
 
             return response()->json([
                 'success' => true,

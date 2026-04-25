@@ -3,7 +3,7 @@ import api from './api';
 export const notificationService = {
   getAll: (params) => api.get('/notifications', { params }),
   getUnreadCount: () => api.get('/notifications/unread-count'),
-  markRead: (id) => api.post(`/notifications/${id}/mark-read`),
-  markAllRead: () => api.post('/notifications/mark-all-read'),
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllRead: () => api.put('/notifications/read-all'),
   delete: (id) => api.delete(`/notifications/${id}`)
 };

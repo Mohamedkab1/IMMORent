@@ -26,6 +26,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AddProperty from './pages/AddProperty';
 import Messages from './pages/Messages';
 import CreateContract from './pages/CreateContract';
+import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
 
 import { ToastContainer } from 'react-toastify';
@@ -61,6 +62,7 @@ function App() {
                   <Route path="/contracts/:id" element={<ProtectedRoute><ContractDetail /></ProtectedRoute>} />
                   <Route path="/requests/new" element={<ProtectedRoute><NewRequest /></ProtectedRoute>} />
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   
                   {/* Dashboard Routes with specific roles */}
                   <Route path="/dashboard/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />

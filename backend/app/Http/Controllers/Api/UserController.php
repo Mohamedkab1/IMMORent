@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
+use App\Notifications\GeneralNotification;
+use Illuminate\Support\Facades\Notification;
 
 class UserController extends Controller
 {
@@ -249,6 +251,15 @@ class UserController extends Controller
 
         $user->agent_status = 'pending';
         $user->save();
+        
+        // Notify all admins about the new agent request
+        $admins = User::whereHas('role', function($q) { $q->where('slug', 'admin'); })->get();
+        Notification::send($admins, new GeneralNotification([
+            'title' => 'Nouvelle demande agent',
+            'message' => "L'utilisateur {$user->name} souhaite devenir agent.",
+            'type' => 'agent_request',
+            'link' => '/admin/agent-requests',
+        ]));
 
         return response()->json([
             'success' => true,
@@ -309,6 +320,16 @@ class UserController extends Controller
         }
 
         $user->save();
+
+        // Notify user about their agent request status
+        $user->notify(new GeneralNotification([
+            'title' => $status === 'approved' ? 'Demande agent acceptée' : 'Demande agent refusée',
+            'message' => $status === 'approved' 
+                ? "Félicitations ! Vous êtes maintenant agent sur IMMORent." 
+                : "Désolé, votre demande pour devenir agent a été refusée.",
+            'type' => 'agent_request_processed',
+            'link' => $status === 'approved' ? '/dashboard/agent' : '/profile',
+        ]));
 
         return response()->json([
             'success' => true,
