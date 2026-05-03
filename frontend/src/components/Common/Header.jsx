@@ -5,6 +5,7 @@ import { fr } from 'date-fns/locale';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useFavorites } from '../../context/FavoritesContext';
 import { notificationService } from '../../services/notifications';
 import echo, { updateEchoToken } from '../../services/echo';
 import logo from '../../assets/IMMORent.jpeg';
@@ -23,13 +24,15 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   BanknotesIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { t, language, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { favoritesCount } = useFavorites();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -236,6 +239,20 @@ const Header = () => {
             {/* Auth section */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
+
+                {/* Favoris */}
+                <Link 
+                  to="/favoris"
+                  className="relative p-2.5 text-text-sub hover:text-rose-500 bg-bg-secondary rounded-xl transition-all"
+                  title={t('nav.favorites', 'Mes Favoris')}
+                >
+                  <HeartIcon className="w-5 h-5" />
+                  {favoritesCount > 0 && (
+                    <span className="absolute top-2 right-2 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                      {favoritesCount > 9 ? '9+' : favoritesCount}
+                    </span>
+                  )}
+                </Link>
 
                 {/* Notifications */}
                 <div className="relative">

@@ -52,6 +52,10 @@ const AgentDashboard = () => {
     monthlyRevenue: 0,
     pendingReviews: 0
   });
+  const [requestFilter, setRequestFilter] = useState('all'); // all, pending, processed
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     loadAllData();
@@ -171,26 +175,17 @@ const AgentDashboard = () => {
     }
   };
 
-  const handleProcessRequest = async (requestId, status) => {
-    const actionText = status === 'approved' ? 'approuver' : 'refuser';
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${actionText} cette demande ?`)) {
-      return;
-    }
-
+  const handleProcessRequest = async (requestId, status, reason = null) => {
     try {
-      let rejectionReason = null;
-      if (status === 'rejected') {
-        rejectionReason = prompt('Motif du refus :');
-        if (!rejectionReason) return;
-      }
-
       const response = await requestService.process(requestId, {
         status,
-        rejection_reason: rejectionReason
+        rejection_reason: reason
       });
       
       if (response.success) {
         toast.success(`Demande ${status === 'approved' ? 'approuvée' : 'refusée'} avec succès`);
+        setShowRejectModal(false);
+        setRejectionReason('');
         
         if (status === 'approved') {
           navigate(`/contracts/new?request=${requestId}`);
@@ -203,6 +198,12 @@ const AgentDashboard = () => {
     } catch (error) {
       toast.error('Erreur lors du traitement de la demande');
     }
+  };
+
+  const openRejectModal = (id) => {
+    setSelectedRequestId(id);
+    setRejectionReason('');
+    setShowRejectModal(true);
   };
 
   const handleProcessReview = async (reviewId, status) => {
@@ -406,7 +407,7 @@ const AgentDashboard = () => {
                        </div>
                        <div className="flex gap-2 text-right">
                          <button onClick={() => handleProcessRequest(request.id, 'approved')} className="text-xs font-bold text-green-600 hover:underline">{t('common.approve')}</button>
-                         <button onClick={() => handleProcessRequest(request.id, 'rejected')} className="text-xs font-bold text-red-600 hover:underline">{t('common.reject')}</button>
+                         <button onClick={() => openRejectModal(request.id)} className="text-xs font-bold text-red-600 hover:underline">{t('common.reject')}</button>
                        </div>
                     </div>
                   ))}
@@ -520,10 +521,24 @@ const AgentDashboard = () => {
           <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
             <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
               <h2 className="text-lg font-bold text-text-main">{t('agent.requests.title')}</h2>
-              <div className="flex gap-2">
-                <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-500 rounded-full text-xs font-bold">
-                  {t('agent.requests.pending_count', { count: requests.filter(r => r.status === 'pending').length })}
-                </span>
+              <div className="flex bg-bg-card p-1 rounded-xl border border-border-main">
+                {[
+                  { id: 'all', label: 'Toutes' },
+                  { id: 'pending', label: 'En attente' },
+                  { id: 'processed', label: 'Traitées' }
+                ].map(filter => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setRequestFilter(filter.id)}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      requestFilter === filter.id 
+                        ? 'bg-primary text-white' 
+                        : 'text-text-sub hover:text-text-main'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -538,7 +553,13 @@ const AgentDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-main">
-                  {requests.map(request => (
+                  {requests
+                    .filter(r => {
+                      if (requestFilter === 'pending') return r.status === 'pending';
+                      if (requestFilter === 'processed') return r.status === 'approved' || r.status === 'rejected';
+                      return true;
+                    })
+                    .map(request => (
                     <tr key={request.id} className="hover:bg-bg-soft/50 transition-colors">
                       <td className="p-4">
                         <div className="font-bold text-text-main text-sm">{request.user?.name}</div>
@@ -551,7 +572,14 @@ const AgentDashboard = () => {
                       <td className="p-4 text-sm text-text-sub">
                         {new Date(request.created_at).toLocaleDateString(language)}
                       </td>
-                      <td className="p-4 text-center">{getStatusBadge(request.status)}</td>
+                      <td className="p-4 text-center">
+                        {getStatusBadge(request.status)}
+                        {request.status === 'rejected' && request.rejection_reason && (
+                          <p className="text-[10px] text-red-500 mt-1 italic max-w-[150px] mx-auto line-clamp-1" title={request.rejection_reason}>
+                            {request.rejection_reason}
+                          </p>
+                        )}
+                      </td>
                       <td className="p-4 text-right">
                         {request.status === 'pending' ? (
                           <div className="flex justify-end gap-3">
@@ -562,7 +590,7 @@ const AgentDashboard = () => {
                               <CheckCircleIcon className="w-4 h-4" /> {t('common.approve')}
                             </button>
                             <button 
-                              onClick={() => handleProcessRequest(request.id, 'rejected')}
+                              onClick={() => openRejectModal(request.id)}
                               className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
                             >
                               <XCircleIcon className="w-4 h-4" /> {t('common.reject')}
@@ -709,6 +737,47 @@ const AgentDashboard = () => {
         )}
 
       </main>
+
+      {/* Modale de Refus */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-bg-card w-full max-w-md rounded-3xl border border-border-main shadow-huge p-8 animate-scale-up">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center text-red-600">
+                <XCircleIcon className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-text-main">Motif du refus</h3>
+                <p className="text-sm text-text-sub">Indiquez la raison pour laquelle vous refusez cette demande.</p>
+              </div>
+            </div>
+
+            <textarea
+              className="w-full bg-bg-soft border border-border-main rounded-2xl p-4 text-sm text-text-main focus:ring-2 focus:ring-red-500 outline-none min-h-[120px] mb-6 transition-all"
+              placeholder="Ex: Le dossier est incomplet ou le bien n'est plus disponible..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              required
+            ></textarea>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className="flex-1 py-3 px-4 bg-bg-soft text-text-main font-bold rounded-xl hover:bg-border-main transition-all"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => handleProcessRequest(selectedRequestId, 'rejected', rejectionReason)}
+                disabled={!rejectionReason.trim()}
+                className="flex-1 py-3 px-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirmer le refus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

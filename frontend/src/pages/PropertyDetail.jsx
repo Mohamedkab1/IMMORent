@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { propertyService } from '../services/properties';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { messageService } from '../services/messages';
 import { 
@@ -36,7 +37,7 @@ const PropertyDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -185,34 +186,27 @@ const PropertyDetail = () => {
     navigate(`/requests/new?property=${id}`);
   };
 
+  const handlePayment = () => {
+    if (!isAuthenticated) {
+      toast.info('Veuillez vous connecter pour procéder au paiement');
+      navigate('/login');
+      return;
+    }
+    navigate(`/properties/${id}/payment`, { state: { property } });
+  };
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success('Lien copié dans le presse-papier');
   };
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = () => {
     if (!isAuthenticated) {
       toast.info('Veuillez vous connecter pour ajouter aux favoris');
       navigate('/login');
       return;
     }
-
-    try {
-       setIsFavorite(!isFavorite); // Optimistic UI
-       /* 
-       const response = await fetch('/api/favorites/toggle', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-         body: JSON.stringify({ property_id: property.id })
-       });
-       const data = await response.json();
-       setIsFavorite(data.status === 'added');
-       */
-       toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
-    } catch (error) {
-       setIsFavorite(!isFavorite); // Rollback
-       toast.error('Erreur de connexion');
-    }
+    toggleFavorite(property);
   };
 
   if (loading) {
@@ -258,9 +252,9 @@ const PropertyDetail = () => {
         <div className="flex gap-2">
           <button 
             onClick={handleToggleFavorite} 
-            className={`p-3 bg-bg-card border border-border-main rounded-xl transition-all shadow-main ${isFavorite ? 'text-rose-500 border-rose-200' : 'text-text-sub hover:text-rose-500 hover:border-rose-200'}`}
+            className={`p-3 bg-bg-card border border-border-main rounded-xl transition-all shadow-main ${isFavorite(property.id) ? 'text-rose-500 border-rose-200' : 'text-text-sub hover:text-rose-500 hover:border-rose-200'}`}
           >
-            {isFavorite ? <HeartIconSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
+            {isFavorite(property.id) ? <HeartIconSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
           </button>
           <button className="p-3 bg-bg-card border border-border-main rounded-xl text-text-sub hover:text-primary hover:border-primary/20 transition-all shadow-main">
             <ShareIcon className="w-5 h-5" />
@@ -557,9 +551,14 @@ const PropertyDetail = () => {
                       && ['available', 'rented', 'reserved'].includes(property.status)
                       && isAuthenticated
                       && user?.role?.slug === 'client' && (
-                      <button onClick={handleRequestRental} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
-                        Réserver pour des dates disponibles
-                      </button>
+                      <div className="flex flex-col gap-2">
+                        <button onClick={handleRequestRental} className="w-full py-4 bg-bg-soft text-primary hover:bg-primary/10 rounded-xl font-bold transition-all shadow-sm border border-primary/20">
+                          Demande de location
+                        </button>
+                        <button onClick={handlePayment} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
+                          Payer & Réserver
+                        </button>
+                      </div>
                     )}
                     {/* Info : bien loué mais dates futures réservables */}
                     {property.status === 'rented' && property.transaction_type === 'rent' && (

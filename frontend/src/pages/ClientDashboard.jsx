@@ -43,7 +43,16 @@ const ClientDashboard = () => {
 
   useEffect(() => {
     loadAllData();
-  }, []);
+    
+    // Polling toutes les 30 secondes
+    const interval = setInterval(() => {
+      if (activeTab === 'requests') {
+        loadRequests();
+      }
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -291,14 +300,33 @@ const ClientDashboard = () => {
                            <p className="font-bold text-text-main">{request.property?.title}</p>
                            <p className="text-xs text-text-muted">{request.property?.city}</p>
                          </td>
-                         <td className="p-6 text-center">{getStatusBadge(request.status)}</td>
-                         <td className="p-6 text-right">
-                            <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">Détails</Link>
-                            {request.status === 'pending' && (
-                              <button onClick={() => cancelRequest(request.id)} className="ms-4 text-rose-500 font-bold text-sm hover:underline">Annuler</button>
-                            )}
-                         </td>
-                       </tr>
+                          <td className="p-6 text-center">
+                             {getStatusBadge(request.status)}
+                             {request.status === 'rejected' && request.rejection_reason && (
+                               <p className="text-[10px] text-red-500 mt-1 italic max-w-[150px] mx-auto line-clamp-2" title={request.rejection_reason}>
+                                 "{request.rejection_reason}"
+                               </p>
+                             )}
+                          </td>
+                          <td className="p-6 text-right">
+                             <div className="flex flex-col items-end gap-2">
+                                <div className="flex gap-4">
+                                  <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">Détails</Link>
+                                  {request.status === 'pending' && (
+                                    <button onClick={() => cancelRequest(request.id)} className="text-rose-500 font-bold text-sm hover:underline">Annuler</button>
+                                  )}
+                                </div>
+                                {request.status === 'approved' && (
+                                  <Link 
+                                    to={`/properties/${request.property_id}/payment`} 
+                                    className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
+                                  >
+                                    Payer maintenant
+                                  </Link>
+                                )}
+                             </div>
+                          </td>
+                        </tr>
                      ))}
                    </tbody>
                  </table>

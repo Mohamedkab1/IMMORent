@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TestPdfController;
+use App\Http\Controllers\InvoiceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,6 +180,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========== PAIEMENTS ==========
     // Routes pour les clients
     Route::get('/my/payments', [PaymentController::class, 'myPayments']);
+    Route::post('/payments/create-intent', [PaymentController::class, 'createIntent']);
+    Route::post('/payments/confirm', [PaymentController::class, 'confirm']);
+    
+    // ========== FACTURES ==========
+    Route::get('/invoices/{id}/download', [InvoiceController::class, 'download']);
     
     // Routes pour les agents et admin
     Route::middleware(['agent'])->group(function () {

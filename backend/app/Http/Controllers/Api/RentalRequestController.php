@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreRentalRequestRequest;
 use App\Notifications\GeneralNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewRentalRequestMail;
+use App\Mail\RentalRequestStatusMail;
 
 class RentalRequestController extends Controller
 {
@@ -147,6 +150,9 @@ class RentalRequestController extends Controller
                     'link' => '/dashboard/agent',
                     'icon' => 'document-text'
                 ]));
+                
+                // Envoi de l'email
+                Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
             }
 
             return response()->json([
@@ -251,6 +257,9 @@ class RentalRequestController extends Controller
                     'link' => '/dashboard/client',
                     'icon' => $request->status === 'approved' ? 'check-circle' : 'x-circle'
                 ]));
+
+                // Envoi de l'email au client
+                Mail::to($client->email)->send(new RentalRequestStatusMail($rentalRequest->load(['property', 'user'])));
             }
             
             Log::info('Demande traitée', [

@@ -31,14 +31,16 @@ export const authService = {
   },
 
   async logout() {
+    // Always clear local state first so the user is never stuck logged in
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     try {
       const response = await api.post('/logout');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
       return response.data;
     } catch (error) {
-      console.error('Erreur logout:', error);
-      throw error;
+      // Log but don't rethrow — local logout already succeeded
+      console.warn('Erreur logout API (ignorée, déconnexion locale effectuée):', error?.response?.status);
+      return { success: true };
     }
   },
 
