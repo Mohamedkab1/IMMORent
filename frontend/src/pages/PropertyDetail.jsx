@@ -75,9 +75,9 @@ const PropertyDetail = () => {
       if (response.success && response.data) {
         if (response.data.features) response.data.features = parseFeatures(response.data.features);
         setProperty(response.data);
-      } else setError('Bien non trouvé');
+      } else setError(t('prop.detail.not_found'));
     } catch (err) {
-      setError('Erreur lors du chargement');
+      setError(t('prop.detail.load_error'));
     } finally {
       setLoading(false);
     }
@@ -102,13 +102,13 @@ const PropertyDetail = () => {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter pour laisser un avis');
+      toast.info(t('prop.detail.review.login_required'));
       navigate('/login');
       return;
     }
 
     if (newComment.length < 5) {
-      toast.warning('Le commentaire doit faire au moins 5 caractères');
+      toast.warning(t('prop.detail.review.min_length'));
       return;
     }
 
@@ -120,13 +120,13 @@ const PropertyDetail = () => {
       });
 
       if (response.success) {
-        toast.success(response.message || 'Merci ! Votre avis est en attente de modération.');
+        toast.success(response.message || t('prop.detail.review.submitted'));
         setNewComment('');
         setNewRating(5);
         fetchReviews(); // Refresh list
       }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Erreur lors de l\'envoi de l\'avis';
+      const msg = err.response?.data?.message || t('prop.detail.review.error');
       toast.error(msg);
     } finally {
       setSubmittingReview(false);
@@ -135,7 +135,7 @@ const PropertyDetail = () => {
 
   const handleContact = () => {
     if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter');
+      toast.info(t('auth.login.required'));
       navigate('/login');
       return;
     }
@@ -144,7 +144,7 @@ const PropertyDetail = () => {
 
   const sendContactMessage = async () => {
     if (!contactMessage.trim()) {
-      toast.warning('Veuillez écrire un message');
+      toast.warning(t('prop.detail.contact.empty'));
       return;
     }
     
@@ -157,13 +157,13 @@ const PropertyDetail = () => {
       });
       
       if (response.success) {
-        toast.success('Message envoyé ! Redirection vers la messagerie...');
+        toast.success(t('prop.detail.contact.sent'));
         setTimeout(() => {
           navigate('/messages');
         }, 1500);
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'envoi du message');
+      toast.error(t('prop.detail.contact.error'));
     } finally {
       setSendingMessage(false);
     }
@@ -171,16 +171,16 @@ const PropertyDetail = () => {
 
   const handleRequestRental = () => {
     if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter');
+      toast.info(t('auth.login.required'));
       navigate('/login');
       return;
     }
     if (user?.role?.slug !== 'client') {
-      toast.error('Seuls les clients peuvent faire une demande');
+      toast.error(t('prop.detail.rental.clients_only'));
       return;
     }
     if (property?.transaction_type !== 'rent') {
-      toast.error('Ce bien n\'est pas disponible à la location');
+      toast.error(t('prop.detail.rental.not_rentable'));
       return;
     }
     navigate(`/requests/new?property=${id}`);
@@ -188,7 +188,7 @@ const PropertyDetail = () => {
 
   const handlePayment = () => {
     if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter pour procéder au paiement');
+      toast.info(t('prop.detail.payment.login_required'));
       navigate('/login');
       return;
     }
@@ -197,12 +197,12 @@ const PropertyDetail = () => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success('Lien copié dans le presse-papier');
+    toast.success(t('prop.detail.link_copied'));
   };
 
   const handleToggleFavorite = () => {
     if (!isAuthenticated) {
-      toast.info('Veuillez vous connecter pour ajouter aux favoris');
+      toast.info(t('prop.detail.fav.login_required'));
       navigate('/login');
       return;
     }
@@ -213,7 +213,7 @@ const PropertyDetail = () => {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
         <div className="w-16 h-16 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-text-muted font-medium">Chargement des détails...</p>
+        <p className="text-text-muted font-medium">{t('prop.detail.loading')}</p>
       </div>
     );
   }
@@ -223,10 +223,10 @@ const PropertyDetail = () => {
       <div className="min-h-screen bg-bg-soft flex justify-center items-center px-4">
         <div className="bg-bg-card p-8 rounded-2xl shadow-sm text-center max-w-md w-full border border-border-main">
           <XMarkIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-text-main mb-2">Erreur</h2>
-          <p className="text-text-sub mb-6">{error || 'Bien introuvable.'}</p>
+          <h2 className="text-xl font-bold text-text-main mb-2">{t('common.error')}</h2>
+          <p className="text-text-sub mb-6">{error || t('prop.detail.not_found')}</p>
           <button onClick={() => navigate('/properties')} className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
-            Retour aux biens
+            {t('prop.detail.back_to_list')}
           </button>
         </div>
       </div>
@@ -236,7 +236,7 @@ const PropertyDetail = () => {
   const features = parseFeatures(property.features);
   const images = property.images?.length > 0 ? property.images : [null];
   const defaultImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80';
-  const agent = property.user || { name: 'Agent', email: 'contact@immorent.com', phone: 'Non renseigné' };
+  const agent = property.user || { name: t('common.agent'), email: 'contact@immorent.com', phone: t('common.no_phone') };
 
   return (
     <div className="min-h-screen bg-bg-soft transition-colors duration-300 pb-12">
@@ -271,7 +271,7 @@ const PropertyDetail = () => {
                 {property.transaction_type === 'rent' ? t('prop.transaction.rent') : t('prop.transaction.sale')}
               </span>
               <span className="px-3 py-1 bg-bg-card text-text-sub rounded-full text-xs font-bold border border-border-main">
-                {property.type_label}
+                {t(property.type_label)}
               </span>
               {property.status === 'available' && (
                 <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-500 rounded-full text-xs font-bold">
@@ -280,31 +280,31 @@ const PropertyDetail = () => {
               )}
               {property.status === 'reserved' && (
                 <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded-full text-xs font-bold border border-rose-200 dark:border-rose-800/30">
-                  🚫 Déjà réservé
+                  🚫 {t('prop.status.reserved')}
                 </span>
               )}
               {property.status === 'rented' && (
                 <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-xs font-bold border border-orange-200 dark:border-orange-800/30">
-                  🔑 Loué
+                  🔑 {t('prop.status.rented')}
                 </span>
               )}
               {property.status === 'sold' && (
                 <span className="px-3 py-1 bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400 rounded-full text-xs font-bold border border-gray-200 dark:border-gray-800/30">
-                  🏷️ Vendu
+                  🏷️ {t('prop.status.sold')}
                 </span>
               )}
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-text-main mb-2 tracking-tight">{property.title}</h1>
+            <h1 className="text-3xl md:text-5xl font-black text-text-main mb-2 tracking-tight">{t(property.title)}</h1>
             <div className="flex items-center gap-4 mb-3 text-text-sub">
               <p className="flex items-center gap-2 font-medium">
                 <MapPinIcon className="w-5 h-5 text-primary" />
-                {property.city} {property.postal_code}
+                {t(property.city)} {property.postal_code}
               </p>
               {totalReviews > 0 && (
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-bg-card rounded-xl border border-border-main shadow-main">
                   <StarIconSolid className="w-4 h-4 text-amber-500" />
                   <span className="text-sm font-black text-text-main">{averageRating}</span>
-                  <span className="text-xs text-text-muted">({totalReviews} avis)</span>
+                  <span className="text-xs text-text-muted">({totalReviews} {t('prop.detail.review.count')})</span>
                 </div>
               )}
             </div>
@@ -313,7 +313,7 @@ const PropertyDetail = () => {
           <div className="text-start md:text-end">
             <div className="text-sm font-black text-text-muted uppercase tracking-widest">{t('prop.price')}</div>
             <div className="text-4xl md:text-5xl font-black text-primary dark:text-secondary mt-1">
-              {property.price?.toLocaleString('fr-FR')} <span className="text-xl font-bold text-text-muted">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
+              {property.price?.toLocaleString(t('common.locale'))} <span className="text-xl font-bold text-text-muted">{t('prop.currency')}{property.transaction_type === 'rent' ? t('prop.per_month') : ''}</span>
             </div>
           </div>
         </div>
@@ -353,10 +353,10 @@ const PropertyDetail = () => {
             {/* Highlights Grid */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { icon: ArrowsRightLeftIcon, val: `${property.surface} m²`, label: 'Surface' },
-                { icon: BuildingOfficeIcon, val: `${property.rooms} p.`, label: 'Pièces' },
-                { icon: HomeIcon, val: `${property.bedrooms || 0} ch.`, label: 'Chambres' },
-                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0} sdb`, label: 'Salles de bain' }
+                { icon: ArrowsRightLeftIcon, val: `${property.surface} ${t('prop.surface_unit')}`, label: t('prop.detail.surface') },
+                { icon: BuildingOfficeIcon, val: `${property.rooms}`, label: t('prop.detail.rooms') },
+                { icon: HomeIcon, val: `${property.bedrooms || 0}`, label: t('prop.detail.bedrooms') },
+                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0}`, label: t('prop.detail.bathrooms') }
               ].map((item, i) => (
                 <div key={i} className="bg-bg-card p-6 rounded-2xl border border-border-main flex flex-col items-center justify-center text-center shadow-sm">
                   <item.icon className="w-8 h-8 text-primary dark:text-secondary mb-3" />
@@ -368,9 +368,9 @@ const PropertyDetail = () => {
 
             {/* Description */}
             <section className="bg-bg-card p-8 rounded-3xl border border-border-main shadow-sm">
-              <h2 className="text-2xl font-bold text-text-main mb-6">Description du bien</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-6">{t('prop.detail.description')}</h2>
               <div className="prose dark:prose-invert max-w-none text-text-sub leading-relaxed">
-                <p className="whitespace-pre-line">{property.description}</p>
+                <p className="whitespace-pre-line">{t(property.description)}</p>
               </div>
             </section>
 
@@ -382,7 +382,7 @@ const PropertyDetail = () => {
                   {features.map((f, i) => (
                     <div key={i} className="flex items-center gap-3 p-4 bg-bg-soft rounded-xl border border-border-main">
                       <CheckCircleIcon className="w-6 h-6 text-green-500 flex-shrink-0" />
-                      <span className="text-text-main font-medium">{f}</span>
+                      <span className="text-text-main font-medium">{t(f.trim())}</span>
                     </div>
                   ))}
                 </div>
@@ -395,7 +395,7 @@ const PropertyDetail = () => {
                 <div>
                   <h2 className="text-2xl font-bold text-text-main flex items-center gap-3">
                     <ChatBubbleLeftRightIcon className="w-7 h-7 text-primary" />
-                    Avis des utilisateurs
+                    {t('prop.detail.review.title')}
                   </h2>
                 </div>
                 {totalReviews > 0 && (
@@ -406,7 +406,7 @@ const PropertyDetail = () => {
                         <StarIconSolid key={star} className={`w-4 h-4 ${star <= Math.round(averageRating) ? 'text-amber-500' : 'text-text-muted dark:text-border-main'}`} />
                       ))}
                     </div>
-                    <div className="text-xs font-bold text-text-muted uppercase tracking-widest">{totalReviews} avis</div>
+                    <div className="text-xs font-bold text-text-muted uppercase tracking-widest">{totalReviews} {t('prop.detail.review.count')}</div>
                   </div>
                 )}
               </div>
@@ -416,13 +416,13 @@ const PropertyDetail = () => {
                 {isAuthenticated ? (
                   property.user_id === user.id ? (
                     <div className="text-center py-4">
-                      <p className="text-text-muted italic">Vous ne pouvez pas laisser d'avis sur votre propre bien.</p>
+                      <p className="text-text-muted italic">{t('prop.detail.review.own_property')}</p>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmitReview}>
-                      <h3 className="font-bold text-text-main mb-4">Laissez votre avis</h3>
+                      <h3 className="font-bold text-text-main mb-4">{t('prop.detail.review.form_title')}</h3>
                       <div className="flex items-center gap-2 mb-6">
-                        <span className="text-sm font-semibold text-text-muted mr-2">Votre note :</span>
+                        <span className="text-sm font-semibold text-text-muted mr-2">{t('prop.detail.review.your_rating')}:</span>
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -441,7 +441,7 @@ const PropertyDetail = () => {
                       <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Qu'avez-vous pensé de ce bien ?"
+                        placeholder={t('prop.detail.review.placeholder')}
                         className="w-full p-4 mb-4 bg-bg-card border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary text-text-main resize-none"
                         rows="3"
                         required
@@ -451,15 +451,15 @@ const PropertyDetail = () => {
                         disabled={submittingReview}
                         className="px-8 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-all shadow-md disabled:opacity-50"
                       >
-                        {submittingReview ? 'Publication...' : 'Publier mon avis'}
+                        {submittingReview ? t('common.loading') : t('prop.detail.review.submit')}
                       </button>
                     </form>
                   )
                 ) : (
                   <div className="text-center py-6">
-                    <p className="text-text-sub mb-4">Vous devez être connecté pour laisser un avis.</p>
+                    <p className="text-text-sub mb-4">{t('prop.detail.review.login_prompt')}</p>
                     <Link to="/login" className="inline-flex items-center gap-2 px-6 py-2 bg-secondary text-primary rounded-xl font-bold hover:shadow-md transition-all">
-                      Se connecter
+                      {t('auth.login.title')}
                     </Link>
                   </div>
                 )}
@@ -470,7 +470,7 @@ const PropertyDetail = () => {
                 {reviewsLoading ? (
                   <div className="flex flex-col items-center py-8">
                     <div className="w-10 h-10 border-4 border-border-main border-t-primary rounded-full animate-spin mb-3"></div>
-                    <p className="text-text-muted text-sm italic">Chargement des avis...</p>
+                    <p className="text-text-muted text-sm italic">{t('prop.detail.review.loading')}</p>
                   </div>
                 ) : reviews.length > 0 ? (
                   reviews.map((review) => (
@@ -483,7 +483,7 @@ const PropertyDetail = () => {
                           <div>
                             <div className="font-bold text-text-main text-sm">{review.user?.name}</div>
                             <div className="text-xs text-text-muted font-medium">
-                              {new Date(review.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              {new Date(review.created_at).toLocaleDateString(t('common.locale'), { day: 'numeric', month: 'long', year: 'numeric' })}
                             </div>
                           </div>
                         </div>
@@ -501,7 +501,7 @@ const PropertyDetail = () => {
                 ) : (
                   <div className="text-center py-12">
                      <StarIconOutline className="w-12 h-12 text-text-muted dark:text-border-main mx-auto mb-4" />
-                     <p className="text-text-muted font-medium italic">Aucun avis pour le moment.</p>
+                     <p className="text-text-muted font-medium italic">{t('prop.detail.review.empty')}</p>
                   </div>
                 )}
               </div>
@@ -515,7 +515,7 @@ const PropertyDetail = () => {
               
               {/* Agent Card */}
               <div className="bg-bg-card p-8 rounded-3xl border border-border-main shadow-huge">
-                <h3 className="text-lg font-bold text-text-main mb-6">Votre conseiller</h3>
+                <h3 className="text-lg font-bold text-text-main mb-6">{t('prop.detail.agent.title')}</h3>
                 
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-2xl font-black shadow-lg">
@@ -523,7 +523,7 @@ const PropertyDetail = () => {
                   </div>
                   <div>
                     <div className="font-bold text-text-main text-lg">{agent.name}</div>
-                    <div className="text-sm font-medium text-text-muted">Agent IMMORent</div>
+                    <div className="text-sm font-medium text-text-muted">{t('prop.detail.agent.label')}</div>
                   </div>
                 </div>
 
@@ -545,7 +545,7 @@ const PropertyDetail = () => {
                 {!showContactForm ? (
                   <div className="space-y-3">
                     <button onClick={handleContact} className="w-full py-4 bg-bg-card border-2 border-border-main text-text-main hover:bg-bg-soft rounded-xl font-bold transition-all shadow-sm">
-                      Envoyer un message
+                      {t('prop.detail.contact.send_btn')}
                     </button>
                     {property.transaction_type === 'rent'
                       && ['available', 'rented', 'reserved'].includes(property.status)
@@ -553,10 +553,10 @@ const PropertyDetail = () => {
                       && user?.role?.slug === 'client' && (
                       <div className="flex flex-col gap-2">
                         <button onClick={handleRequestRental} className="w-full py-4 bg-bg-soft text-primary hover:bg-primary/10 rounded-xl font-bold transition-all shadow-sm border border-primary/20">
-                          Demande de location
+                          {t('prop.detail.rental.request_btn')}
                         </button>
                         <button onClick={handlePayment} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
-                          Payer & Réserver
+                          {t('prop.detail.rental.pay_btn')}
                         </button>
                       </div>
                     )}
@@ -565,8 +565,8 @@ const PropertyDetail = () => {
                       <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 text-blue-700 dark:text-blue-400 rounded-xl text-sm font-medium">
                         <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-bold mb-0.5">Bien actuellement loué</p>
-                          <p className="text-xs opacity-90">Ce bien est en cours de location. Vous pouvez néanmoins le réserver pour des dates futures libres — le système vérifiera automatiquement les disponibilités.</p>
+                          <p className="font-bold mb-0.5">{t('prop.detail.status.rented_title')}</p>
+                          <p className="text-xs opacity-90">{t('prop.detail.status.rented_desc')}</p>
                         </div>
                       </div>
                     )}
@@ -575,8 +575,8 @@ const PropertyDetail = () => {
                       <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-400 rounded-xl text-sm font-medium">
                         <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-bold mb-0.5">Déjà réservé sur certaines dates</p>
-                          <p className="text-xs opacity-90">Ce bien a une réservation en cours. Choisissez d'autres dates et le système vérifiera la disponibilité.</p>
+                          <p className="font-bold mb-0.5">{t('prop.detail.status.reserved_title')}</p>
+                          <p className="text-xs opacity-90">{t('prop.detail.status.reserved_desc')}</p>
                         </div>
                       </div>
                     )}
@@ -584,24 +584,24 @@ const PropertyDetail = () => {
                     {property.status === 'sold' && (
                       <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800/30 text-gray-700 dark:text-gray-400 rounded-xl text-sm font-medium">
                         <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <p>Ce bien a déjà été vendu et n'est plus disponible.</p>
+                        <p>{t('prop.detail.status.sold_desc')}</p>
                       </div>
                     )}
                     {property.transaction_type === 'sale' && ['available', 'reserved'].includes(property.status) && (
                       <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-500 rounded-xl text-sm font-medium">
                         <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0" />
-                        <p>Ce bien est à vendre. Veuillez contacter l'agent pour convenir d'une visite.</p>
+                        <p>{t('prop.detail.status.for_sale_desc')}</p>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="bg-bg-soft p-4 rounded-2xl border border-border-main">
-                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Votre message</label>
+                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('prop.detail.contact.label')}</label>
                     <textarea 
                       value={contactMessage} 
                       onChange={e => setContactMessage(e.target.value)} 
                       rows="4" 
-                      placeholder="Je suis intéressé par ce bien..."
+                      placeholder={t('prop.detail.contact.placeholder')}
                       className="w-full p-4 mb-4 bg-bg-card border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary text-text-main resize-none"
                     />
                     <div className="flex flex-col gap-2">
@@ -610,10 +610,10 @@ const PropertyDetail = () => {
                           disabled={sendingMessage}
                           className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md disabled:opacity-50"
                         >
-                          {sendingMessage ? 'Envoi...' : 'Envoyer'}
+                          {sendingMessage ? t('common.sending') : t('prop.detail.contact.send')}
                         </button>
                        <button onClick={() => setShowContactForm(false)} className="w-full py-3 bg-transparent text-text-muted hover:text-text-main rounded-xl font-bold transition-colors">
-                         Annuler
+                         {t('common.cancel')}
                        </button>
                     </div>
                   </div>
