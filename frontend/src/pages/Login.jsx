@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../context/LanguageContext';
 
 const Login = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,7 +30,7 @@ const Login = () => {
     
     try {
       const response = await login(formData.email, formData.password);
-      toast.success(response.message || 'Connexion réussie');
+      toast.success(response.message || t('auth.login.success'));
       
       const user = response.data.user;
       if (user.role?.slug === 'admin') {
@@ -39,7 +41,7 @@ const Login = () => {
         navigate('/dashboard/client');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Email ou mot de passe incorrect');
+      toast.error(error.response?.data?.message || t('auth.login.error'));
     } finally {
       setLoading(false);
     }
@@ -71,18 +73,18 @@ const Login = () => {
             IMMO<span className="text-secondary">Rent</span>
           </Link>
           <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-            Gérez vos biens <br />avec l'excellence <br />méritée.
+            {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
           </h2>
           <p className="text-xl text-white/80 max-w-md leading-relaxed mb-12">
-            La plateforme immobilière SaaS n°1 au Maroc pour les professionnels et les particuliers exigeants.
+            {t('auth.hero.subtitle')}
           </p>
           
           <ul className="space-y-4">
             {[
-              "Accès exclusif aux meilleurs biens",
-              "Gestion de contrats automatisée",
-              "Paiements sécurisés en temps réel",
-              "Support premium 24/7"
+              t('auth.hero.feature_1'),
+              t('auth.hero.feature_2'),
+              t('auth.hero.feature_3'),
+              t('auth.hero.feature_4')
             ].map((item, i) => (
               <li key={i} className="flex items-center text-white/90 font-medium">
                 <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
@@ -111,20 +113,20 @@ const Login = () => {
         
         <div className="w-full max-w-md mx-auto">
           <div className="mb-10">
-            <h1 className="text-3xl font-black text-text-main mb-3 tracking-tight">Connexion</h1>
-            <p className="text-text-sub font-medium">Bon retour parmi nous ! Veuillez entrer vos identifiants.</p>
+            <h1 className="text-3xl font-black text-text-main mb-3 tracking-tight">{t('auth.login.title')}</h1>
+            <p className="text-text-sub font-medium">{t('auth.login.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-text-sub" htmlFor="email">Adresse Email</label>
+              <label className="text-sm font-bold text-text-sub" htmlFor="email">{t('auth.login.email_label')}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="nom@exemple.ma"
+                placeholder={t('auth.login.email_placeholder')}
                 required
                 className="w-full px-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-text-muted"
                 disabled={loading}
@@ -133,8 +135,8 @@ const Login = () => {
 
             <div className="space-y-2">
               <div className="flex justify-between">
-                <label className="text-sm font-bold text-text-sub" htmlFor="password">Mot de passe</label>
-                <Link to="/forgot-password" title="Mot de passe oublié ?" className="text-sm font-bold text-primary hover:text-primary-light transition-colors">Oublié ?</Link>
+                <label className="text-sm font-bold text-text-sub" htmlFor="password">{t('auth.login.password_label')}</label>
+                <Link to="/forgot-password" title={t('auth.login.forgot_password')} className="text-sm font-bold text-primary hover:text-primary-light transition-colors">{t('auth.login.forgot')}</Link>
               </div>
               <div className="relative">
                 <input
@@ -172,7 +174,7 @@ const Login = () => {
                 className="h-4 w-4 text-primary focus:ring-primary border-border-main rounded bg-bg-soft"
               />
               <label htmlFor="rememberMe" className="ml-2 block text-sm font-medium text-text-sub">
-                Se souvenir de moi
+                {t('auth.login.remember')}
               </label>
             </div>
 
@@ -184,17 +186,17 @@ const Login = () => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Connexion en cours...
+                  {t('auth.login.submitting')}
                 </>
               ) : (
-                'Se connecter'
+                t('auth.login.submit')
               )}
             </button>
           </form>
 
           {/* Demo Accounts - Quick Login */}
           <div className="mt-12">
-            <p className="text-xs font-bold text-text-muted uppercase tracking-widest text-center mb-6">COMPTES DE DÉMONSTRATION</p>
+            <p className="text-xs font-bold text-text-muted uppercase tracking-widest text-center mb-6">{t('auth.login.demo_title')}</p>
             <div className="grid grid-cols-3 gap-3">
               {demoAccounts.map((acc, i) => (
                 <button
@@ -211,8 +213,8 @@ const Login = () => {
 
           <div className="mt-10 text-center">
             <p className="text-text-sub font-medium">
-              Pas encore de compte ?{' '}
-              <Link to="/register" className="text-primary font-bold hover:underline">S'inscrire gratuitement</Link>
+              {t('auth.login.no_account')}{' '}
+              <Link to="/register" className="text-primary font-bold hover:underline">{t('auth.login.register_link')}</Link>
             </p>
           </div>
         </div>

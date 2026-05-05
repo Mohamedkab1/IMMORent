@@ -126,18 +126,18 @@ const ClientDashboard = () => {
         toast.error(response.message);
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'annulation');
+      toast.error(t('profile.update_error', 'Erreur'));
     }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('En attente'), icon: ClockIcon },
-      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Approuvée'), icon: CheckCircleIcon },
-      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Refusée'), icon: XCircleIcon },
-      cancelled: { bg: 'bg-bg-card border border-border-main', text: 'text-text-muted', label: t('Annulée'), icon: XCircleIcon },
-      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('Actif'), icon: CheckCircleIcon },
-      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('Résilié'), icon: XCircleIcon },
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('common.status.pending'), icon: ClockIcon },
+      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.approved'), icon: CheckCircleIcon },
+      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.rejected'), icon: XCircleIcon },
+      cancelled: { bg: 'bg-bg-card border border-border-main', text: 'text-text-muted', label: t('common.status.cancelled'), icon: XCircleIcon },
+      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.active'), icon: CheckCircleIcon },
+      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.terminated'), icon: XCircleIcon },
     };
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
@@ -194,8 +194,8 @@ const ClientDashboard = () => {
         <div className="glass-panel rounded-3xl p-2 flex flex-wrap gap-2 mb-8 animate-fade-in rtl:flex-row-reverse">
           {[
             { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
-            { id: 'requests', label: t('client.requests.history', 'Demandes'), icon: ClipboardDocumentListIcon || BellIcon },
-            { id: 'contracts', label: t('client.contracts.active_title', 'Contrats'), icon: DocumentTextIcon },
+            { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
+            { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -236,7 +236,7 @@ const ClientDashboard = () => {
                 <div className="lg:col-span-2 bg-bg-card rounded-3xl border border-border-main p-8 shadow-main">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-text-main">{t('client.requests.recent')}</h2>
-                    <button onClick={() => setActiveTab('requests')} className="text-sm font-bold text-primary dark:text-secondary hover:underline">Voir tout</button>
+                    <button onClick={() => setActiveTab('requests')} className="text-sm font-bold text-primary dark:text-secondary hover:underline">{t('client.requests.view_all')}</button>
                   </div>
                   <div className="space-y-4">
                     {requests.slice(0, 3).map(request => (
@@ -246,7 +246,7 @@ const ClientDashboard = () => {
                             <HomeIcon className="w-6 h-6" />
                           </div>
                           <div>
-                            <p className="font-bold text-text-main line-clamp-1">{request.property?.title}</p>
+                            <p className="font-bold text-text-main line-clamp-1">{request.property?.title ? t(request.property.title) : ''}</p>
                             <p className="text-xs text-text-muted mt-0.5">{request.property?.city} • {getRequestTypeBadge(request.type).props.children[1]}</p>
                           </div>
                         </div>
@@ -260,15 +260,15 @@ const ClientDashboard = () => {
                 </div>
 
                 <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main h-fit">
-                   <h2 className="text-xl font-bold text-text-main mb-6">Support & Aide</h2>
+                   <h2 className="text-xl font-bold text-text-main mb-6">{t('client.support.title')}</h2>
                    <div className="space-y-4">
                       <Link to="/contact" className="flex items-center gap-4 p-4 bg-bg-soft rounded-2xl hover:bg-primary/5 transition-all group">
                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                             <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary" />
                          </div>
                          <div>
-                            <p className="text-sm font-bold text-text-main">Besoin d'aide ?</p>
-                            <p className="text-xs text-text-muted">Contactez un conseiller</p>
+                            <p className="text-sm font-bold text-text-main">{t('client.support.need_help')}</p>
+                            <p className="text-xs text-text-muted">{t('client.support.contact')}</p>
                          </div>
                       </Link>
                    </div>
@@ -286,10 +286,10 @@ const ClientDashboard = () => {
                  <table className="w-full text-left">
                    <thead>
                      <tr className="bg-bg-soft border-b border-border-main text-xs uppercase font-black text-text-muted tracking-widest">
-                       <th className="p-6">ID</th>
-                       <th className="p-6">Bien</th>
-                       <th className="p-6 text-center">Statut</th>
-                       <th className="p-6 text-right">Actions</th>
+                       <th className="p-6">{t('client.table.id')}</th>
+                       <th className="p-6">{t('client.table.property')}</th>
+                       <th className="p-6 text-center">{t('client.table.status')}</th>
+                       <th className="p-6 text-right">{t('client.table.actions')}</th>
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-border-main">
@@ -297,7 +297,7 @@ const ClientDashboard = () => {
                        <tr key={request.id} className="hover:bg-bg-soft/50 transition-colors">
                          <td className="p-6 text-sm font-mono text-text-muted">#{request.id}</td>
                          <td className="p-6">
-                           <p className="font-bold text-text-main">{request.property?.title}</p>
+                           <p className="font-bold text-text-main">{request.property?.title ? t(request.property.title) : ''}</p>
                            <p className="text-xs text-text-muted">{request.property?.city}</p>
                          </td>
                           <td className="p-6 text-center">
@@ -311,9 +311,9 @@ const ClientDashboard = () => {
                           <td className="p-6 text-right">
                              <div className="flex flex-col items-end gap-2">
                                 <div className="flex gap-4">
-                                  <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">Détails</Link>
+                                  <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">{t('client.requests.details')}</Link>
                                   {request.status === 'pending' && (
-                                    <button onClick={() => cancelRequest(request.id)} className="text-rose-500 font-bold text-sm hover:underline">Annuler</button>
+                                    <button onClick={() => cancelRequest(request.id)} className="text-rose-500 font-bold text-sm hover:underline">{t('client.requests.cancel')}</button>
                                   )}
                                 </div>
                                 {request.status === 'approved' && (
@@ -321,7 +321,7 @@ const ClientDashboard = () => {
                                     to={`/properties/${request.property_id}/payment`} 
                                     className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
                                   >
-                                    Payer maintenant
+                                    {t('client.requests.pay_now')}
                                   </Link>
                                 )}
                              </div>
@@ -340,22 +340,22 @@ const ClientDashboard = () => {
                  <div key={contract.id} className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main hover:border-primary transition-all group">
                     <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">{contract.property?.title}</h3>
+                        <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">{contract.property?.title ? t(contract.property.title) : ''}</h3>
                         <p className="text-sm text-text-muted">{contract.property?.address}</p>
                       </div>
                       {getStatusBadge(contract.status)}
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-8">
                        <div className="p-4 bg-bg-soft rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">Loyer Mensuel</p>
+                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">{t('client.contracts.monthly_rent')}</p>
                           <p className="text-lg font-black text-text-main">{contract.monthly_rent?.toLocaleString()} DH</p>
                        </div>
                        <div className="p-4 bg-bg-soft rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">Date Signature</p>
+                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">{t('client.contracts.sign_date')}</p>
                           <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
                        </div>
                     </div>
-                    <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block">Consulter le contrat</Link>
+                    <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block">{t('client.contracts.view')}</Link>
                  </div>
                ))}
                {contracts.length === 0 && (

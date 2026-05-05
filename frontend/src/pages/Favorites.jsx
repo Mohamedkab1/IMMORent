@@ -24,10 +24,10 @@ const Favorites = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-text-main flex items-center gap-3">
             <HeartSolid className="w-8 h-8 text-rose-500" />
-            {t('nav.favorites', 'Mes Favoris')}
+            {t('fav.title')}
           </h1>
           <p className="text-text-sub mt-2">
-            Retrouvez ici tous les biens immobiliers que vous avez sauvegardés.
+            {t('fav.desc')}
           </p>
         </div>
 
@@ -36,12 +36,12 @@ const Favorites = () => {
             <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/10 rounded-full flex items-center justify-center mb-6">
               <HeartIcon className="w-10 h-10 text-rose-400" />
             </div>
-            <h3 className="text-xl font-bold text-text-main mb-2">Aucun bien en favori</h3>
+            <h3 className="text-xl font-bold text-text-main mb-2">{t('fav.empty.title')}</h3>
             <p className="text-text-sub mb-6 max-w-sm">
-              Vous n'avez pas encore ajouté de propriétés à vos favoris. Parcourez nos annonces et cliquez sur le cœur pour les sauvegarder.
+              {t('fav.empty.desc')}
             </p>
             <Link to="/properties" className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
-              Explorer les biens
+              {t('fav.empty.btn')}
             </Link>
           </div>
         ) : (
@@ -58,9 +58,9 @@ const Favorites = () => {
                   
                   <div className="absolute top-4 start-4 flex flex-col gap-2">
                     {property.transaction_type === 'sale' ? (
-                      <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">Vente</span>
+                      <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.sale')}</span>
                     ) : (
-                       <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">Location</span>
+                       <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.rent')}</span>
                     )}
                   </div>
                   
@@ -68,14 +68,14 @@ const Favorites = () => {
                     <button 
                       onClick={(e) => { e.preventDefault(); removeFavorite(property.id); }}
                       className="p-2 bg-bg-glass backdrop-blur-sm text-rose-500 hover:bg-rose-500 hover:text-white rounded-full shadow-large transition-colors"
-                      title="Retirer des favoris"
+                      title={t('fav.remove')}
                     >
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
                   
                   <div className="absolute bottom-4 inset-x-4">
-                     <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{property.title}</h3>
+                     <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{t(property.title)}</h3>
                      <div className="text-slate-200 text-xs mt-1 flex items-center gap-1 opacity-90">
                        <MapPinIcon className="w-3.5 h-3.5" />
                        {property.city}
@@ -86,9 +86,9 @@ const Favorites = () => {
                 <div className="p-5 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col">
-                       <span className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-1">Prix</span>
+                       <span className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-1">{t('prop.card.price')}</span>
                        <div className="text-xl font-black text-primary dark:text-white">
-                         {property.price?.toLocaleString('fr-FR')} <span className="text-sm font-bold text-text-muted">DH{property.transaction_type === 'rent' ? '/ms' : ''}</span>
+                         {property.price?.toLocaleString(t('common.locale', 'fr-FR'))} <span className="text-sm font-bold text-text-muted">{t('prop.card.dh')}{property.transaction_type === 'rent' ? t('prop.card.per_month') : ''}</span>
                        </div>
                     </div>
                   </div>
@@ -109,7 +109,7 @@ const Favorites = () => {
                     to={`/properties/${property.id}`}
                     className="block w-full py-3 text-center font-bold rounded-xl transition-all shadow-md bg-secondary text-primary hover:bg-secondary-hover"
                   >
-                    Voir les détails
+                    {t('prop.action.view_details')}
                   </Link>
                 </div>
               </div>

@@ -104,7 +104,7 @@ const AgentDashboard = () => {
       loadPendingReviews()
     ]);
     setRefreshing(false);
-    toast.success('Données actualisées');
+    toast.success(t('agent.toast.data_refresh'));
   };
 
   const loadProperties = async () => {
@@ -116,7 +116,7 @@ const AgentDashboard = () => {
       }
     } catch (error) {
       console.error('Erreur chargement biens:', error);
-      toast.error('Erreur lors du chargement des biens');
+      toast.error(t('agent.toast.prop_err'));
     }
   };
 
@@ -164,13 +164,13 @@ const AgentDashboard = () => {
   };
 
   const handleDeleteProperty = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce bien ?')) {
+    if (window.confirm(t('agent.toast.prop_del_conf'))) {
       try {
         await propertyService.delete(id);
-        toast.success('Bien supprimé avec succès');
+        toast.success(t('agent.toast.prop_del_suc'));
         loadProperties();
       } catch (error) {
-        toast.error('Erreur lors de la suppression');
+        toast.error(t('agent.toast.prop_del_err'));
       }
     }
   };
@@ -183,7 +183,7 @@ const AgentDashboard = () => {
       });
       
       if (response.success) {
-        toast.success(`Demande ${status === 'approved' ? 'approuvée' : 'refusée'} avec succès`);
+        toast.success(status === 'approved' ? t('agent.toast.req_appr') : t('agent.toast.req_rej'));
         setShowRejectModal(false);
         setRejectionReason('');
         
@@ -193,10 +193,10 @@ const AgentDashboard = () => {
           loadRequests();
         }
       } else {
-        toast.error(response.message || 'Erreur lors du traitement');
+        toast.error(response.message || t('agent.toast.req_err'));
       }
     } catch (error) {
-      toast.error('Erreur lors du traitement de la demande');
+      toast.error(t('agent.toast.req_err_2'));
     }
   };
 
@@ -207,8 +207,7 @@ const AgentDashboard = () => {
   };
 
   const handleProcessReview = async (reviewId, status) => {
-    const actionText = status === 'approved' ? 'approuver' : 'rejeter';
-    if (!window.confirm(`Voulez-vous vraiment ${actionText} cet avis ?`)) return;
+    if (!window.confirm(status === 'approved' ? t('agent.reviews.approve_confirm') : t('agent.reviews.reject_confirm'))) return;
 
     try {
       const response = await propertyService.processReview(reviewId, status);
@@ -217,7 +216,7 @@ const AgentDashboard = () => {
         loadPendingReviews();
       }
     } catch (error) {
-      toast.error('Erreur lors du traitement de l\'avis');
+      toast.error(t('agent.toast.rev_err'));
     }
   };
 
@@ -250,14 +249,14 @@ const AgentDashboard = () => {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500">
           <KeyIcon className="w-3.5 h-3.5" />
-          Location
+          {t('prop.filter.rent')}
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-500">
           <TagIcon className="w-3.5 h-3.5" />
-          Vente
+          {t('prop.filter.sale')}
         </span>
       );
     }
@@ -267,7 +266,7 @@ const AgentDashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-text-muted">
         <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="font-medium animate-pulse">Chargement de votre espace...</p>
+        <p className="font-medium animate-pulse">{t('agent.loading')}</p>
       </div>
     );
   }
@@ -283,7 +282,7 @@ const AgentDashboard = () => {
           </div>
           <h3 className="text-xl font-bold text-text-main truncate mt-2">{user?.name}</h3>
           <p className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
-            <UserIcon className="w-3 h-3" /> Agent Immobilier
+            <UserIcon className="w-3 h-3" /> {t('agent.badges.agent')}
           </p>
         </div>
         
@@ -322,7 +321,7 @@ const AgentDashboard = () => {
             onClick={() => setActiveTab('reviews')}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'reviews' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
-            <ChatBubbleLeftRightIcon className="w-5 h-5" /> Modération avis
+            <ChatBubbleLeftRightIcon className="w-5 h-5" /> {t('agent.reviews.title')}
             {stats.pendingReviews > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold">{stats.pendingReviews}</span>}
           </button>
         </nav>
@@ -338,7 +337,7 @@ const AgentDashboard = () => {
       <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-text-main tracking-tight">{t('dash.agent.welcome')}</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-text-main tracking-tight">{t('agent.dashboard.welcome')}</h1>
             <p className="text-sm text-text-sub mt-1">{t('agent.dashboard.subtitle')}</p>
           </div>
           
@@ -349,7 +348,7 @@ const AgentDashboard = () => {
               className="flex items-center gap-2 px-4 py-2 bg-bg-card text-text-sub hover:text-primary border border-border-main rounded-lg text-sm font-medium transition-all shadow-main"
             >
               <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-               {refreshing ? t('common.loading') : t('agent.dashboard.refresh', 'Actualiser')}
+               {refreshing ? t('common.loading') : t('agent.dashboard.refresh')}
             </button>
           </div>
         </div>
@@ -394,7 +393,7 @@ const AgentDashboard = () => {
                     {t('dash.stats.pending_requests')}
                   </h2>
                   <button onClick={() => setActiveTab('requests')} className="text-sm font-semibold text-primary hover:underline">
-                    {t('agent.dashboard.see_all', 'Tout voir')}
+                    {t('agent.dashboard.see_all')}
                   </button>
                 </div>
                 
@@ -402,8 +401,8 @@ const AgentDashboard = () => {
                   {requests.filter(r => r.status?.toLowerCase() === 'pending').slice(0, 3).map(request => (
                     <div key={request.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-bg-soft rounded-xl border border-border-main gap-4">
                        <div>
-                         <h4 className="font-bold text-text-main text-sm">{request.user?.name || t('agent.requests.client_unknown', 'Client Inconnu')}</h4>
-                         <p className="text-xs text-text-muted mb-1">{request.property?.title}</p>
+                         <h4 className="font-bold text-text-main text-sm">{request.user?.name || t('agent.requests.client_unknown')}</h4>
+                         <p className="text-xs text-text-muted mb-1">{request.property?.title ? t(request.property.title) : ''}</p>
                        </div>
                        <div className="flex gap-2 text-right">
                          <button onClick={() => handleProcessRequest(request.id, 'approved')} className="text-xs font-bold text-green-600 hover:underline">{t('common.approve')}</button>
@@ -432,7 +431,7 @@ const AgentDashboard = () => {
                   {contracts.slice(0, 3).map(contract => (
                     <div key={contract.id} className="flex items-center justify-between p-4 bg-bg-soft rounded-xl border border-border-main">
                        <div>
-                         <h4 className="font-bold text-text-main text-sm">{contract.property?.title}</h4>
+                         <h4 className="font-bold text-text-main text-sm">{contract.property?.title ? t(contract.property.title) : ''}</h4>
                          <p className="text-xs text-text-muted mt-1">{t('agent.contracts.table.tenant')}: {contract.tenant?.name}</p>
                        </div>
                        <div className="text-right">
@@ -476,7 +475,7 @@ const AgentDashboard = () => {
                    {properties.map(property => (
                      <tr key={property.id} className="hover:bg-bg-soft/50 transition-colors">
                        <td className="p-4">
-                         <div className="font-bold text-text-main text-sm line-clamp-1">{property.title}</div>
+                         <div className="font-bold text-text-main text-sm line-clamp-1">{property.title ? t(property.title) : ''}</div>
                          <div className="text-xs text-text-muted mt-1 flex items-center gap-1">
                            <MapPinIcon className="w-3 h-3" /> {property.city}
                          </div>
@@ -523,9 +522,9 @@ const AgentDashboard = () => {
               <h2 className="text-lg font-bold text-text-main">{t('agent.requests.title')}</h2>
               <div className="flex bg-bg-card p-1 rounded-xl border border-border-main">
                 {[
-                  { id: 'all', label: 'Toutes' },
-                  { id: 'pending', label: 'En attente' },
-                  { id: 'processed', label: 'Traitées' }
+                  { id: 'all', label: t('agent.filters.all') },
+                  { id: 'pending', label: t('agent.filters.pending') },
+                  { id: 'processed', label: t('agent.filters.processed') }
                 ].map(filter => (
                   <button
                     key={filter.id}
@@ -566,11 +565,11 @@ const AgentDashboard = () => {
                         <div className="text-xs text-text-muted">{request.user?.email}</div>
                       </td>
                       <td className="p-4">
-                        <div className="text-sm text-text-main font-medium">{request.property?.title}</div>
+                        <div className="text-sm text-text-main font-medium">{request.property?.title ? t(request.property.title) : ''}</div>
                         <div className="text-xs text-text-muted">{request.property?.city}</div>
                       </td>
                       <td className="p-4 text-sm text-text-sub">
-                        {new Date(request.created_at).toLocaleDateString(language)}
+                        {new Date(request.created_at).toLocaleDateString(t('common.locale', 'fr-FR'))}
                       </td>
                       <td className="p-4 text-center">
                         {getStatusBadge(request.status)}
@@ -597,7 +596,7 @@ const AgentDashboard = () => {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-text-muted italic">{t('agent.requests.processed_at', { date: new Date(request.processed_at || request.updated_at).toLocaleDateString(language) })}</span>
+                          <span className="text-xs text-text-muted italic">{t('agent.requests.processed_at')}{new Date(request.processed_at || request.updated_at).toLocaleDateString(t('common.locale', 'fr-FR'))}</span>
                         )}
                       </td>
                     </tr>
@@ -617,7 +616,7 @@ const AgentDashboard = () => {
           <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
              <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.contracts.title')}</h2>
-                <span className="text-sm text-text-muted">{t('agent.contracts.active_count', { count: stats.activeContracts })}</span>
+                <span className="text-sm text-text-muted">{stats.activeContracts}{t('agent.contracts.active_count')}</span>
              </div>
              <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
@@ -634,7 +633,7 @@ const AgentDashboard = () => {
                    {contracts.map(contract => (
                      <tr key={contract.id} className="hover:bg-bg-soft/50 transition-colors">
                        <td className="p-4">
-                         <div className="font-bold text-text-main text-sm">{contract.property?.title}</div>
+                         <div className="font-bold text-text-main text-sm">{contract.property?.title ? t(contract.property.title) : ''}</div>
                          <div className="text-xs text-text-muted mt-1">{contract.property?.city}</div>
                        </td>
                        <td className="p-4">
@@ -666,9 +665,9 @@ const AgentDashboard = () => {
         {activeTab === 'reviews' && (
           <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden animate-fade-in">
             <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
-              <h2 className="text-lg font-bold text-text-main">Modération des avis</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('agent.reviews.title')}</h2>
               <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500 rounded-full text-xs font-bold uppercase">
-                {stats.pendingReviews} en attente
+                {stats.pendingReviews}{t('agent.reviews.pending')}
               </span>
             </div>
             
@@ -684,7 +683,7 @@ const AgentDashboard = () => {
                         <div>
                           <div className="font-bold text-text-main">{review.user?.name}</div>
                           <div className="text-xs text-text-sub flex items-center gap-1">
-                            sur <span className="font-semibold text-primary">{review.property?.title}</span>
+                            {t('agent.reviews.on')} <span className="font-semibold text-primary">{review.property?.title ? t(review.property.title) : ''}</span>
                           </div>
                         </div>
                       </div>
@@ -701,7 +700,7 @@ const AgentDashboard = () => {
                       </div>
                       
                       <div className="text-xs text-text-muted">
-                        Posté le {new Date(review.created_at).toLocaleDateString(language, { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {t('agent.reviews.posted_on')} {new Date(review.created_at).toLocaleDateString(t('common.locale', 'fr-FR'), { day: 'numeric', month: 'long', year: 'numeric' })}
                       </div>
                     </div>
 
@@ -710,13 +709,13 @@ const AgentDashboard = () => {
                         onClick={() => handleProcessReview(review.id, 'approved')}
                         className="flex-1 px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 transition-all shadow-sm flex items-center justify-center gap-2"
                       >
-                        <CheckCircleIcon className="w-4 h-4" /> Approuver
+                        <CheckCircleIcon className="w-4 h-4" /> {t('common.approve')}
                       </button>
                       <button 
                         onClick={() => handleProcessReview(review.id, 'rejected')}
                         className="flex-1 px-4 py-2 bg-rose-500 text-white rounded-xl text-sm font-bold hover:bg-rose-600 transition-all shadow-sm flex items-center justify-center gap-2"
                       >
-                        <XCircleIcon className="w-4 h-4" /> Rejeter
+                        <XCircleIcon className="w-4 h-4" /> {t('common.reject')}
                       </button>
                     </div>
                   </div>
@@ -728,8 +727,8 @@ const AgentDashboard = () => {
                   <div className="w-20 h-20 bg-bg-soft rounded-full flex items-center justify-center mx-auto mb-6 text-text-muted border border-border-main">
                     <ChatBubbleLeftRightIcon className="w-10 h-10" />
                   </div>
-                  <h3 className="text-lg font-bold text-text-main mb-2">Tout est à jour !</h3>
-                  <p className="text-text-muted italic">Aucun avis en attente de modération pour le moment.</p>
+                  <h3 className="text-lg font-bold text-text-main mb-2">{t('agent.reviews.no_data.title')}</h3>
+                  <p className="text-text-muted italic">{t('agent.reviews.no_data.desc')}</p>
                 </div>
               )}
             </div>
@@ -747,14 +746,14 @@ const AgentDashboard = () => {
                 <XCircleIcon className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-text-main">Motif du refus</h3>
-                <p className="text-sm text-text-sub">Indiquez la raison pour laquelle vous refusez cette demande.</p>
+                <h3 className="text-xl font-black text-text-main">{t('agent.modals.reject.title')}</h3>
+                <p className="text-sm text-text-sub">{t('agent.modals.reject.desc')}</p>
               </div>
             </div>
 
             <textarea
               className="w-full bg-bg-soft border border-border-main rounded-2xl p-4 text-sm text-text-main focus:ring-2 focus:ring-red-500 outline-none min-h-[120px] mb-6 transition-all"
-              placeholder="Ex: Le dossier est incomplet ou le bien n'est plus disponible..."
+              placeholder={t('agent.modals.reject.placeholder')}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               required
@@ -765,14 +764,14 @@ const AgentDashboard = () => {
                 onClick={() => setShowRejectModal(false)}
                 className="flex-1 py-3 px-4 bg-bg-soft text-text-main font-bold rounded-xl hover:bg-border-main transition-all"
               >
-                Annuler
+                {t('agent.modals.reject.cancel')}
               </button>
               <button
                 onClick={() => handleProcessRequest(selectedRequestId, 'rejected', rejectionReason)}
                 disabled={!rejectionReason.trim()}
                 className="flex-1 py-3 px-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirmer le refus
+                {t('agent.modals.reject.confirm')}
               </button>
             </div>
           </div>

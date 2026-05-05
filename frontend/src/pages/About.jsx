@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 const About = () => {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       
@@ -18,10 +20,10 @@ const About = () => {
         
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
-            À propos d'<span className="text-secondary">IMMORent</span>
+            {t('about.hero.title_p1')}<span className="text-secondary">{t('about.hero.title_p2')}</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-sm">
-            La plateforme premium qui révolutionne et simplifie la gestion immobilière partout au Maroc.
+            {t('about.hero.subtitle')}
           </p>
         </div>
       </div>
@@ -39,34 +41,29 @@ const About = () => {
             />
           </div>
           <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main">Notre histoire</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main">{t('about.story.title')}</h2>
             <div className="w-20 h-1.5 bg-secondary rounded-full"></div>
             <div className="prose dark:prose-invert prose-lg text-text-sub">
               <p>
-                IMMORent est né d'un constat simple : la gestion immobilière est souvent complexe 
-                et chronophage. En 2020, notre fondateur, fort de 15 ans d'expérience dans l'immobilier, 
-                a décidé de créer une plateforme qui simplifierait la vie des propriétaires, 
-                des agents et des locataires.
+                {t('about.story.p1')}
               </p>
               <p>
-                Aujourd'hui, IMMORent compte plus de 10 000 utilisateurs et 500 biens référencés 
-                à travers le Maroc. Notre équipe de passionnés travaille chaque jour pour améliorer 
-                nos services et offrir la meilleure expérience possible.
+                {t('about.story.p2')}
               </p>
             </div>
             
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border-main">
               <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">500+</span>
-                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Biens</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">{t('about.stats.properties')}</span>
               </div>
               <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">10k+</span>
-                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Clients</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">{t('about.stats.clients')}</span>
               </div>
               <div className="text-center p-4 bg-bg-card rounded-2xl shadow-sm border border-border-main">
                 <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">50+</span>
-                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">Agences</span>
+                <span className="text-sm font-semibold text-text-muted uppercase tracking-wider">{t('about.stats.agencies')}</span>
               </div>
             </div>
           </div>
@@ -74,16 +71,16 @@ const About = () => {
 
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-text-main inline-block relative mb-16">
-            Nos valeurs
+            {t('about.values.title')}
             <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-secondary rounded-full"></div>
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: HandRaisedIcon, title: 'Confiance', desc: 'Relations durables basées sur la transparence et le respect.', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-              { icon: LightBulbIcon, title: 'Innovation', desc: 'Technologies avancées pour simplifier la gestion quotidienne.', color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-              { icon: StarIcon, title: 'Excellence', desc: 'Service de qualité supérieure à tous nos utilisateurs.', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-              { icon: HeartIcon, title: 'Passion', desc: 'Nous aimons profondément ce que nous faisons chaque jour.', color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' }
+              { icon: HandRaisedIcon, title: t('about.values.trust.title'), desc: t('about.values.trust.desc'), color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+              { icon: LightBulbIcon, title: t('about.values.innovation.title'), desc: t('about.values.innovation.desc'), color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+              { icon: StarIcon, title: t('about.values.excellence.title'), desc: t('about.values.excellence.desc'), color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+              { icon: HeartIcon, title: t('about.values.passion.title'), desc: t('about.values.passion.desc'), color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' }
             ].map((v, i) => (
               <div key={i} className="bg-bg-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-border-main transition-all duration-300">
                 <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-6 rotate-3 ${v.bg} ${v.color}`}>
@@ -99,16 +96,16 @@ const About = () => {
         {/* Team Section */}
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white inline-block relative mb-16">
-            Notre équipe dirigeante
+            {t('about.team.title')}
             <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-secondary rounded-full"></div>
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { img: 'https://randomuser.me/api/portraits/men/1.jpg', name: 'Jean Martin', role: 'Fondateur & CEO' },
-              { img: 'https://randomuser.me/api/portraits/women/2.jpg', name: 'Sophie Bernard', role: 'Directrice Commerciale' },
-              { img: 'https://randomuser.me/api/portraits/men/3.jpg', name: 'Pierre Dubois', role: 'Directeur Technique' },
-              { img: 'https://randomuser.me/api/portraits/women/4.jpg', name: 'Marie Lambert', role: 'Responsable Clientèle' }
+              { img: 'https://randomuser.me/api/portraits/men/1.jpg', name: 'Jean Martin', role: t('about.team.founder') },
+              { img: 'https://randomuser.me/api/portraits/women/2.jpg', name: 'Sophie Bernard', role: t('about.team.sales_dir') },
+              { img: 'https://randomuser.me/api/portraits/men/3.jpg', name: 'Pierre Dubois', role: t('about.team.tech_dir') },
+              { img: 'https://randomuser.me/api/portraits/women/4.jpg', name: 'Marie Lambert', role: t('about.team.client_mgr') }
             ].map((member, i) => (
               <div key={i} className="bg-bg-card p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-border-main transition-all duration-300 group">
                 <div className="relative w-32 h-32 mx-auto mb-6">
@@ -132,16 +129,16 @@ const About = () => {
             <svg className="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
           </div>
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-md">Rejoignez l'aventure IMMORent</h2>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-md">{t('about.cta.title')}</h2>
             <p className="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto opacity-90">
-              Que vous soyez propriétaire, agent immobilier ou locataire, notre plateforme est conçue sur mesure pour répondre à vos besoins.
+              {t('about.cta.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
               <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-xl hover:-translate-y-1">
-                Créer un compte
+                {t('about.cta.btn_register')}
               </Link>
               <Link to="/contact" className="w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white/10 rounded-xl font-bold transition-all hover:-translate-y-1">
-                Nous contacter
+                {t('about.cta.btn_contact')}
               </Link>
             </div>
           </div>

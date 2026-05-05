@@ -9,9 +9,16 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
+import { useLanguage } from '../../context/LanguageContext';
+
 const RevenueChart = ({ data, title }) => {
+  const { t } = useLanguage();
   // Mapper les mois numériques en noms
-  const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+  const monthNames = [
+    t('common.months.jan'), t('common.months.feb'), t('common.months.mar'), t('common.months.apr'), 
+    t('common.months.may'), t('common.months.jun'), t('common.months.jul'), t('common.months.aug'), 
+    t('common.months.sep'), t('common.months.oct'), t('common.months.nov'), t('common.months.dec')
+  ];
   
   const formattedData = data.map(item => ({
     ...item,
@@ -23,8 +30,8 @@ const RevenueChart = ({ data, title }) => {
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-lg font-bold text-text-main tracking-tight">{title}</h3>
         <select className="text-xs font-semibold bg-bg-soft border-none rounded-lg focus:ring-0 text-text-sub">
-          <option>Derniers 12 mois</option>
-          <option>2024</option>
+          <option value="12m">{t('admin.overview.last_12_months', 'Derniers 12 mois')}</option>
+          <option value="2024">2024</option>
         </select>
       </div>
       

@@ -15,8 +15,10 @@ import {
   CameraIcon
 } from '@heroicons/react/24/outline';
 import { userService } from '../services/users';
+import { useLanguage } from '../context/LanguageContext';
 
 const Profile = () => {
+  const { t } = useLanguage();
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,26 +35,26 @@ const Profile = () => {
     setLoading(true);
     try {
       // Simulation d'appel API pour la démo, à connecter au vrai service si disponible
-      toast.success('Profil mis à jour avec succès');
+      toast.success(t('profile.update_success'));
       setIsEditing(false);
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('profile.update_error'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleBecomeAgent = async () => {
-    if (window.confirm('Souhaitez-vous vraiment envoyer une demande pour devenir agent immobilier ?')) {
+    if (window.confirm(t('profile.agent_confirm'))) {
       setLoading(true);
       try {
         const res = await userService.becomeAgent();
         if (res.success) {
-          toast.success('Votre demande a été envoyée avec succès');
+          toast.success(t('profile.agent_success'));
           setTimeout(() => window.location.reload(), 2000);
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+        toast.error(error.response?.data?.message || t('profile.agent_error'));
       } finally {
         setLoading(false);
       }
@@ -66,12 +68,12 @@ const Profile = () => {
         {/* Header Section */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-                <h1 className="text-4xl font-black text-text-main tracking-tight">Mon Profil</h1>
-                <p className="text-text-sub font-medium mt-1">Gérez vos informations et préférences de compte.</p>
+                <h1 className="text-4xl font-black text-text-main tracking-tight">{t('profile.title')}</h1>
+                <p className="text-text-sub font-medium mt-1">{t('profile.subtitle')}</p>
             </div>
             <div className="flex items-center gap-3">
                 <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
-                    <ShieldCheckIcon className="w-4 h-4" /> Compte Vérifié
+                    <ShieldCheckIcon className="w-4 h-4" /> {t('profile.verified')}
                 </div>
             </div>
         </div>
@@ -97,11 +99,11 @@ const Profile = () => {
                     
                     <div className="mt-8 pt-8 border-t border-border-main/50 space-y-4">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-text-sub font-medium">Membre depuis</span>
-                            <span className="text-text-main font-bold">{new Date(user?.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+                            <span className="text-text-sub font-medium">{t('profile.member_since')}</span>
+                            <span className="text-text-main font-bold">{new Date(user?.created_at).toLocaleDateString(t('common.locale', 'fr-FR'), { month: 'long', year: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-text-sub font-medium">Biens loués</span>
+                            <span className="text-text-sub font-medium">{t('profile.properties_rented')}</span>
                             <span className="text-text-main font-bold">2</span>
                         </div>
                     </div>
@@ -111,8 +113,8 @@ const Profile = () => {
                 {user?.role?.slug === 'client' && (
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-primary/20 dark:to-primary/10 rounded-3xl p-8 text-white shadow-xl border border-white/10 relative overflow-hidden">
                         <BriefcaseIcon className="absolute -right-6 -bottom-6 w-32 h-32 text-white/5" />
-                        <h3 className="text-xl font-bold mb-2">Devenir Agent</h3>
-                        <p className="text-sm text-white/70 mb-6">Passez à un compte professionnel pour gérer vos propres biens immobiliers.</p>
+                        <h3 className="text-xl font-bold mb-2">{t('profile.become_agent')}</h3>
+                        <p className="text-sm text-white/70 mb-6">{t('profile.become_agent_desc')}</p>
                         
                         {!user.agent_status ? (
                              <button 
@@ -120,13 +122,13 @@ const Profile = () => {
                                 disabled={loading}
                                 className="w-full py-3 bg-secondary text-primary rounded-xl font-black text-sm hover:bg-secondary-hover transition-all flex items-center justify-center gap-2"
                              >
-                                Postuler maintenant
+                                {t('profile.apply_now')}
                              </button>
                         ) : (
                             <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                <p className="text-[10px] font-black uppercase text-white/40 mb-1">Statut demande</p>
+                                <p className="text-[10px] font-black uppercase text-white/40 mb-1">{t('profile.status_req')}</p>
                                 <p className="font-bold text-secondary">
-                                    {user.agent_status === 'pending' ? 'En attente...' : user.agent_status}
+                                    {user.agent_status === 'pending' ? t('profile.pending') : user.agent_status}
                                 </p>
                             </div>
                         )}
@@ -142,15 +144,15 @@ const Profile = () => {
                             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                                 <UserIcon className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-text-main">Informations Générales</h3>
+                            <h3 className="text-xl font-bold text-text-main">{t('profile.general_info')}</h3>
                         </div>
                         {!isEditing ? (
                             <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-5 py-2.5 bg-bg-soft hover:bg-primary hover:text-white rounded-xl text-sm font-bold text-primary transition-all duration-300">
-                                <PencilIcon className="w-4 h-4" /> Modifier
+                                <PencilIcon className="w-4 h-4" /> {t('profile.edit')}
                             </button>
                         ) : (
                             <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl text-sm font-bold transition-all duration-300">
-                                <XMarkIcon className="w-4 h-4" /> Annuler
+                                <XMarkIcon className="w-4 h-4" /> {t('profile.cancel')}
                             </button>
                         )}
                     </div>
@@ -159,7 +161,7 @@ const Profile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <UserIcon className="w-4 h-4" /> Nom complet
+                                    <UserIcon className="w-4 h-4" /> {t('profile.name_label')}
                                 </label>
                                 <input 
                                     type="text" 
@@ -173,7 +175,7 @@ const Profile = () => {
 
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <EnvelopeIcon className="w-4 h-4" /> Adresse Email
+                                    <EnvelopeIcon className="w-4 h-4" /> {t('profile.email_label')}
                                 </label>
                                 <input 
                                     type="email" 
@@ -181,12 +183,12 @@ const Profile = () => {
                                     disabled 
                                     className="w-full px-5 py-4 rounded-2xl border border-border-main bg-bg-soft text-text-muted cursor-not-allowed font-medium"
                                 />
-                                <p className="text-[10px] text-text-muted font-bold italic tracking-wide">L'email ne peut pas être modifié pour des raisons de sécurité.</p>
+                                <p className="text-[10px] text-text-muted font-bold italic tracking-wide">{t('profile.email_desc')}</p>
                             </div>
 
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <PhoneIcon className="w-4 h-4" /> Téléphone
+                                    <PhoneIcon className="w-4 h-4" /> {t('profile.phone_label')}
                                 </label>
                                 <input 
                                     type="tel" 
@@ -201,17 +203,17 @@ const Profile = () => {
 
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" /> Créé le
+                                    <CalendarIcon className="w-4 h-4" /> {t('profile.created_at')}
                                 </label>
                                 <div className="w-full px-5 py-4 rounded-2xl border border-border-main bg-bg-soft text-text-muted font-medium flex items-center">
-                                    {new Date(user?.created_at).toLocaleDateString('fr-FR')}
+                                    {new Date(user?.created_at).toLocaleDateString(t('common.locale', 'fr-FR'))}
                                 </div>
                             </div>
                         </div>
 
                         <div className="space-y-3">
                             <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                <MapPinIcon className="w-4 h-4" /> Adresse de résidence
+                                <MapPinIcon className="w-4 h-4" /> {t('profile.address_label')}
                             </label>
                             <textarea 
                                 name="address" 
@@ -219,7 +221,7 @@ const Profile = () => {
                                 onChange={handleChange} 
                                 disabled={!isEditing}
                                 rows="3"
-                                placeholder="Votre adresse complète..."
+                                placeholder={t('profile.address_placeholder')}
                                 className={`w-full px-5 py-4 rounded-2xl border transition-all duration-300 font-medium ${isEditing ? 'bg-bg-main border-primary shadow-lg shadow-primary/5 text-text-main' : 'bg-bg-soft border-border-main text-text-muted cursor-not-allowed'}`}
                             />
                         </div>
@@ -232,7 +234,7 @@ const Profile = () => {
                                     className="w-full md:w-auto px-12 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                                 >
                                     {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <CheckIcon className="w-6 h-6" />}
-                                    Enregistrer les modifications
+                                    {t('profile.save')}
                                 </button>
                             </div>
                         )}
@@ -241,10 +243,10 @@ const Profile = () => {
                     <div className="mt-12 pt-12 border-t border-border-main/50">
                          <div className="flex items-center gap-3 text-rose-500 mb-6">
                             <ShieldCheckIcon className="w-6 h-6" />
-                            <h4 className="text-lg font-bold">Sécurité du compte</h4>
+                            <h4 className="text-lg font-bold">{t('profile.security')}</h4>
                          </div>
                          <button className="px-6 py-3 bg-bg-soft hover:bg-bg-main border border-border-main text-text-main rounded-xl text-sm font-bold transition-all">
-                             Changer mon mot de passe
+                             {t('profile.change_password')}
                          </button>
                     </div>
                 </div>

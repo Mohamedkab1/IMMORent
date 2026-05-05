@@ -32,15 +32,6 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
     onFilterChange(resetFilters);
   };
 
-  const propertyTypes = [
-    { value: '', label: 'Tous types' },
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
-    { value: 'studio', label: 'Studio' },
-    { value: 'commercial', label: 'Local commercial' },
-    { value: 'land', label: 'Terrain' },
-  ];
-
   const roomOptions = [
     { value: '', label: 'Toutes' },
     { value: '1', label: '1 pièce' },
@@ -80,7 +71,6 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
                 onChange={handleChange}
                 onSubmit={handleSubmit}
                 onReset={handleReset}
-                propertyTypes={propertyTypes}
                 roomOptions={roomOptions}
               />
             </div>
@@ -96,7 +86,6 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
           onChange={handleChange}
           onSubmit={handleSubmit}
           onReset={handleReset}
-          propertyTypes={propertyTypes}
           roomOptions={roomOptions}
         />
       </div>
@@ -104,7 +93,7 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
   );
 };
 
-const FilterForm = ({ filters, onChange, onSubmit, onReset, propertyTypes, roomOptions }) => (
+const FilterForm = ({ filters, onChange, onSubmit, onReset, roomOptions }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
@@ -119,23 +108,6 @@ const FilterForm = ({ filters, onChange, onSubmit, onReset, propertyTypes, roomO
         placeholder="Ex: Paris, Lyon..."
         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
       />
-    </div>
-
-    <div>
-      <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-        Type de bien
-      </label>
-      <select
-        name="type"
-        id="type"
-        value={filters.type || ''}
-        onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
-      >
-        {propertyTypes.map(type => (
-          <option key={type.value} value={type.value}>{type.label}</option>
-        ))}
-      </select>
     </div>
 
     <div>

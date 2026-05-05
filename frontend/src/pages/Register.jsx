@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { HomeIcon, BuildingOfficeIcon, UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, LockClosedIcon, ArrowRightIcon, ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { useLanguage } from '../context/LanguageContext';
 
 const Register = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,7 +36,7 @@ const Register = () => {
 
   const validateStep1 = () => {
     if (!selectedRole) {
-      toast.error('Veuillez sélectionner un rôle');
+      toast.error(t('auth.register.error_role'));
       return false;
     }
     return true;
@@ -42,23 +44,23 @@ const Register = () => {
 
   const validateStep2 = () => {
     if (!formData.name.trim()) {
-      toast.error('Le nom est requis');
+      toast.error(t('auth.register.error_name'));
       return false;
     }
     if (!formData.email.trim()) {
-      toast.error('L\'email est requis');
+      toast.error(t('auth.register.error_email'));
       return false;
     }
     if (!formData.password) {
-      toast.error('Le mot de passe est requis');
+      toast.error(t('auth.register.error_password'));
       return false;
     }
     if (formData.password.length < 8) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères');
+      toast.error(t('auth.register.error_password_length'));
       return false;
     }
     if (formData.password !== formData.password_confirmation) {
-      toast.error('Les mots de passe ne correspondent pas');
+      toast.error(t('auth.register.error_password_match'));
       return false;
     }
     return true;
@@ -81,10 +83,10 @@ const Register = () => {
     setLoading(true);
     try {
       const response = await register(formData);
-      toast.success(response.message || 'Inscription réussie');
+      toast.success(response.message || t('auth.register.success'));
       
       if (formData.role === 'agent') {
-        toast.info('Votre compte agent est en attente de validation par un administrateur.');
+        toast.info(t('auth.register.agent_pending'));
         navigate('/login');
       } else {
         navigate('/dashboard/client');
@@ -96,7 +98,7 @@ const Register = () => {
           errArray.forEach(msg => toast.error(msg));
         });
       } else {
-        toast.error(error.response?.data?.message || "Erreur lors de l'inscription");
+        toast.error(error.response?.data?.message || t('auth.register.error_general'));
       }
     } finally {
       setLoading(false);
@@ -114,8 +116,8 @@ const Register = () => {
           <Link to="/" className="text-3xl font-black text-text-main tracking-tight">
             IMMO<span className="text-secondary">Rent</span>
           </Link>
-          <h1 className="mt-6 text-4xl font-extrabold text-text-main tracking-tight">Créer un compte</h1>
-          <p className="mt-2 text-text-sub font-medium">Rejoignez la révolution immobilière au Maroc.</p>
+          <h1 className="mt-6 text-4xl font-extrabold text-text-main tracking-tight">{t('auth.register.title')}</h1>
+          <p className="mt-2 text-text-sub font-medium">{t('auth.register.subtitle')}</p>
         </div>
 
         {/* Unified Progress Indicator */}
@@ -126,8 +128,8 @@ const Register = () => {
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>2</div>
                 
                 <div className="absolute top-12 left-0 right-0 flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted px-2">
-                    <span className={currentStep >= 1 ? 'text-primary' : ''}>Profil</span>
-                    <span className={currentStep === 2 ? 'text-primary' : ''}>Détails</span>
+                    <span className={currentStep >= 1 ? 'text-primary' : ''}>{t('auth.register.step1_badge')}</span>
+                    <span className={currentStep === 2 ? 'text-primary' : ''}>{t('auth.register.step2_badge')}</span>
                 </div>
             </div>
         </div>
@@ -137,8 +139,8 @@ const Register = () => {
             {currentStep === 1 ? (
               <div className="animate-fade-in">
                 <div className="text-center mb-10">
-                  <h3 className="text-2xl font-bold text-text-main">Choisissez votre profil</h3>
-                  <p className="text-text-sub mt-1">Sélectionnez comment vous souhaitez utiliser la plateforme.</p>
+                  <h3 className="text-2xl font-bold text-text-main">{t('auth.register.step1_title')}</h3>
+                  <p className="text-text-sub mt-1">{t('auth.register.step1_subtitle')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,10 +152,10 @@ const Register = () => {
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'client' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
                       <HomeIcon className="w-8 h-8" />
                     </div>
-                    <h4 className="text-xl font-bold text-text-main mb-2">Client / Locataire</h4>
-                    <p className="text-sm text-text-sub leading-relaxed mb-6">Je recherche un logement à louer et je souhaite gérer mes contrats en ligne.</p>
+                    <h4 className="text-xl font-bold text-text-main mb-2">{t('auth.register.role_client_title')}</h4>
+                    <p className="text-sm text-text-sub leading-relaxed mb-6">{t('auth.register.role_client_desc')}</p>
                     <ul className="space-y-3">
-                      {['Recherche illimitée', 'Contrats numériques', 'Suivi des paiements'].map((f, i) => (
+                      {[t('auth.register.role_client_f1'), t('auth.register.role_client_f2'), t('auth.register.role_client_f3')].map((f, i) => (
                         <li key={i} className="flex items-center text-xs font-bold text-text-main/80 uppercase tracking-tight">
                             <CheckCircleIcon className="w-4 h-4 mr-2 text-emerald-500" /> {f}
                         </li>
@@ -170,16 +172,16 @@ const Register = () => {
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'agent' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
                       <BuildingOfficeIcon className="w-8 h-8" />
                     </div>
-                    <h4 className="text-xl font-bold text-text-main mb-2">Agent Immobilier</h4>
-                    <p className="text-sm text-text-sub leading-relaxed mb-6">Je gère un parc immobilier et je souhaite automatiser mes tâches professionnelles.</p>
+                    <h4 className="text-xl font-bold text-text-main mb-2">{t('auth.register.role_agent_title')}</h4>
+                    <p className="text-sm text-text-sub leading-relaxed mb-6">{t('auth.register.role_agent_desc')}</p>
                     <ul className="space-y-3">
-                      {['Publication d\'annonces', 'Gestion des locataires', 'Génération PDF'].map((f, i) => (
+                      {[t('auth.register.role_agent_f1'), t('auth.register.role_agent_f2'), t('auth.register.role_agent_f3')].map((f, i) => (
                         <li key={i} className="flex items-center text-xs font-bold text-text-main/80 uppercase tracking-tight">
                             <CheckCircleIcon className="w-4 h-4 mr-2 text-emerald-500" /> {f}
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-6 inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg uppercase tracking-widest">Validation Admin requise</div>
+                    <div className="mt-6 inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black rounded-lg uppercase tracking-widest">{t('auth.register.agent_validation')}</div>
                     {selectedRole === 'agent' && <div className="absolute top-4 right-4 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center animate-scale-in">✓</div>}
                   </div>
                 </div>
@@ -190,7 +192,7 @@ const Register = () => {
                     onClick={handleNext}
                     className="px-10 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center gap-3"
                   >
-                    Continuer vers vos infos
+                    {t('auth.register.next_btn')}
                     <ArrowRightIcon className="w-5 h-5" />
                   </button>
                 </div>
@@ -198,13 +200,13 @@ const Register = () => {
             ) : (
               <div className="animate-fade-in">
                 <div className="text-center mb-10">
-                  <h3 className="text-2xl font-bold text-text-main">Informations personnelles</h3>
-                  <p className="text-text-sub mt-1">Ces données seront utilisées pour vos futurs contrats.</p>
+                  <h3 className="text-2xl font-bold text-text-main">{t('auth.register.step2_title')}</h3>
+                  <p className="text-text-sub mt-1">{t('auth.register.step2_subtitle')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Nom Complet</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.name_label')}</label>
                     <div className="relative">
                         <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -212,7 +214,7 @@ const Register = () => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Meryem Bennani"
+                            placeholder={t('auth.register.name_placeholder')}
                             className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                             required
                         />
@@ -220,7 +222,7 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Adresse Email</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.email_label')}</label>
                     <div className="relative">
                         <EnvelopeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -228,7 +230,7 @@ const Register = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="meryem@exemple.ma"
+                            placeholder={t('auth.register.email_placeholder')}
                             className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                             required
                         />
@@ -236,7 +238,7 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Téléphone</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.phone_label')}</label>
                     <div className="relative">
                         <PhoneIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -251,7 +253,7 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Adresse de résidence</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.address_label')}</label>
                     <div className="relative">
                         <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -259,14 +261,14 @@ const Register = () => {
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
-                            placeholder="Gueliz, Marrakech"
+                            placeholder={t('auth.register.address_placeholder')}
                             className="w-full pl-12 pr-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Mot de passe</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.password_label')}</label>
                     <div className="relative">
                         <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -285,7 +287,7 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-sub">Confirmer le mot de passe</label>
+                    <label className="text-sm font-bold text-text-sub">{t('auth.register.password_confirm_label')}</label>
                     <div className="relative">
                         <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
@@ -307,7 +309,7 @@ const Register = () => {
                     onClick={handleBack}
                     className="flex-1 py-4 px-6 bg-bg-soft border border-border-main text-text-main rounded-xl font-bold hover:bg-bg-card hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                   >
-                    <ArrowLeftIcon className="w-5 h-5" /> Retour
+                    <ArrowLeftIcon className="w-5 h-5" /> {t('auth.register.back_btn')}
                   </button>
                   <button 
                     type="submit" 
@@ -316,7 +318,7 @@ const Register = () => {
                   >
                     {loading ? (
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : 'Créer mon compte professionnel'}
+                    ) : t('auth.register.submit_btn')}
                   </button>
                 </div>
               </div>
@@ -326,8 +328,8 @@ const Register = () => {
 
         <div className="mt-12 text-center">
             <p className="text-text-sub font-medium">
-              Vous avez déjà un compte ?{' '}
-              <Link to="/login" className="text-primary font-extrabold hover:underline">Se connecter ici</Link>
+              {t('auth.register.has_account')}{' '}
+              <Link to="/login" className="text-primary font-extrabold hover:underline">{t('auth.register.login_link')}</Link>
             </p>
         </div>
       </div>

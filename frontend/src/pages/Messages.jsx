@@ -15,9 +15,11 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../context/LanguageContext';
 
 const Messages = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -75,7 +77,7 @@ const Messages = () => {
         setMessages(response.data.data || []);
       }
     } catch (error) {
-      toast.error('Erreur lors du chargement des messages');
+      toast.error(t('msg.error.load_msg'));
     } finally {
       setLoadingMessages(false);
     }
@@ -109,7 +111,7 @@ const Messages = () => {
         loadConversations(false);
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'envoi');
+      toast.error(t('msg.error.send'));
     } finally {
       setSending(false);
     }
@@ -129,12 +131,12 @@ const Messages = () => {
       {/* Sidebar - Liste des conversations */}
       <div className={`${showMobileList ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-96 border-e border-border-main bg-bg-card transition-all`}>
         <div className="p-6 border-b border-border-main">
-          <h1 className="text-2xl font-black text-text-main tracking-tight mb-4">Messages</h1>
+          <h1 className="text-2xl font-black text-text-main tracking-tight mb-4">{t('msg.title')}</h1>
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input 
               type="text" 
-              placeholder="Rechercher une discussion..." 
+              placeholder={t('msg.search_placeholder')}
               className="w-full pl-10 pr-4 py-2 bg-bg-soft border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary focus:bg-bg-card transition-all text-text-main"
             />
           </div>
@@ -167,18 +169,18 @@ const Messages = () => {
                   <div className="flex justify-between items-baseline mb-1">
                     <h4 className="font-bold text-text-main truncate">{conv.other_user.name}</h4>
                     <span className="text-[10px] font-medium text-text-muted whitespace-nowrap ml-2">
-                       {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: fr }) : ''}
+                       {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: t('common.locale', 'fr') === 'fr-FR' ? fr : undefined }) : ''}
                     </span>
                   </div>
                   <p className={`text-xs truncate ${conv.unread_count > 0 ? 'text-text-main font-bold' : 'text-text-sub'}`}>
-                    {conv.property ? `Re: ${conv.property.title}` : 'Dernier message...'}
+                    {conv.property ? `Re: ${t(conv.property.title)}` : t('msg.list.last_message')}
                   </p>
                 </div>
               </button>
             ))
           ) : (
             <div className="p-8 text-center">
-              <p className="text-sm text-text-muted">Aucune conversation pour le moment.</p>
+              <p className="text-sm text-text-muted">{t('msg.list.empty')}</p>
             </div>
           )}
         </div>
@@ -204,7 +206,7 @@ const Messages = () => {
                 <div>
                   <h3 className="font-bold text-text-main leading-tight">{selectedConversation.other_user.name}</h3>
                   <p className="text-[10px] font-semibold text-emerald-500 flex items-center gap-1 uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> En ligne
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> {t('msg.status.online')}
                   </p>
                 </div>
               </div>
@@ -216,14 +218,13 @@ const Messages = () => {
               </div>
             </header>
 
-            {/* Context Property Bar if exists */}
             {selectedConversation.property && (
                 <div className="bg-bg-soft px-6 py-2 border-b border-border-main flex items-center justify-between text-xs transition-all">
                     <div className="flex items-center gap-2 overflow-hidden">
                         <BuildingOfficeIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="text-text-sub font-medium truncate">Concerne : <strong>{selectedConversation.property.title}</strong></span>
+                        <span className="text-text-sub font-medium truncate">{t('msg.property.concerning')} <strong>{t(selectedConversation.property.title)}</strong></span>
                     </div>
-                    <button className="text-primary font-bold hover:underline shrink-0 ml-4">Voir le bien</button>
+                    <button className="text-primary font-bold hover:underline shrink-0 ml-4">{t('msg.property.view_btn')}</button>
                 </div>
             )}
 
@@ -265,7 +266,7 @@ const Messages = () => {
                   type="text" 
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Écrivez votre message ici..." 
+                  placeholder={t('msg.input.placeholder')}
                   className="flex-1 bg-bg-soft border-none rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-primary focus:bg-bg-card transition-all text-text-main"
                 />
                 <button 
@@ -283,8 +284,8 @@ const Messages = () => {
             <div className="w-24 h-24 bg-bg-card rounded-3xl flex items-center justify-center shadow-xl mb-6 border border-border-main">
               <PaperAirplaneIcon className="w-12 h-12 text-text-muted -rotate-45" />
             </div>
-            <h3 className="text-xl font-bold text-text-main mb-2">Sélectionnez une conversation</h3>
-            <p className="max-w-xs text-sm">Commencez à discuter avec vos clients ou agents pour finaliser vos transactions immobilières.</p>
+            <h3 className="text-xl font-bold text-text-main mb-2">{t('msg.empty.title')}</h3>
+            <p className="max-w-xs text-sm">{t('msg.empty.desc')}</p>
           </div>
         )}
       </div>
