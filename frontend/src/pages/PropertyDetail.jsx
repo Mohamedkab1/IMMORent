@@ -26,6 +26,17 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -50,6 +61,7 @@ const PropertyDetail = () => {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -195,9 +207,25 @@ const PropertyDetail = () => {
     navigate(`/properties/${id}/payment`, { state: { property } });
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success(t('prop.detail.link_copied'));
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: property.title,
+      text: property.description,
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setShowShareModal(true);
+        }
+      }
+    } else {
+      setShowShareModal(true);
+    }
   };
 
   const handleToggleFavorite = () => {
@@ -256,7 +284,10 @@ const PropertyDetail = () => {
           >
             {isFavorite(property.id) ? <HeartIconSolid className="w-5 h-5" /> : <HeartIcon className="w-5 h-5" />}
           </button>
-          <button className="p-3 bg-bg-card border border-border-main rounded-xl text-text-sub hover:text-primary hover:border-primary/20 transition-all shadow-main">
+          <button 
+            onClick={handleShare}
+            className="p-3 bg-bg-card border border-border-main rounded-xl text-text-sub hover:text-primary hover:border-primary/20 transition-all shadow-main"
+          >
             <ShareIcon className="w-5 h-5" />
           </button>
         </div>
@@ -354,10 +385,10 @@ const PropertyDetail = () => {
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { icon: ArrowsRightLeftIcon, val: `${property.surface} ${t('prop.surface_unit')}`, label: t('prop.detail.surface') },
-                { icon: BuildingOfficeIcon, val: `${property.rooms}`, label: t('prop.detail.rooms') },
-                { icon: HomeIcon, val: `${property.bedrooms || 0}`, label: t('prop.detail.bedrooms') },
-                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0}`, label: t('prop.detail.bathrooms') }
-              ].map((item, i) => (
+                { icon: BuildingOfficeIcon, val: `${property.rooms}`, label: t('prop.detail.rooms'), hideIfLand: true },
+                { icon: HomeIcon, val: `${property.bedrooms || 0}`, label: t('prop.detail.bedrooms'), hideIfLand: true },
+                { icon: CurrencyDollarIcon, val: `${property.bathrooms || 0}`, label: t('prop.detail.bathrooms'), hideIfLand: true }
+              ].filter(item => !(property.type === 'land' && item.hideIfLand)).map((item, i) => (
                 <div key={i} className="bg-bg-card p-6 rounded-2xl border border-border-main flex flex-col items-center justify-center text-center shadow-sm">
                   <item.icon className="w-8 h-8 text-primary dark:text-secondary mb-3" />
                   <span className="text-xl font-bold text-text-main">{item.val}</span>
@@ -619,11 +650,98 @@ const PropertyDetail = () => {
                   </div>
                 )}
               </div>
+
+              {/* Map Card in Sidebar */}
+              <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-huge overflow-hidden group">
+                <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
+                  <MapPinIcon className="w-5 h-5 text-primary" />
+                  Localisation
+                </h3>
+                {property.latitude && property.longitude ? (
+                  <div className="rounded-2xl overflow-hidden h-64 w-full relative z-0 border border-border-main">
+                    <MapContainer 
+                      center={[parseFloat(property.latitude), parseFloat(property.longitude)]} 
+                      zoom={14} 
+                      style={{ height: '100%', width: '100%' }}
+                      className="grayscale-[0.4] group-hover:grayscale-0 transition-all duration-700"
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[parseFloat(property.latitude), parseFloat(property.longitude)]}>
+                        <Popup>
+                          <p className="font-bold text-xs">{property.address}</p>
+                        </Popup>
+                      </Marker>
+                    </MapContainer>
+                  </div>
+                ) : (
+                  <div className="bg-bg-soft rounded-2xl p-8 text-center border border-dashed border-border-main">
+                    <p className="text-text-muted text-xs font-medium italic">Localisation non renseignée</p>
+                  </div>
+                )}
+                <p className="mt-4 text-sm text-text-sub font-medium">{property.address}</p>
+              </div>
             </div>
           </div>
         </div>
       </main>
 
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-bg-card w-full max-w-md rounded-3xl shadow-huge border border-border-main p-8 animate-scale-up">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-text-main">Partager ce bien</h3>
+              <button onClick={() => setShowShareModal(false)} className="p-2 hover:bg-bg-soft rounded-xl transition-colors">
+                <XMarkIcon className="w-6 h-6 text-text-muted" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 bg-bg-soft rounded-2xl border border-border-main">
+                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-2">Lien public</p>
+                <div className="flex gap-2">
+                  <input 
+                    readOnly 
+                    value={window.location.href} 
+                    className="bg-transparent border-0 p-0 text-sm font-medium text-text-main flex-1 focus:ring-0"
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success(t('prop.detail.link_copied'));
+                    }}
+                    className="text-primary font-bold text-sm hover:underline"
+                  >
+                    Copier
+                  </button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(property.title + ' ' + window.location.href)}`)}
+                  className="flex items-center justify-center gap-3 p-4 bg-green-500/10 text-green-600 rounded-2xl font-bold hover:bg-green-500/20 transition-colors"
+                >
+                  WhatsApp
+                </button>
+                <button 
+                  onClick={() => window.location.href = `mailto:?subject=${encodeURIComponent(property.title)}&body=${encodeURIComponent(window.location.href)}`}
+                  className="flex items-center justify-center gap-3 p-4 bg-blue-500/10 text-blue-600 rounded-2xl font-bold hover:bg-blue-500/20 transition-colors"
+                >
+                  Email
+                </button>
+              </div>
+              
+              <button 
+                onClick={() => setShowShareModal(false)}
+                className="w-full py-4 bg-bg-soft text-text-main rounded-2xl font-bold hover:bg-border-main transition-colors mt-2"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

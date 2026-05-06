@@ -9,7 +9,7 @@ class Property extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'description', 'price', 'address', 'city', 'postal_code',
+        'title', 'description', 'price', 'address', 'latitude', 'longitude', 'city', 'postal_code',
         'surface', 'rooms', 'bedrooms', 'bathrooms', 'status', 'type',
         'listing_type', 'features', 'images', 'user_id', 'category_id', 'owner_id'
     ];

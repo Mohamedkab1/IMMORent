@@ -27,6 +27,8 @@ class StorePropertyRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'transaction_type' => 'required|in:rent,sale,for_rent,for_sale',
             'address' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'city' => 'required|string',
             'postal_code' => 'required|string|max:10',
             'surface' => 'required|numeric|min:0',

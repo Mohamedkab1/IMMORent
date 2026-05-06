@@ -111,6 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/properties/{id}/reject', [PropertyController::class, 'reject']);
         Route::put('/admin/properties/{id}/archive', [PropertyController::class, 'toggleArchive']);
         Route::put('/admin/properties/{id}/featured', [PropertyController::class, 'toggleFeatured']);
+        Route::post('/admin/properties/geocode-existing', [PropertyController::class, 'geocodeExisting']);
 
         // Settings
         Route::get('/admin/settings', [SettingController::class, 'index']);

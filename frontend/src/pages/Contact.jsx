@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '../context/LanguageContext';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const Contact = () => {
   const { t } = useLanguage();
@@ -140,19 +151,23 @@ const Contact = () => {
           </div>
 
           {/* Map */}
-          <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-border-main relative group">
-            {/* Map Placeholder or Google maps Embed */}
-            <div className="absolute inset-0 bg-bg-soft animate-pulse pointer-events-none -z-10"></div>
-            <iframe 
-              title="Carte localisation agence Marrakech"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217009.8920852963!2d-8.04298672152276!3d31.646783331007564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafee8d96179e51%3A0x5950b6534f87adb8!2sMarrakech%2C%20Maroc!5e0!3m2!1sfr!2sfr!4v1700000000000!5m2!1sfr!2sfr" 
-              width="100%" 
-              height="100%" 
-              style={{ border: 0 }} 
-              allowFullScreen 
-              loading="lazy"
-              className="grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 z-10 relative"
-            />
+          <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-border-main relative group z-0">
+            <MapContainer 
+              center={[31.6295, -7.9811]} 
+              zoom={13} 
+              style={{ height: '100%', width: '100%' }}
+              className="grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000"
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[31.6295, -7.9811]}>
+                <Popup>
+                  <div className="p-2 text-center">
+                    <p className="font-bold text-primary">IMMORent Marrakech</p>
+                    <p className="text-xs text-text-muted mt-1">Siège Social - Centre Ville</p>
+                  </div>
+                </Popup>
+              </Marker>
+            </MapContainer>
           </div>
           
         </div>
