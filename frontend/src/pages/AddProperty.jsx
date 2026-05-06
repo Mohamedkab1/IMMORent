@@ -18,8 +18,32 @@ import {
   TagIcon,
   LockClosedIcon,
   InformationCircleIcon,
-  StarIcon
+  StarIcon,
+  LinkIcon,
+  CheckIcon,
+  ClipboardIcon,
+  ChatBubbleBottomCenterTextIcon,
+  ShareIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Component to update map view
+const ChangeView = ({ center }) => {
+  const map = useMap();
+  map.setView(center, 13);
+  return null;
+};
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -46,7 +70,14 @@ const AddProperty = () => {
     bathrooms: '',
     type: 'apartment',
     category_id: '',
+    latitude: '',
+    longitude: '',
   });
+
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [newPropertyId, setNewPropertyId] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -93,6 +124,40 @@ const AddProperty = () => {
     const { name, value } = e.target; 
     setFormData(prev => ({ ...prev, [name]: value })); 
     if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: null })); 
+
+    if (name === 'address' && value.length > 3) {
+      searchAddress(value);
+    } else if (name === 'address') {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const searchAddress = async (query) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`, {
+        headers: {
+          'User-Agent': 'IMMORent-App'
+        }
+      });
+      const data = await res.json();
+      setAddressSuggestions(data);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error("Geocoding error", error);
+    }
+  };
+
+  const selectSuggestion = (suggestion) => {
+    setFormData(prev => ({
+      ...prev,
+      address: suggestion.display_name,
+      latitude: parseFloat(suggestion.lat),
+      longitude: parseFloat(suggestion.lon),
+      city: suggestion.address.city || suggestion.address.town || suggestion.address.village || prev.city,
+      postal_code: suggestion.address.postcode || prev.postal_code,
+    }));
+    setShowSuggestions(false);
   };
 
   const handleTransactionTypeSelect = (type) => {
@@ -136,7 +201,7 @@ const AddProperty = () => {
     if (!formData.city.trim()) errors.city = 'La ville est requise';
     if (!formData.postal_code.trim()) errors.postal_code = 'Le code postal est requis';
     if (!formData.surface || formData.surface <= 0) errors.surface = 'La surface est requise';
-    if (!formData.rooms || formData.rooms <= 0) errors.rooms = 'Le nombre de pièces est requis';
+    if (formData.type !== 'land' && (!formData.rooms || formData.rooms <= 0)) errors.rooms = 'Le nombre de pièces est requis';
     if (!formData.type) errors.type = 'Le type de bien est requis';
     if (!formData.category_id) errors.category_id = 'La catégorie est requise';
     setValidationErrors(errors);
@@ -170,15 +235,19 @@ const AddProperty = () => {
       data.append('rooms', parseInt(formData.rooms) || 1);
       data.append('bedrooms', parseInt(formData.bedrooms) || 0);
       data.append('bathrooms', parseInt(formData.bathrooms) || 0);
+      data.append('bathrooms', parseInt(formData.bathrooms) || 0);
       data.append('type', formData.type);
       data.append('category_id', parseInt(formData.category_id));
+      if (formData.latitude) data.append('latitude', formData.latitude);
+      if (formData.longitude) data.append('longitude', formData.longitude);
       data.append('features', JSON.stringify(featuresList));
       images.forEach(img => data.append('images[]', img));
       
       const res = await propertyService.create(data);
       if (res.success) { 
         toast.success('Bien immobilier ajouté avec succès !'); 
-        navigate('/dashboard/agent?refresh=true'); 
+        setNewPropertyId(res.data.id);
+        setShowSuccessModal(true);
       } else {
         toast.error(res.message || 'Une erreur est survenue.');
       }
@@ -336,17 +405,44 @@ const AddProperty = () => {
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
                   Adresse complète <span className="text-rose-500">*</span>
                 </label>
-                <input 
-                  type="text" name="address" value={formData.address} onChange={handleChange} 
-                  placeholder="Numéro, rue, bâtiment..." 
-                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                />
+                <div className="relative">
+                  <input 
+                    type="text" name="address" value={formData.address} onChange={handleChange} 
+                    placeholder="Numéro, rue, bâtiment..." 
+                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                    autoComplete="off"
+                  />
+                  {showSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute z-50 w-full mt-2 bg-bg-card border border-border-main rounded-xl shadow-xl overflow-hidden animate-fade-in">
+                      {addressSuggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => selectSuggestion(s)}
+                          className="w-full text-left px-4 py-3 hover:bg-bg-soft text-sm text-text-main border-b border-border-main last:border-0 transition-colors"
+                        >
+                          {s.display_name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {validationErrors.address && <p className="text-rose-500 text-xs font-semibold">{validationErrors.address}</p>}
               </div>
+
+              {formData.latitude && formData.longitude && (
+                <div className="rounded-xl overflow-hidden border border-border-main shadow-sm h-64 w-full relative z-0">
+                  <MapContainer center={[formData.latitude, formData.longitude]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <Marker position={[formData.latitude, formData.longitude]} />
+                    <ChangeView center={[formData.latitude, formData.longitude]} />
+                  </MapContainer>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -402,36 +498,40 @@ const AddProperty = () => {
                   {validationErrors.surface && <p className="text-rose-500 text-xs font-semibold">{validationErrors.surface}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                    Pièces <span className="text-rose-500">*</span>
-                  </label>
-                  <input 
-                    type="number" name="rooms" value={formData.rooms} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.rooms ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                  />
-                  {validationErrors.rooms && <p className="text-rose-500 text-xs font-semibold">{validationErrors.rooms}</p>}
-                </div>
+                {formData.type !== 'land' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
+                        Pièces <span className="text-rose-500">*</span>
+                      </label>
+                      <input 
+                        type="number" name="rooms" value={formData.rooms} onChange={handleChange} 
+                        className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.rooms ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                      />
+                      {validationErrors.rooms && <p className="text-rose-500 text-xs font-semibold">{validationErrors.rooms}</p>}
+                    </div>
 
-                <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                    Chambres
-                  </label>
-                  <input 
-                    type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
+                        Chambres
+                      </label>
+                      <input 
+                        type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} 
+                        className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                    Salles de bain
-                  </label>
-                  <input 
-                    type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
+                        Salles de bain
+                      </label>
+                      <input 
+                        type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} 
+                        className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -532,6 +632,94 @@ const AddProperty = () => {
           
         </form>
       </div>
+
+      {/* Success Sharing Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-bg-card w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-border-main overflow-hidden animate-scale-up">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckIcon className="w-10 h-10 stroke-[3]" />
+              </div>
+              <h2 className="text-3xl font-black text-text-main mb-2">Bien ajouté !</h2>
+              <p className="text-text-muted font-medium mb-8">Votre annonce est maintenant en ligne. Vous pouvez la partager dès maintenant.</p>
+
+              <div className="space-y-4">
+                <div className="relative group">
+                  <input 
+                    readOnly 
+                    value={`${window.location.origin}/properties/${newPropertyId}`}
+                    className="w-full px-4 py-4 bg-bg-soft border border-border-main rounded-2xl text-sm font-bold text-primary text-center pr-12 focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/properties/${newPropertyId}`);
+                      toast.success("Lien copié !");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-text-muted hover:text-primary transition-colors"
+                  >
+                    <ClipboardIcon className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <a 
+                    href={`https://wa.me/?text=${encodeURIComponent("Découvrez ce bien : " + window.location.origin + "/properties/" + newPropertyId)}`}
+                    target="_blank" rel="noreferrer"
+                    className="flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg shadow-green-500/20"
+                  >
+                    <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> WhatsApp
+                  </a>
+                  <a 
+                    href={`mailto:?subject=Bien immobilier&body=${encodeURIComponent("Découvrez ce bien : " + window.location.origin + "/properties/" + newPropertyId)}`}
+                    className="flex items-center justify-center gap-2 py-4 bg-bg-soft border border-border-main text-text-main rounded-2xl font-bold hover:bg-bg-card transition-all"
+                  >
+                    <EnvelopeIcon className="w-5 h-5" /> Email
+                  </a>
+                </div>
+
+                {navigator.share && (
+                  <button 
+                    onClick={() => navigator.share({ title: 'Bien immobilier', url: `${window.location.origin}/properties/${newPropertyId}` })}
+                    className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all shadow-xl shadow-primary/20"
+                  >
+                    <ShareIcon className="w-5 h-5" /> Plus d'options
+                  </button>
+                )}
+
+                <button 
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setFormData({
+                      title: '',
+                      description: '',
+                      price: '',
+                      transaction_type: 'rent',
+                      address: '',
+                      city: '',
+                      postal_code: '',
+                      surface: '',
+                      rooms: '',
+                      bedrooms: '',
+                      bathrooms: '',
+                      type: 'apartment',
+                      category_id: categories.length ? categories[0].id : '',
+                      latitude: '',
+                      longitude: '',
+                    });
+                    setImages([]);
+                    setImagePreviews([]);
+                    setFeaturesList([]);
+                  }}
+                  className="w-full py-4 text-text-muted font-bold hover:text-text-main transition-colors"
+                >
+                  Fermer et ajouter un autre bien
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

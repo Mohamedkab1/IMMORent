@@ -27,6 +27,8 @@ class UpdatePropertyRequest extends FormRequest
             'price' => 'sometimes|numeric|min:0',
             'transaction_type' => 'sometimes|in:rent,sale,for_rent,for_sale',
             'address' => 'sometimes|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'city' => 'sometimes|string',
             'postal_code' => 'sometimes|string|max:10',
             'surface' => 'sometimes|numeric|min:0',

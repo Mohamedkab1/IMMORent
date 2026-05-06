@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Http\Requests\StorePropertyRequest;
 use App\Http\Requests\UpdatePropertyRequest;
 use App\Notifications\GeneralNotification;
@@ -174,6 +175,15 @@ class PropertyController extends Controller
                 unset($data['transaction_type']);
             }
 
+            // Automatiquement géocoder si latitude/longitude sont absents
+            if ((!isset($data['latitude']) || !$data['latitude']) && isset($data['address'])) {
+                $geo = $this->geocodeAddress($data['address']);
+                if ($geo) {
+                    $data['latitude'] = $geo['lat'];
+                    $data['longitude'] = $geo['lon'];
+                }
+            }
+
             $property = Property::create($data);
 
             return response()->json([
@@ -260,6 +270,8 @@ class PropertyController extends Controller
             'transaction_type_label'=> $transactionTypeLabel,
             'listing_type'          => $listingType,
             'address'               => $property->address,
+            'latitude'              => (float) $property->latitude,
+            'longitude'             => (float) $property->longitude,
             'city'                  => $property->city,
             'postal_code'           => $property->postal_code,
             'surface'               => (float) $property->surface,
@@ -367,6 +379,15 @@ class PropertyController extends Controller
                 }
                 $data['images'] = $imagesToKeep;
                 unset($data['existing_images']);
+            }
+
+            // Géocodage si l'adresse a changé ou si coordonnées absentes
+            if (isset($data['address']) && (!isset($data['latitude']) || !$data['latitude'])) {
+                $geo = $this->geocodeAddress($data['address']);
+                if ($geo) {
+                    $data['latitude'] = $geo['lat'];
+                    $data['longitude'] = $geo['lon'];
+                }
             }
 
             $property->update($data);
@@ -693,5 +714,65 @@ class PropertyController extends Controller
             'unavailable' => 'Indisponible'
         ];
         return $labels[$status] ?? $status;
+    }
+
+    /**
+     * Géocoder une adresse via Nominatim
+     */
+    private function geocodeAddress($address)
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'IMMORent-App'
+            ])->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address,
+                'format' => 'json',
+                'limit' => 1,
+            ]);
+
+            $coords = $response->json();
+            if (!empty($coords)) {
+                return [
+                    'lat' => $coords[0]['lat'],
+                    'lon' => $coords[0]['lon']
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Geocoding error for address ' . $address . ': ' . $e->getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Endpoint temporaire pour géocoder les biens existants
+     */
+    public function geocodeExisting(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        $properties = Property::whereNull('latitude')->orWhere('latitude', 0)->get();
+        $count = 0;
+
+        foreach ($properties as $property) {
+            if ($property->address) {
+                $geo = $this->geocodeAddress($property->address);
+                if ($geo) {
+                    $property->update([
+                        'latitude' => $geo['lat'],
+                        'longitude' => $geo['lon']
+                    ]);
+                    $count++;
+                    // Respecter les limites de taux de Nominatim (1 requête par seconde recommandé)
+                    usleep(1000000); 
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "$count biens ont été géocodés avec succès."
+        ]);
     }
 }
