@@ -31,6 +31,7 @@ import {
 } from '@heroicons/react/24/outline';
 import StatsCard from '../components/Common/StatsCard';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import RevenueChart from '../components/Dashboard/RevenueChart';
 
 const AgentDashboard = () => {
   const { user } = useAuth();
@@ -50,7 +51,8 @@ const AgentDashboard = () => {
     pendingRequests: 0, 
     activeContracts: 0, 
     monthlyRevenue: 0,
-    pendingReviews: 0
+    pendingReviews: 0,
+    revenueChartData: []
   });
   const [requestFilter, setRequestFilter] = useState('all'); // all, pending, processed
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -86,7 +88,8 @@ const AgentDashboard = () => {
           availableProperties: data.my_properties?.available || 0,
           pendingRequests: data.requests?.pending || 0,
           activeContracts: data.contracts?.managed || 0,
-          monthlyRevenue: parseFloat(data.revenue_managed) || 0
+          monthlyRevenue: parseFloat(data.revenue_managed) || 0,
+          revenueChartData: data.charts?.revenue_by_month || []
         });
       }
     } catch (error) {
@@ -384,6 +387,10 @@ const AgentDashboard = () => {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
+            <div className="h-96">
+              <RevenueChart data={stats.revenueChartData || []} title={t('agent.dashboard.evolution', 'Evolution du travail')} />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Dernières Demandes */}
               <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm p-6 overflow-hidden">

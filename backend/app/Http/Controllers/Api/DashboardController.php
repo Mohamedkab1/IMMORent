@@ -133,6 +133,7 @@ class DashboardController extends Controller
             ],
             'charts' => [
                 'requests_by_month' => $this->getMonthlyRequestsForAgent($user),
+                'revenue_by_month' => $this->getMonthlyRevenueForAgent($user),
             ]
         ];
 
@@ -220,6 +221,40 @@ class DashboardController extends Controller
     {
         try {
             return [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    private function getMonthlyRevenueForAgent($user)
+    {
+        try {
+            $months = [];
+            for ($i = 11; $i >= 0; $i--) {
+                $date = \Carbon\Carbon::now()->subMonths($i);
+                $months[$date->format('Y-m')] = [
+                    'month' => $date->format('n'),
+                    'total' => 0
+                ];
+            }
+
+            $payments = \App\Models\Payment::where('status', 'paid')
+                ->whereHas('contract', function($q) use ($user) {
+                    $q->where('agent_id', $user->id);
+                })
+                ->where('created_at', '>=', \Carbon\Carbon::now()->subMonths(11)->startOfMonth())
+                ->get()
+                ->groupBy(function($val) {
+                    return \Carbon\Carbon::parse($val->created_at)->format('Y-m');
+                });
+
+            foreach ($payments as $monthYear => $monthPayments) {
+                if (isset($months[$monthYear])) {
+                    $months[$monthYear]['total'] = $monthPayments->sum('amount');
+                }
+            }
+
+            return array_values($months);
         } catch (\Exception $e) {
             return [];
         }
