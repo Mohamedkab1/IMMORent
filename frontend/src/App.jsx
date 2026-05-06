@@ -31,6 +31,7 @@ import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
 import Favorites from './pages/Favorites';
 import Payment from './pages/Payment';
+import ChatWidget from './components/Common/ChatWidget';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -91,6 +92,7 @@ function App() {
               </main>
               <Footer />
             </div>
+            <ChatWidget />
             <ToastContainer 
               position="top-right"
               autoClose={5000}
