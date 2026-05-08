@@ -32,8 +32,10 @@ const Notifications = () => {
     setLoading(true);
     try {
       const res = await notificationService.getAll({ per_page: 50 });
-      if (res.success) {
-        setNotifications(res.data.data || []);
+      if (res.data?.success) {
+        // Laravel pagination returns the items in the 'data' property of the response 'data'
+        const rawNotifications = res.data?.data?.data || [];
+        setNotifications(rawNotifications);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);

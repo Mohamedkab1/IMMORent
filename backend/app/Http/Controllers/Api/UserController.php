@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Notifications\GeneralNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AgentRequestAcceptedMail;
 
 class UserController extends Controller
 {
@@ -345,6 +347,14 @@ class UserController extends Controller
             'type' => 'agent_request_processed',
             'link' => $status === 'approved' ? '/dashboard/agent' : '/profile',
         ]));
+
+        if ($status === 'approved') {
+            try {
+                Mail::to($user->email)->send(new AgentRequestAcceptedMail($user));
+            } catch (\Exception $e) {
+                Log::error('Erreur lors de l\'envoi de l\'email agent_request_accepted: ' . $e->getMessage());
+            }
+        }
 
         return response()->json([
             'success' => true,

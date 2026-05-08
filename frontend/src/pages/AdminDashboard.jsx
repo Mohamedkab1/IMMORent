@@ -221,7 +221,16 @@ const AdminDashboard = () => {
     setLoadingRequests(true);
     try {
       const res = await userService.getAgentRequests();
-      if (res.success) setAgentRequests(res.data);
+      if (res.success) {
+        setAgentRequests(res.data);
+        setStats(prev => prev ? {
+          ...prev,
+          requests: {
+            ...(prev.requests || {}),
+            pending: 0
+          }
+        } : prev);
+      }
     } catch (error) {
       console.error('Erreur chargement demandes agents:', error);
     } finally {
@@ -498,6 +507,12 @@ const AdminDashboard = () => {
             )}
           </Link>
           <Link 
+            to="/notifications" 
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm text-text-sub hover:bg-bg-soft hover:text-text-main`}
+          >
+            <BellIcon className="w-5 h-5" /> {t('nav.notifications')}
+          </Link>
+          <Link 
             to="/dashboard/admin/settings" 
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
@@ -554,10 +569,6 @@ const AdminDashboard = () => {
             >
               <ArrowPathIcon className="w-5 h-5" />
             </button>
-            <div className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:shadow-md relative cursor-pointer hover:scale-105 hover:text-primary transition-all">
-              <BellIcon className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-bg-card"></span>
-            </div>
           </div>
         </header>
 

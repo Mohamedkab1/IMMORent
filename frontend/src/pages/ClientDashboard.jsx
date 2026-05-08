@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { useLanguage } from '../context/LanguageContext';
+import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { 
   HomeIcon, 
@@ -59,6 +60,7 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 
 const ClientDashboard = () => {
   const { user } = useAuth();
+  const { favoritesCount } = useFavorites();
   const location = useLocation();
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -272,7 +274,7 @@ const ClientDashboard = () => {
                 <StatsCard title={t('dash.stats.pending_requests')} value={stats.activeRequests} icon={BellIcon} color="blue" />
                 <StatsCard title={t('dash.stats.active_contracts')} value={stats.activeContracts} icon={DocumentTextIcon} color="green" />
                 <StatsCard title={t('client.dashboard.stats.expenses')} value={`${stats.totalPayments.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" />
-                <StatsCard title={t('client.dashboard.stats.favorites')} value={stats.favoriteProperties} icon={HeartIcon} color="rose" />
+                <StatsCard title={t('client.dashboard.stats.favorites')} value={favoritesCount} icon={HeartIcon} color="rose" />
                 </div>
               </RevealOnScroll>
 
