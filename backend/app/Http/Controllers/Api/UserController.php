@@ -146,7 +146,9 @@ class UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'remove_photo' => 'nullable|boolean',
+            'current_password' => 'sometimes|required_with:password|string',
             'password' => 'sometimes|nullable|string|min:8|confirmed',
         ]);
 
@@ -154,9 +156,22 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->except(['profile_photo', 'password', 'role_id']);
+        $data = $request->except(['profile_photo', 'password', 'role_id', 'remove_photo', 'current_password']);
 
+        // Photo Removal
+        if ($request->remove_photo) {
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+                $user->profile_photo = null;
+                $user->save();
+            }
+        }
+
+        // Password Update with Verification
         if ($request->has('password') && !empty($request->password)) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['success' => false, 'message' => 'L\'ancien mot de passe est incorrect'], 422);
+            }
             $data['password'] = Hash::make($request->password);
         }
 
@@ -174,7 +189,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil mis à jour avec succès',
-            'data' => $user->fresh('role')
+            'data' => $user->fresh(['role'])->loadCount(['rentalRequests', 'contractsAsTenant', 'contractsAsAgent', 'properties'])
         ]);
     }
 

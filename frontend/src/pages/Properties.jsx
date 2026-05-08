@@ -17,6 +17,40 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = React.useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Properties = () => {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -119,70 +153,80 @@ const Properties = () => {
   return (
     <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-primary via-primary-hover to-slate-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 px-6 py-20 text-center overflow-hidden">
+      <div className="relative flex items-center justify-center min-h-[40vh] bg-slate-900 group overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-slate-900/90 z-10 transition-opacity duration-700 group-hover:opacity-80"></div>
+        <img 
+          src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80" 
+          alt="Properties Background" 
+          className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-[15s] group-hover:scale-110" 
+        />
+        
         {/* Abstract Background patterns */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" width="404" height="404" fill="none" viewBox="0 0 404 404">
+        <div className="absolute inset-0 opacity-10 z-10 mix-blend-overlay">
+          <svg className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" width="600" height="600" fill="none" viewBox="0 0 404 404">
             <defs>
               <pattern id="pattern-circles" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
                 <circle cx="2" cy="2" r="2" fill="currentColor" />
               </pattern>
             </defs>
-            <rect width="404" height="404" fill="url(#pattern-circles)" />
+            <rect width="600" height="600" fill="url(#pattern-circles)" />
           </svg>
         </div>
 
-        <div className="relative z-10 max-w-3xl mx-auto text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight drop-shadow-md">
-            {t('prop.hero.title_p1')} <span className="text-secondary">{t('prop.hero.title_p2')}</span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-sm font-medium">
-            {t('prop.hero.subtitle')}
-          </p>
-          <button 
-            className="md:hidden inline-flex items-center gap-2 px-6 py-3 bg-secondary text-primary hover:bg-secondary-hover rounded-xl font-bold transition-all shadow-xl hover:-translate-y-1"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <FunnelIcon className="w-5 h-5" />
-            {showFilters ? t('prop.filter.hide') : t('prop.filter.show')}
-          </button>
+        <div className="relative z-20 max-w-3xl mx-auto text-center px-4 mt-8">
+          <RevealOnScroll>
+            <span className="inline-block py-1 px-4 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold mb-4 tracking-widest uppercase">
+              {t('nav.properties')}
+            </span>
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight text-white drop-shadow-lg">
+              {t('prop.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('prop.hero.title_p2')}</span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-md font-medium leading-relaxed">
+              {t('prop.hero.subtitle')}
+            </p>
+            <button 
+              className="md:hidden inline-flex items-center gap-2 px-8 py-4 bg-secondary text-primary hover:bg-yellow-400 rounded-xl font-bold transition-all shadow-xl hover:-translate-y-1"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <FunnelIcon className="w-5 h-5" />
+              {showFilters ? t('prop.filter.hide') : t('prop.filter.show')}
+            </button>
+          </RevealOnScroll>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8">
         
         {/* Filters Sidebar */}
-        <aside className={`fixed md:relative top-0 ${showFilters ? 'start-0' : '-start-full'} md:start-0 w-80 md:w-1/4 h-full md:h-auto bg-bg-card z-50 md:z-0 shadow-huge md:shadow-main md:rounded-2xl border-e md:border border-border-main transition-all duration-300 overflow-y-auto md:overflow-visible`}>
-          <div className="p-6 sticky top-0 bg-bg-card border-b border-border-main flex justify-between items-center z-10">
-            <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
+        <aside className={`fixed md:relative top-0 ${showFilters ? 'start-0' : '-start-full'} md:start-0 w-80 md:w-1/4 h-full md:h-auto bg-bg-card z-50 md:z-0 shadow-2xl md:shadow-main md:rounded-3xl border-e md:border border-border-main transition-all duration-500 overflow-y-auto md:overflow-visible`}>
+          <div className="p-6 sticky top-0 bg-bg-card/95 backdrop-blur-xl border-b border-border-main flex justify-between items-center z-10">
+            <h2 className="text-lg font-black text-text-main flex items-center gap-2 uppercase tracking-wide">
               <FunnelIcon className="w-5 h-5 text-primary dark:text-secondary" />
               {t('prop.filter.title')}
             </h2>
-            <button onClick={() => setShowFilters(false)} className="md:hidden p-2 text-text-muted hover:text-red-500 rounded-lg hover:bg-bg-soft">
+            <button onClick={() => setShowFilters(false)} className="md:hidden p-2 text-text-muted hover:text-red-500 rounded-xl hover:bg-red-500/10 transition-colors">
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
 
           <form onSubmit={(e) => e.preventDefault()} className="p-6 space-y-6">
-            <div className="space-y-1.5 border-b border-border-main pb-6">
-              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('prop.filter.location')}</label>
+            <div className="space-y-2 border-b border-border-main pb-6 group">
+              <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.location')}</label>
               <div className="relative">
-                <MapPinIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                <MapPinIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   name="city"
                   value={filters.city}
                   onChange={handleFilterChange}
                   placeholder={t('prop.filter.loc_placeholder')}
-                  className="w-full ps-10 pe-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all"
+                  className="w-full ps-10 pe-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all shadow-inner"
                 />
               </div>
             </div>
 
-
-
-            <div className="space-y-1.5 border-b border-border-main pb-6">
-              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('prop.filter.budget')}</label>
+            <div className="space-y-2 border-b border-border-main pb-6 group">
+              <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.budget')}</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -190,7 +234,7 @@ const Properties = () => {
                   value={filters.min_price}
                   onChange={handleFilterChange}
                   placeholder={t('prop.filter.budget_min')}
-                  className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <span className="text-text-muted font-bold">-</span>
                 <input
@@ -199,33 +243,33 @@ const Properties = () => {
                   value={filters.max_price}
                   onChange={handleFilterChange}
                   placeholder={t('prop.filter.budget_max')}
-                  className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 border-b border-border-main pb-6">
-              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('prop.filter.surface_min')}</label>
+            <div className="space-y-2 border-b border-border-main pb-6 group">
+              <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.surface_min')}</label>
               <div className="relative">
-                <ArrowsRightLeftIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                <ArrowsRightLeftIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                 <input
                   type="number"
                   name="surface_min"
                   value={filters.surface_min}
                   onChange={handleFilterChange}
                   placeholder={t('prop.filter.surface_placeholder')}
-                  className="w-full ps-10 pe-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full ps-10 pe-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5 border-b border-border-main pb-6">
-              <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('prop.filter.rooms')}</label>
+            <div className="space-y-2 border-b border-border-main pb-6 group">
+              <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.rooms')}</label>
               <select
                 name="rooms"
                 value={filters.rooms}
                 onChange={handleFilterChange}
-                className="w-full px-4 py-2.5 bg-bg-soft border border-border-main rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all appearance-none cursor-pointer"
+                className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all appearance-none cursor-pointer shadow-inner"
               >
                 <option value="">{t('prop.filter.all_rooms')}</option>
                 {[1,2,3,4].map(n => <option key={n} value={n}>{n} {t('prop.filter.room_unit')}{n>1?'s':''}</option>)}
@@ -237,7 +281,7 @@ const Properties = () => {
               <button 
                 type="button" 
                 onClick={handleReset} 
-                className="w-full py-3 bg-bg-soft text-text-main hover:bg-border-main active:scale-95 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary hover:bg-primary hover:text-white dark:hover:bg-secondary dark:hover:text-primary rounded-2xl font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
               >
                 <ArrowPathIcon className="w-5 h-5" /> {t('prop.filter.reset')}
               </button>
@@ -247,7 +291,7 @@ const Properties = () => {
 
         {/* Backdrop for mobile sidebar */}
         {showFilters && (
-          <div className="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setShowFilters(false)} />
+          <div className="fixed inset-0 bg-slate-900/60 z-40 md:hidden backdrop-blur-md transition-opacity" onClick={() => setShowFilters(false)} />
         )}
 
         {/* Properties Content */}
@@ -290,99 +334,100 @@ const Properties = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {properties.map(property => (
-                  <div key={property.id} className="group flex flex-col bg-bg-card rounded-2xl border border-border-main overflow-hidden hover:shadow-huge hover:-translate-y-2 transition-all duration-300">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-bg-soft">
-                      <img 
-                        src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage} 
-                        alt={property.title}
-                        className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${property.status !== 'available' ? 'brightness-75' : ''}`}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60"></div>
-                      
-                      <div className="absolute top-4 start-4 flex flex-col gap-2">
-                        {property.transaction_type === 'sale' ? (
-                          <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.sale')}</span>
-                        ) : (
-                           <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.rent')}</span>
-                        )}
-                        {/* ✅ Badge statut sur la photo */}
-                        {property.status === 'reserved' && (
-                          <span className="px-3 py-1 bg-rose-700 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.reserved')}</span>
-                        )}
-                        {property.status === 'rented' && (
-                          <span className="px-3 py-1 bg-orange-600 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.rented')}</span>
-                        )}
-                        {property.status === 'sold' && (
-                          <span className="px-3 py-1 bg-gray-700 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.sold')}</span>
-                        )}
-                      </div>
-                      
-                      <div className="absolute top-4 end-4">
-                        <span className="px-3 py-1 bg-bg-glass backdrop-blur-sm text-text-main text-xs font-bold rounded-full shadow-large hidden md:block">
-                          {t(`property.type.${property.type}`, property.type_label)}
-                        </span>
-                      </div>
-                      
-                      <div className="absolute bottom-4 inset-x-4">
-                         <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{t(property.title)}</h3>
-                         <div className="text-slate-200 text-xs mt-1 flex items-center gap-1 opacity-90">
-                           <MapPinIcon className="w-3.5 h-3.5" />
-                           {property.city}
-                         </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-5 flex-1 flex flex-col">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex flex-col">
-                           <span className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-1">{t('prop.card.price')}</span>
-                           <div className="text-xl font-black text-primary dark:text-white">
-                             {property.price?.toLocaleString(t('common.locale', 'fr-FR'))} <span className="text-sm font-bold text-text-muted">{t('prop.card.dh')}{property.transaction_type === 'rent' ? t('prop.card.per_month') : ''}</span>
+                {properties.map((property, index) => (
+                  <RevealOnScroll key={property.id} delay={(index % 6) * 100}>
+                    <div className="group flex flex-col bg-bg-card rounded-3xl border border-border-main overflow-hidden shadow-sm hover:shadow-2xl hover:border-primary/20 dark:hover:border-secondary/20 hover:-translate-y-2 transition-all duration-500 h-full">
+                      <div className="relative aspect-[4/3] overflow-hidden bg-bg-soft">
+                        <img 
+                          src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage} 
+                          alt={property.title}
+                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${property.status !== 'available' ? 'brightness-75' : ''}`}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        <div className="absolute top-4 start-4 flex flex-col gap-2">
+                          {property.transaction_type === 'sale' ? (
+                            <span className="px-4 py-1.5 bg-rose-500 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.sale')}</span>
+                          ) : (
+                             <span className="px-4 py-1.5 bg-green-500 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.rent')}</span>
+                          )}
+                          {/* ✅ Badge statut sur la photo */}
+                          {property.status === 'reserved' && (
+                            <span className="px-4 py-1.5 bg-rose-700 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.reserved')}</span>
+                          )}
+                          {property.status === 'rented' && (
+                            <span className="px-4 py-1.5 bg-orange-600 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.rented')}</span>
+                          )}
+                          {property.status === 'sold' && (
+                            <span className="px-4 py-1.5 bg-gray-700 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.sold')}</span>
+                          )}
+                        </div>
+                        
+                        <div className="absolute top-4 end-4">
+                          <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold rounded-full shadow-lg hidden md:block">
+                            {t(`property.type.${property.type}`, property.type_label)}
+                          </span>
+                        </div>
+                        
+                        <div className="absolute bottom-4 inset-x-5 transform transition-transform duration-300 group-hover:-translate-y-1">
+                           <h3 className="text-white font-extrabold text-xl leading-tight line-clamp-1 drop-shadow-md mb-1">{t(property.title)}</h3>
+                           <div className="text-slate-300 text-sm flex items-center gap-1.5 font-medium">
+                             <MapPinIcon className="w-4 h-4 text-secondary" />
+                             {property.city}
                            </div>
                         </div>
-                        {/* ✅ Badge statut visible dans la carte */}
-                        {property.status === 'reserved' && (
-                          <span className="px-2.5 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-bold rounded-full border border-rose-200 dark:border-rose-800/40 whitespace-nowrap">
-                            {t('prop.card.reserved')}
-                          </span>
-                        )}
-                        {property.status === 'rented' && (
-                          <span className="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-bold rounded-full border border-orange-200 dark:border-orange-800/40 whitespace-nowrap">
-                            {t('prop.card.rented')}
-                          </span>
-                        )}
-                        {property.status === 'sold' && (
-                          <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-full border border-gray-200 dark:border-gray-800/40 whitespace-nowrap">
-                            {t('prop.card.sold')}
-                          </span>
-                        )}
                       </div>
+                      
+                      <div className="p-6 flex-1 flex flex-col bg-bg-card relative z-10">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="flex flex-col">
+                             <span className="text-xs text-text-muted font-black uppercase tracking-widest mb-1">{t('prop.card.price')}</span>
+                             <div className="text-2xl font-black text-primary dark:text-white">
+                               {property.price?.toLocaleString(t('common.locale', 'fr-FR'))} <span className="text-base font-bold text-text-muted">{t('prop.card.dh')}{property.transaction_type === 'rent' ? t('prop.card.per_month') : ''}</span>
+                             </div>
+                          </div>
+                          {/* ✅ Badge statut visible dans la carte */}
+                          {property.status === 'reserved' && (
+                            <span className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl border border-rose-100 dark:border-rose-800/30">
+                              {t('prop.card.reserved')}
+                            </span>
+                          )}
+                          {property.status === 'rented' && (
+                            <span className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-xs font-bold rounded-xl border border-orange-100 dark:border-orange-800/30">
+                              {t('prop.card.rented')}
+                            </span>
+                          )}
+                          {property.status === 'sold' && (
+                            <span className="px-3 py-1.5 bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 text-xs font-bold rounded-xl border border-gray-100 dark:border-gray-800/30">
+                              {t('prop.card.sold')}
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="flex items-center gap-4 py-4 border-y border-border-main mb-4 mt-auto">
-                        <div className="flex items-center gap-1.5 text-text-sub text-sm font-medium">
-                          <ArrowsRightLeftIcon className="w-4 h-4 text-text-muted" />
-                          {property.surface} m²
+                        <div className="flex items-center gap-5 py-5 border-y border-border-main mb-6 mt-auto">
+                          <div className="flex items-center gap-2 text-text-sub font-semibold bg-bg-soft px-3 py-1.5 rounded-lg">
+                            <ArrowsRightLeftIcon className="w-4 h-4 text-primary dark:text-secondary" />
+                            {property.surface} m²
+                          </div>
+                          <div className="flex items-center gap-2 text-text-sub font-semibold bg-bg-soft px-3 py-1.5 rounded-lg">
+                            <BuildingOfficeIcon className="w-4 h-4 text-primary dark:text-secondary" />
+                            {property.rooms} p.
+                          </div>
                         </div>
-                        <div className="w-1 h-1 bg-border-main rounded-full"></div>
-                        <div className="flex items-center gap-1.5 text-text-sub text-sm font-medium">
-                          <BuildingOfficeIcon className="w-4 h-4 text-text-muted" />
-                          {property.rooms} p.
-                        </div>
+
+                        <Link 
+                          to={`/properties/${property.id}`}
+                          className={`block w-full py-4 text-center font-black uppercase tracking-wider rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl ${
+                            property.status === 'available'
+                              ? 'bg-secondary text-primary hover:bg-yellow-400'
+                              : 'bg-bg-soft text-text-muted hover:bg-border-main border border-border-main'
+                          }`}
+                        >
+                          {property.status === 'available' ? t('prop.action.view_details') : t('prop.action.consult')}
+                        </Link>
                       </div>
-
-                      <Link 
-                        to={`/properties/${property.id}`}
-                        className={`block w-full py-3 text-center font-bold rounded-xl transition-all shadow-md ${
-                          property.status === 'available'
-                            ? 'bg-secondary text-primary hover:bg-secondary-hover'
-                            : 'bg-bg-soft text-text-muted hover:bg-border-main border border-border-main'
-                        }`}
-                      >
-                        {property.status === 'available' ? t('prop.action.view_details') : t('prop.action.consult')}
-                      </Link>
                     </div>
-                  </div>
+                  </RevealOnScroll>
                 ))}
               </div>
 

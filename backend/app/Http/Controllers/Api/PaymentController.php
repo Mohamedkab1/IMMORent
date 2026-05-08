@@ -156,6 +156,20 @@ class PaymentController extends Controller
             $pdfPath = storage_path('app/public/invoices/' . $filename);
             Mail::to(auth()->user()->email)->send(new InvoicePaidMail($invoice, $pdfPath));
 
+            // Notifier l'agent que le paiement a été reçu
+            $agent = $payment->contract ? $payment->contract->agent : ($payment->property ? $payment->property->user : null);
+            if ($agent) {
+                $notifData = [
+                    'title' => 'Paiement reçu',
+                    'message' => "Un paiement de {$payment->amount} DH a été reçu pour le bien : " . ($payment->property ? $payment->property->title : 'Bien inconnu'),
+                    'type' => 'payment_received',
+                    'link' => '/dashboard/agent',
+                    'icon' => 'currency-dollar'
+                ];
+                $agent->notify(new GeneralNotification($notifData));
+                event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+            }
+
             return response()->json([
                 'success' => true,
                 'payment' => $payment,

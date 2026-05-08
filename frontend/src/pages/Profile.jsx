@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { 
@@ -12,7 +12,8 @@ import {
   CalendarIcon, 
   BriefcaseIcon,
   ShieldCheckIcon,
-  CameraIcon
+  CameraIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { userService } from '../services/users';
 import { useLanguage } from '../context/LanguageContext';
@@ -26,7 +27,25 @@ const Profile = () => {
     phone: user?.phone || '',
     address: user?.address || '',
   });
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+  });
   const [loading, setLoading] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || '',
+      });
+    }
+  }, [user]);
+
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -34,11 +53,77 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Simulation d'appel API pour la démo, à connecter au vrai service si disponible
-      toast.success(t('profile.update_success'));
-      setIsEditing(false);
+      const res = await userService.update(user.id, formData);
+      if (res.success) {
+        updateUser(res.data);
+        toast.success(t('profile.update_success'));
+        setIsEditing(false);
+      }
     } catch (error) {
-      toast.error(t('profile.update_error'));
+      toast.error(error.response?.data?.message || t('profile.update_error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotoClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formDataUpload = new FormData();
+    formDataUpload.append('profile_photo', file);
+
+    setLoading(true);
+    try {
+      const res = await userService.update(user.id, formDataUpload);
+      if (res.success) {
+        updateUser(res.data);
+        toast.success(t('profile.update_success'));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('profile.update_error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!window.confirm(t('common.confirm_delete', 'Voulez-vous supprimer votre photo ?'))) return;
+    
+    setLoading(true);
+    try {
+      const res = await userService.update(user.id, { remove_photo: true });
+      if (res.success) {
+        updateUser(res.data);
+        toast.success(t('profile.update_success'));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('profile.update_error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (passwordData.password !== passwordData.password_confirmation) {
+      return toast.error(t('auth.register.error_password_match'));
+    }
+
+    setLoading(true);
+    try {
+      const res = await userService.update(user.id, passwordData);
+      if (res.success) {
+        toast.success(t('profile.update_success'));
+        setShowPasswordModal(false);
+        setPasswordData({ current_password: '', password: '', password_confirmation: '' });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || t('profile.update_error'));
     } finally {
       setLoading(false);
     }
@@ -86,10 +171,38 @@ const Profile = () => {
                     <div className="absolute top-0 left-0 right-0 h-2 bg-primary"></div>
                     
                     <div className="relative mx-auto w-32 h-32 mb-6">
-                        <div className="w-full h-full rounded-3xl bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center text-5xl font-black text-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                            {user?.name?.charAt(0) || 'U'}
-                        </div>
-                        <button className="absolute -bottom-2 -right-2 p-3 bg-secondary text-primary rounded-xl shadow-lg border-4 border-bg-card hover:scale-110 transition-transform">
+                        {user?.profile_photo ? (
+                            <div className="relative group/photo w-full h-full">
+                                <img 
+                                    src={`http://localhost:8000/storage/${user.profile_photo}?t=${new Date().getTime()}`} 
+                                    alt={user.name} 
+                                    className="w-full h-full rounded-3xl object-cover shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500 border-4 border-bg-card"
+                                />
+                                <button 
+                                    onClick={handleDeletePhoto}
+                                    className="absolute -top-2 -left-2 p-2 bg-rose-500 text-white rounded-xl shadow-lg opacity-0 group-hover/photo:opacity-100 transition-opacity hover:scale-110"
+                                    title={t('common.delete')}
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="w-full h-full rounded-3xl bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center text-5xl font-black text-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                                {user?.name?.charAt(0) || 'U'}
+                            </div>
+                        )}
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handlePhotoChange} 
+                            className="hidden" 
+                            accept="image/*"
+                        />
+                        <button 
+                            onClick={handlePhotoClick}
+                            disabled={loading}
+                            className="absolute -bottom-2 -right-2 p-3 bg-secondary text-primary rounded-xl shadow-lg border-4 border-bg-card hover:scale-110 transition-transform disabled:opacity-50"
+                        >
                             <CameraIcon className="w-5 h-5" />
                         </button>
                     </div>
@@ -104,7 +217,14 @@ const Profile = () => {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-text-sub font-medium">{t('profile.properties_rented')}</span>
-                            <span className="text-text-main font-bold">2</span>
+                            <span className="text-text-main font-bold">
+                                {user?.role?.slug === 'client' 
+                                    ? (user?.contracts_as_tenant_count || 0) 
+                                    : (user?.role?.slug === 'agent' 
+                                        ? (user?.contracts_as_agent_count || 0) 
+                                        : (user?.properties_count || 0))
+                                }
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -245,9 +365,79 @@ const Profile = () => {
                             <ShieldCheckIcon className="w-6 h-6" />
                             <h4 className="text-lg font-bold">{t('profile.security')}</h4>
                          </div>
-                         <button className="px-6 py-3 bg-bg-soft hover:bg-bg-main border border-border-main text-text-main rounded-xl text-sm font-bold transition-all">
-                             {t('profile.change_password')}
-                         </button>
+                         <div className="pt-6 border-t border-border-main flex flex-wrap gap-4">
+                             <button 
+                                onClick={() => setShowPasswordModal(true)}
+                                className="px-6 py-3 bg-bg-soft hover:bg-bg-main border border-border-main text-text-main rounded-xl text-sm font-bold transition-all"
+                             >
+                                 {t('profile.change_password')}
+                             </button>
+                         </div>
+
+                         {/* Modal Changement Mot de Passe */}
+                         {showPasswordModal && (
+                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                                 <div className="bg-bg-card w-full max-w-md rounded-3xl border border-border-main shadow-huge p-8 animate-scale-up">
+                                     <h3 className="text-xl font-black text-text-main mb-6">{t('profile.change_password')}</h3>
+                                     
+                                     <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                                         <div>
+                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
+                                                 {t('auth.login.password_label')} (actuel)
+                                             </label>
+                                             <input 
+                                                 type="password" 
+                                                 required
+                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                                 value={passwordData.current_password}
+                                                 onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
+                                             />
+                                         </div>
+                                         <div>
+                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
+                                                 {t('auth.register.password_label')} (nouveau)
+                                             </label>
+                                             <input 
+                                                 type="password" 
+                                                 required
+                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                                 value={passwordData.password}
+                                                 onChange={(e) => setPasswordData({...passwordData, password: e.target.value})}
+                                             />
+                                         </div>
+                                         <div>
+                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
+                                                 {t('auth.register.password_confirm_label')}
+                                             </label>
+                                             <input 
+                                                 type="password" 
+                                                 required
+                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                                 value={passwordData.password_confirmation}
+                                                 onChange={(e) => setPasswordData({...passwordData, password_confirmation: e.target.value})}
+                                             />
+                                         </div>
+
+                                         <div className="flex gap-4 pt-4">
+                                             <button 
+                                                 type="button"
+                                                 onClick={() => setShowPasswordModal(false)}
+                                                 className="flex-1 py-3 px-4 bg-bg-soft text-text-main font-bold rounded-xl hover:bg-border-main transition-all"
+                                             >
+                                                 {t('common.cancel')}
+                                             </button>
+                                             <button 
+                                                 type="submit"
+                                                 disabled={loading}
+                                                 className="flex-1 py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                                             >
+                                                 {loading ? t('common.loading') : t('common.save')}
+                                             </button>
+                                         </div>
+                                     </form>
+                                 </div>
+                             </div>
+                         )}
                     </div>
                 </div>
             </div>

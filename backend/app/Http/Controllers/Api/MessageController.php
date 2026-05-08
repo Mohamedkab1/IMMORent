@@ -129,13 +129,18 @@ class MessageController extends Controller
                 // Déclencher l'événement Real-time (Notification)
                 $receiver = User::find($receiverId);
                 if ($receiver) {
-                    $receiver->notify(new GeneralNotification([
+                    $notifData = [
                         'title' => 'Nouveau message',
                         'message' => "Vous avez reçu un message de {$user->name}",
                         'type' => 'message',
                         'link' => '/messages',
                         'icon' => 'chat'
-                    ]));
+                    ];
+
+                    $receiver->notify(new GeneralNotification($notifData));
+                    
+                    // Dispatch explicit real-time event for immediate UI update
+                    event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
                 }
 
                 return response()->json([

@@ -81,6 +81,17 @@ Route::get('/test-pdf', function() {
 // ROUTES PROTÉGÉES (Nécessitent une authentification)
 // ===========================================
 Route::middleware('auth:sanctum')->group(function () {
+    // Route de test pour le broadcast
+    Route::get('/test-broadcast', function () {
+        $user = auth()->user();
+        event(new \App\Events\RealTimeNotification($user->id, [
+            'title' => 'Test Real-time',
+            'message' => 'Ceci est une notification de test ' . now()->toTimeString(),
+            'type' => 'info',
+            'icon' => 'bell'
+        ]));
+        return response()->json(['message' => 'Broadcast sent to user ' . $user->id]);
+    });
     
     // ========== AUTHENTIFICATION ==========
     Route::post('/logout', [AuthController::class, 'logout']);

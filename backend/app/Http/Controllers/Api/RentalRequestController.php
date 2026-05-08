@@ -74,18 +74,25 @@ class RentalRequestController extends Controller
                 ], 404);
             }
             
-            // ✅ FIX: Normaliser transaction_type (for_rent => rent, for_sale => sale)
+            // ✅ FIX: Normaliser le type de demande reçu
+            $requestedType = match($request->type) {
+                'for_rent', 'rent' => 'rent',
+                'for_sale', 'sale' => 'sale',
+                default => $request->type,
+            };
+
+            // ✅ FIX: Normaliser transaction_type du bien (for_rent => rent, for_sale => sale)
             $propertyType = match($property->listing_type ?? $property->transaction_type) {
-                'for_rent' => 'rent',
-                'for_sale' => 'sale',
-                default    => $property->transaction_type ?? 'rent',
+                'for_rent', 'rent' => 'rent',
+                'for_sale', 'sale' => 'sale',
+                default => $property->transaction_type ?? 'rent',
             };
             
             // Vérifier que le type de demande correspond au type de bien
-            if ($request->type !== $propertyType) {
+            if ($requestedType !== $propertyType) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Le type de demande ne correspond pas au type de bien'
+                    'message' => "Le type de demande ($requestedType) ne correspond pas au type de bien ($propertyType)"
                 ], 400);
             }
             
@@ -143,13 +150,15 @@ class RentalRequestController extends Controller
             // Notifier l'agent/propriétaire
             $owner = $property->user; // Le créateur du bien
             if ($owner) {
-                $owner->notify(new GeneralNotification([
+                $notifData = [
                     'title' => 'Nouvelle demande',
                     'message' => "{$request->user()->name} a envoyé une demande pour {$property->title}",
                     'type' => 'request',
                     'link' => '/dashboard/agent',
                     'icon' => 'document-text'
-                ]));
+                ];
+                $owner->notify(new GeneralNotification($notifData));
+                event(new \App\Events\RealTimeNotification($owner->id, $notifData));
                 
                 // Envoi de l'email
                 Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
@@ -231,11 +240,21 @@ class RentalRequestController extends Controller
                 ], 422);
             }
             
-            $rentalRequest->update([
+            $success = $rentalRequest->update([
                 'status' => $request->status,
                 'rejection_reason' => $request->rejection_reason,
                 'processed_at' => now(),
                 'processed_by' => $request->user()->id
+            ]);
+
+            if (!$success) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la mise à jour du statut'], 500);
+            }
+
+            Log::info('RentalRequest status updated', [
+                'id' => $rentalRequest->id,
+                'new_status' => $rentalRequest->status,
+                'request_input' => $request->status
             ]);
             
             // Si approuvé, mettre à jour le statut du bien
@@ -250,13 +269,22 @@ class RentalRequestController extends Controller
             $client = User::find($rentalRequest->user_id);
             if ($client) {
                 $statusText = $request->status === 'approved' ? 'approuvée' : 'refusée';
-                $client->notify(new GeneralNotification([
+                $notifData = [
                     'title' => "Demande {$statusText}",
                     'message' => "Votre demande pour {$rentalRequest->property->title} a été {$statusText}",
                     'type' => 'request_update',
                     'link' => '/dashboard/client',
                     'icon' => $request->status === 'approved' ? 'check-circle' : 'x-circle'
-                ]));
+                ];
+
+                $client->notify(new \App\Notifications\GeneralNotification($notifData));
+                event(new \App\Events\RealTimeNotification($client->id, $notifData));
+
+                Log::info('Notification envoyée au client', [
+                    'client_id' => $client->id,
+                    'status' => $request->status,
+                    'property' => $rentalRequest->property->title
+                ]);
 
                 // Envoi de l'email au client
                 Mail::to($client->email)->send(new RentalRequestStatusMail($rentalRequest->load(['property', 'user'])));
@@ -318,6 +346,20 @@ class RentalRequestController extends Controller
             
             $rentalRequest->update(['status' => 'cancelled']);
             
+            // Notifier l'agent que la demande a été annulée
+            $agent = $rentalRequest->property->user;
+            if ($agent) {
+                $notifData = [
+                    'title' => 'Demande annulée',
+                    'message' => "Le client {$rentalRequest->user->name} a annulé sa demande pour {$rentalRequest->property->title}.",
+                    'type' => 'request_cancelled',
+                    'link' => '/dashboard/agent',
+                    'icon' => 'x-mark'
+                ];
+                $agent->notify(new GeneralNotification($notifData));
+                event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Demande annulée avec succès'

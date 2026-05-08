@@ -72,12 +72,18 @@ export const AuthProvider = ({ children }) => {
   const isAgent = user?.role?.slug === 'agent';
   const isClient = user?.role?.slug === 'client';
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isAdmin,
     isAgent,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { propertyService } from '../services/properties';
@@ -33,6 +33,40 @@ import StatsCard from '../components/Common/StatsCard';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import RevenueChart from '../components/Dashboard/RevenueChart';
 
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const AgentDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
@@ -59,10 +93,14 @@ const AgentDashboard = () => {
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
+  // Load on mount AND whenever coming back from contract creation
   useEffect(() => {
     loadAllData();
+  }, []);
+
+  useEffect(() => {
     if (location.search.includes('refresh')) {
-      setTimeout(() => loadAllData(), 500);
+      loadAllData();
     }
   }, [location.search]);
 
@@ -189,11 +227,23 @@ const AgentDashboard = () => {
         toast.success(status === 'approved' ? t('agent.toast.req_appr') : t('agent.toast.req_rej'));
         setShowRejectModal(false);
         setRejectionReason('');
+
+        // ✅ FIX: Update local state immediately so the badge reflects the new status
+        setRequests(prev =>
+          prev.map(r =>
+            r.id === requestId
+              ? { ...r, status, processed_at: new Date().toISOString(), rejection_reason: reason }
+              : r
+          )
+        );
+        // Also update pending count in stats
+        setStats(prev => ({
+          ...prev,
+          pendingRequests: Math.max(0, prev.pendingRequests - 1)
+        }));
         
         if (status === 'approved') {
           navigate(`/contracts/new?request=${requestId}`);
-        } else {
-          loadRequests();
         }
       } else {
         toast.error(response.message || t('agent.toast.req_err'));
@@ -225,15 +275,15 @@ const AgentDashboard = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      available: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('status.available', 'Disponible'), icon: CheckCircleIcon },
-      rented: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('status.rented', 'Loué'), icon: XCircleIcon },
-      reserved: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('status.reserved', 'Réservé'), icon: ClockIcon },
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('status.pending', 'En attente'), icon: ClockIcon },
-      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('status.approved', 'Approuvée'), icon: CheckCircleIcon },
-      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('status.rejected', 'Refusée'), icon: XCircleIcon },
-      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('status.active', 'Actif'), icon: CheckCircleIcon },
-      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('status.terminated', 'Résilié'), icon: XCircleIcon },
-      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('status.completed', 'Terminé'), icon: CheckCircleIcon }
+      available: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('prop.status.available'), icon: CheckCircleIcon },
+      rented: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400', label: t('prop.status.rented'), icon: XCircleIcon },
+      reserved: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('prop.status.reserved'), icon: ClockIcon },
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', label: t('common.status.pending'), icon: ClockIcon },
+      approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.approved'), icon: CheckCircleIcon },
+      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.rejected'), icon: XCircleIcon },
+      active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.active'), icon: CheckCircleIcon },
+      terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.terminated'), icon: XCircleIcon },
+      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('common.status.completed'), icon: CheckCircleIcon }
     };
     
     const config = statusConfig[status] || statusConfig.pending;
@@ -278,14 +328,22 @@ const AgentDashboard = () => {
     <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-bg-soft">
       
       {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-border-main text-center relative pt-12">
-           <div className="w-20 h-20 absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-huge border-4 border-bg-card">
-            {user?.name?.charAt(0)}
+      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300 md:sticky md:top-[70px] md:h-[calc(100vh-70px)] overflow-y-auto shrink-0 shadow-sm z-10">
+        <div className="p-6 border-b border-border-main flex flex-col items-center text-center">
+           <div className="w-24 h-24 overflow-hidden bg-gradient-to-tr from-primary to-blue-400 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-lg border-4 border-bg-card mb-4">
+            {user?.profile_photo ? (
+                <img 
+                    src={`http://localhost:8000/storage/${user.profile_photo}`} 
+                    alt={user.name} 
+                    className="w-full h-full object-cover"
+                />
+            ) : (
+                user?.name?.charAt(0)
+            )}
           </div>
-          <h3 className="text-xl font-bold text-text-main truncate mt-2">{user?.name}</h3>
-          <p className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
-            <UserIcon className="w-3 h-3" /> {t('agent.badges.agent')}
+          <h3 className="text-xl font-black text-text-main truncate w-full">{user?.name}</h3>
+          <p className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30 rounded-full text-[10px] font-black uppercase tracking-widest">
+            <UserIcon className="w-3.5 h-3.5" /> {t('agent.badges.agent')}
           </p>
         </div>
         
@@ -348,7 +406,7 @@ const AgentDashboard = () => {
             <button 
               onClick={refreshData} 
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-bg-card text-text-sub hover:text-primary border border-border-main rounded-lg text-sm font-medium transition-all shadow-main"
+              className="flex items-center gap-2 px-4 py-2 bg-bg-card text-text-sub hover:text-primary hover:bg-primary/5 border border-border-main rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
             >
               <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                {refreshing ? t('common.loading') : t('agent.dashboard.refresh')}
@@ -357,7 +415,8 @@ const AgentDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <RevealOnScroll>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           <StatsCard 
             title={t('home.stats.properties')} 
             value={stats.totalProperties} 
@@ -382,18 +441,23 @@ const AgentDashboard = () => {
             icon={CurrencyDollarIcon} 
             color="blue"
           />
-        </div>
+          </div>
+        </RevealOnScroll>
 
         {/* Dashboard Tab */}
+        <div className="animate-fade-in relative z-10">
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            <div className="h-96">
-              <RevenueChart data={stats.revenueChartData || []} title={t('agent.dashboard.evolution', 'Evolution du travail')} />
-            </div>
+            <RevealOnScroll delay={100}>
+              <div className="h-96">
+                <RevenueChart data={stats.revenueChartData || []} title={t('agent.dashboard.evolution', 'Evolution du travail')} />
+              </div>
+            </RevealOnScroll>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Dernières Demandes */}
-              <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm p-6 overflow-hidden">
+              <RevealOnScroll delay={200}>
+                <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <BellIcon className="w-5 h-5 text-amber-500" />
@@ -424,9 +488,11 @@ const AgentDashboard = () => {
                   )}
                 </div>
               </section>
+             </RevealOnScroll>
 
               {/* Derniers Contrats */}
-              <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm p-6 overflow-hidden">
+              <RevealOnScroll delay={300}>
+                <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
                  <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <DocumentDuplicateIcon className="w-5 h-5 text-blue-500" />
@@ -454,13 +520,15 @@ const AgentDashboard = () => {
                   )}
                 </div>
               </section>
+             </RevealOnScroll>
             </div>
           </div>
         )}
 
         {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
              <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.properties.title')}</h2>
                 <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
@@ -519,12 +587,14 @@ const AgentDashboard = () => {
                  </tbody>
                </table>
              </div>
-                      </section>
+            </section>
+          </RevealOnScroll>
         )}
 
         {/* Requests Tab */}
         {activeTab === 'requests' && (
-          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
             <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
               <h2 className="text-lg font-bold text-text-main">{t('agent.requests.title')}</h2>
               <div className="flex bg-bg-card p-1 rounded-xl border border-border-main">
@@ -613,14 +683,16 @@ const AgentDashboard = () => {
                         <td colSpan="5" className="p-8 text-center text-text-muted">{t('agent.requests.no_data')}</td>
                       </tr>
                   )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </RevealOnScroll>
         )}
         {/* Contracts Tab - Full View */}
         {activeTab === 'contracts' && (
-          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
              <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.contracts.title')}</h2>
                 <span className="text-sm text-text-muted">{stats.activeContracts}{t('agent.contracts.active_count')}</span>
@@ -662,15 +734,17 @@ const AgentDashboard = () => {
                         <td colSpan="5" className="p-8 text-center text-text-muted">{t('agent.contracts.no_data')}</td>
                       </tr>
                    )}
-                 </tbody>
-               </table>
-             </div>
-           </section>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </RevealOnScroll>
         )}
 
         {/* Reviews Moderation Tab */}
         {activeTab === 'reviews' && (
-          <section className="bg-bg-card rounded-2xl border border-border-main shadow-sm overflow-hidden animate-fade-in">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden animate-fade-in">
             <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
               <h2 className="text-lg font-bold text-text-main">{t('agent.reviews.title')}</h2>
               <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500 rounded-full text-xs font-bold uppercase">
@@ -740,8 +814,10 @@ const AgentDashboard = () => {
               )}
             </div>
           </section>
+         </RevealOnScroll>
         )}
 
+        </div>
       </main>
 
       {/* Modale de Refus */}

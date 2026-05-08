@@ -124,9 +124,23 @@ class PropertyController extends Controller
                 ], 404);
             }
 
+            $data = $this->formatProperty($property, true);
+
+            // Si l'utilisateur est connecté, ajouter le statut de sa demande pour ce bien
+            if (auth('sanctum')->check()) {
+                $userRequest = \App\Models\RentalRequest::where('user_id', auth('sanctum')->id())
+                    ->where('property_id', $id)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                
+                $data['user_request_status'] = $userRequest ? $userRequest->status : null;
+            } else {
+                $data['user_request_status'] = null;
+            }
+
             return response()->json([
                 'success' => true,
-                'data' => $this->formatProperty($property, true)
+                'data' => $data
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur show property: ' . $e->getMessage());

@@ -579,16 +579,29 @@ const PropertyDetail = () => {
                       {t('prop.detail.contact.send_btn')}
                     </button>
                     {property.transaction_type === 'rent'
-                      && ['available', 'rented', 'reserved'].includes(property.status)
                       && isAuthenticated
                       && user?.role?.slug === 'client' && (
                       <div className="flex flex-col gap-2">
-                        <button onClick={handleRequestRental} className="w-full py-4 bg-bg-soft text-primary hover:bg-primary/10 rounded-xl font-bold transition-all shadow-sm border border-primary/20">
-                          {t('prop.detail.rental.request_btn')}
-                        </button>
-                        <button onClick={handlePayment} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
-                          {t('prop.detail.rental.pay_btn')}
-                        </button>
+                        {/* Si aucune demande ou demande annulée/refusée, on peut faire une demande */}
+                        {(!property.user_request_status || ['cancelled', 'rejected'].includes(property.user_request_status)) ? (
+                          <button onClick={handleRequestRental} className="w-full py-4 bg-bg-soft text-primary hover:bg-primary/10 rounded-xl font-bold transition-all shadow-sm border border-primary/20">
+                            {t('prop.detail.rental.request_btn')}
+                          </button>
+                        ) : (
+                          /* Sinon on affiche le statut de la demande en cours */
+                          <div className={`w-full py-4 px-4 rounded-xl font-bold text-center border ${
+                            property.user_request_status === 'approved' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'
+                          }`}>
+                            {property.user_request_status === 'approved' ? t('common.status.approved') : t('common.status.pending')}
+                          </div>
+                        )}
+
+                        {/* Le bouton PAYER ne s'affiche que si la demande est approuvée */}
+                        {property.user_request_status === 'approved' && (
+                          <button onClick={handlePayment} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
+                            {t('prop.detail.rental.pay_btn')}
+                          </button>
+                        )}
                       </div>
                     )}
                     {/* Info : bien loué mais dates futures réservables */}

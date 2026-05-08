@@ -9,6 +9,7 @@ import { useFavorites } from '../../context/FavoritesContext';
 import { notificationService } from '../../services/notifications';
 import echo, { updateEchoToken } from '../../services/echo';
 import logo from '../../assets/IMMORent.jpeg';
+import { toast } from 'react-toastify';
 import {
   SunIcon,
   MoonIcon,
@@ -49,6 +50,11 @@ const Header = () => {
     if (isAuthenticated && user) {
       loadNotifications();
 
+      // Polling fallback to ensure notifications work even without WebSockets
+      const pollInterval = setInterval(() => {
+        loadNotifications();
+      }, 10000); // Every 10 seconds
+
       const token = localStorage.getItem('token');
       if (token) updateEchoToken(token);
 
@@ -56,18 +62,52 @@ const Header = () => {
 
       const handleNewNotification = (notification) => {
         console.log('New notification received:', notification);
-        const normalized = normalizeNotification(notification);
+        
+        // Normalize data from both custom events and standard Laravel notifications
+        const data = notification.notification || notification;
+        const normalized = {
+          id: data.id || Math.random().toString(36).substr(2, 9),
+          data: {
+            title: data.title || (notification.data?.title),
+            message: data.message || (notification.data?.message),
+            type: data.type || (notification.data?.type) || 'info',
+            link: data.link || (notification.data?.link),
+            icon: data.icon || (notification.data?.icon)
+          },
+          read_at: null,
+          created_at: data.created_at || new Date().toISOString()
+        };
+
+        // Show toast notification
+        toast.info(
+          <div>
+            <div className="font-bold">{normalized.data.title || 'Nouvelle notification'}</div>
+            <div className="text-xs opacity-90">{normalized.data.message}</div>
+          </div>,
+          {
+            icon: getNotifIcon(normalized.data.type),
+            onClick: () => {
+               if (normalized.data.link) navigate(normalized.data.link);
+            }
+          }
+        );
+
+        // Update local state
         setUnreadCount(prev => prev + 1);
         setNotifications(prev => [normalized, ...prev.slice(0, 9)]);
       };
 
+      // Listen for explicit custom event
+      channel.listen('.notification.received', handleNewNotification);
+      
+      // Listen for standard Laravel notifications
       channel.notification(handleNewNotification);
-      channel.listen('.notification', handleNewNotification);
-      channel.listen('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', handleNewNotification);
 
       return () => {
         window.removeEventListener('scroll', handleScroll);
-        channel.stopListening('.notification');
+        clearInterval(pollInterval);
+        channel.stopListening('.notification.received');
+        // Standard Laravel notification listener cleanup
         channel.stopListening('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated');
       };
     }
@@ -87,8 +127,16 @@ const Header = () => {
         notificationService.getUnreadCount(),
         notificationService.getAll({ per_page: 10 })
       ]);
-      if (countRes.success) setUnreadCount(countRes.count);
-      if (listRes.success) setNotifications(listRes.data.data || []);
+      
+      if (countRes.data?.success) {
+        setUnreadCount(countRes.data.count);
+      }
+      
+      if (listRes.data?.success) {
+        // Laravel pagination returns the items in the 'data' property of the response 'data'
+        const rawNotifications = listRes.data.data.data || [];
+        setNotifications(rawNotifications);
+      }
     } catch (error) {
       console.error('Error loading notifications:', error);
     }
@@ -189,44 +237,57 @@ const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 rtl:gap-reverse">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-200 ${location.pathname === link.path ? 'text-primary dark:text-secondary bg-primary/5 dark:bg-secondary/10' : 'text-text-sub hover:text-primary dark:hover:text-white hover:bg-bg-secondary'}`}
-              >
-                {link.name}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-2 rtl:gap-reverse">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative px-4 py-2 text-sm font-bold transition-colors duration-300 group ${
+                    isActive ? 'text-primary dark:text-secondary' : 'text-text-sub hover:text-text-main'
+                  }`}
+                >
+                  {link.name}
+                  {/* Animated underline */}
+                  <span className={`absolute bottom-0 left-0 w-full h-0.5 rounded-full transition-all duration-300 ease-out ${
+                    isActive ? 'bg-primary dark:bg-secondary scale-x-100 opacity-100' : 'bg-text-main scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-20'
+                  }`}></span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right actions */}
-          <div className="hidden md:flex items-center gap-2 rtl:gap-reverse">
+          <div className="hidden md:flex items-center gap-3 rtl:gap-reverse">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="group/theme relative p-2.5 bg-bg-soft hover:bg-bg-main rounded-xl border border-border-main transition-all shadow-main hover:shadow-large active:scale-95 overflow-hidden"
+              className="group/theme relative p-2.5 text-text-sub hover:text-primary dark:hover:text-secondary rounded-full bg-bg-secondary/50 hover:bg-primary/10 dark:hover:bg-secondary/10 border border-transparent hover:border-primary/20 dark:hover:border-secondary/20 transition-all duration-300 active:scale-95"
               aria-label="Toggle Theme"
             >
-              <div className="relative z-10 transition-transform duration-500 group-hover/theme:rotate-[360deg]">
-                {theme === 'dark' ? <SunIcon className="w-5 h-5 text-amber-400" /> : <MoonIcon className="w-5 h-5 text-primary" />}
+              <div className="relative z-10 transition-transform duration-500 group-hover/theme:rotate-[360deg] group-hover/theme:scale-110">
+                {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-secondary/5 opacity-0 group-hover/theme:opacity-100 transition-opacity"></div>
             </button>
 
             {/* Language Switch */}
-            <div className="relative group">
-              <button className="flex items-center gap-2 px-3 py-2.5 text-text-sub hover:text-text-main bg-bg-secondary rounded-xl border border-transparent group-hover:border-border-main transition-all uppercase text-xs font-black tracking-widest leading-none">
+            <div className="relative group/lang">
+              <button className="flex items-center gap-2 px-4 py-2 text-text-sub hover:text-text-main rounded-full bg-bg-secondary/50 hover:bg-bg-soft transition-all duration-300 uppercase text-xs font-bold tracking-widest">
                 <LanguageIcon className="w-5 h-5" />
-                {language}
+                <span>{language}</span>
               </button>
-              <div className="absolute top-full right-0 mt-2 w-32 bg-bg-main rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 overflow-hidden ring-1 ring-black/5">
+              
+              <div className="absolute top-full right-0 mt-3 w-32 bg-bg-main/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-4 scale-95 group-hover/lang:opacity-100 group-hover/lang:visible group-hover/lang:translate-y-0 group-hover/lang:scale-100 transition-all duration-300 origin-top-right overflow-hidden p-1.5">
                 {['fr', 'en', 'ar'].map((lang) => (
                   <button
                     key={lang}
                     onClick={() => changeLanguage(lang)}
-                    className={`block w-full text-center px-4 py-3 text-sm font-bold transition-colors ${language === lang ? 'bg-primary/5 text-primary dark:bg-secondary/10 dark:text-secondary' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                    className={`block w-full text-center px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-200 ${
+                      language === lang 
+                        ? 'bg-primary text-white dark:bg-secondary dark:text-slate-900 shadow-md' 
+                        : 'text-text-sub hover:bg-bg-soft hover:text-text-main'
+                    }`}
                   >
                     {lang.toUpperCase()}
                   </button>
@@ -234,7 +295,7 @@ const Header = () => {
               </div>
             </div>
 
-            <div className="h-6 w-px bg-border-main mx-2"></div>
+            <div className="h-6 w-px bg-border-main mx-1"></div>
 
             {/* Auth section */}
             {isAuthenticated ? (
@@ -243,12 +304,12 @@ const Header = () => {
                 {/* Favoris */}
                 <Link 
                   to="/favoris"
-                  className="relative p-2.5 text-text-sub hover:text-rose-500 bg-bg-secondary rounded-xl transition-all"
+                  className="relative p-2.5 text-text-sub hover:text-rose-500 rounded-full bg-bg-secondary/50 hover:bg-rose-500/10 transition-all duration-300 hover:scale-110"
                   title={t('nav.favorites', 'Mes Favoris')}
                 >
                   <HeartIcon className="w-5 h-5" />
                   {favoritesCount > 0 && (
-                    <span className="absolute top-2 right-2 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                    <span className="absolute top-0 right-0 w-4 h-4 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-bg-main">
                       {favoritesCount > 9 ? '9+' : favoritesCount}
                     </span>
                   )}
@@ -261,11 +322,13 @@ const Header = () => {
                       setNotifOpen(!notifOpen);
                       setDropdownOpen(false);
                     }}
-                    className="relative p-2.5 text-text-sub hover:text-primary dark:hover:text-secondary bg-bg-secondary rounded-xl transition-all"
+                    className={`relative p-2.5 rounded-full transition-all duration-300 hover:scale-110 ${
+                      notifOpen ? 'bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary' : 'text-text-sub bg-bg-secondary/50 hover:bg-primary/5 hover:text-primary'
+                    }`}
                   >
                     <BellIcon className="w-5 h-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                      <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-bg-main animate-pulse">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -326,8 +389,16 @@ const Header = () => {
                     }} 
                     className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-2xl border border-transparent hover:border-border-main transition-all"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-md">
-                      {user?.name?.[0]?.toUpperCase()}
+                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-md border border-white/10">
+                      {user?.profile_photo ? (
+                        <img 
+                          src={`http://localhost:8000/storage/${user.profile_photo}`} 
+                          alt={user.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user?.name?.[0]?.toUpperCase()
+                      )}
                     </div>
                     <div className="hidden lg:block text-start">
                       <div className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[100px] leading-none mb-0.5">{user?.name}</div>
@@ -416,8 +487,16 @@ const Header = () => {
           {isAuthenticated ? (
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-4 px-4">
-                <div className="w-14 h-14 rounded-2xl bg-primary dark:bg-secondary flex items-center justify-center text-white dark:text-primary font-black text-xl shadow-lg">
-                  {user?.name?.[0]?.toUpperCase()}
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-primary dark:bg-secondary flex items-center justify-center text-white dark:text-primary font-black text-xl shadow-lg border-2 border-white/10">
+                  {user?.profile_photo ? (
+                    <img 
+                      src={`http://localhost:8000/storage/${user.profile_photo}`} 
+                      alt={user.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user?.name?.[0]?.toUpperCase()
+                  )}
                 </div>
                 <div>
                   <p className="font-bold text-slate-800 dark:text-white text-lg">{user?.name}</p>

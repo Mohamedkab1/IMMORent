@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import { requestService } from '../services/requests';
@@ -23,6 +23,40 @@ import {
 } from '@heroicons/react/24/outline';
 import StatsCard from '../components/Common/StatsCard';
 
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const ClientDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
@@ -44,15 +78,13 @@ const ClientDashboard = () => {
   useEffect(() => {
     loadAllData();
     
-    // Polling toutes les 30 secondes
+    // Polling toutes les 15 secondes pour rafraichir les statuts
     const interval = setInterval(() => {
-      if (activeTab === 'requests') {
-        loadRequests();
-      }
-    }, 30000);
+      loadRequests();
+    }, 15000);
     
     return () => clearInterval(interval);
-  }, [activeTab]);
+  }, []);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -78,7 +110,17 @@ const ClientDashboard = () => {
     setRequestsError(null);
     try {
       const response = await requestService.getMyRequests();
-      if (response.success) {
+      // The service returns response.data (axios), which is the JSON body { success, data }
+      const body = response?.data ?? response;
+      if (body?.success) {
+        const data = body.data || [];
+        setRequests(data);
+        setStats(prev => ({ 
+          ...prev, 
+          activeRequests: data.filter(r => r.status === 'pending' || r.status === 'approved').length 
+        }));
+      } else if (response?.success) {
+        // Fallback: service already unwrapped response.data
         const data = response.data || [];
         setRequests(data);
         setStats(prev => ({ 
@@ -86,7 +128,7 @@ const ClientDashboard = () => {
           activeRequests: data.filter(r => r.status === 'pending' || r.status === 'approved').length 
         }));
       } else {
-        setRequestsError(response.message || 'Erreur lors du chargement des demandes');
+        setRequestsError((body || response)?.message || 'Erreur lors du chargement des demandes');
       }
     } catch (error) {
       console.error('Erreur chargement demandes:', error);
@@ -222,18 +264,21 @@ const ClientDashboard = () => {
         </div>
 
         {/* Content Area */}
-        <div className="animate-fade-in">
+        <div className="animate-fade-in relative z-10">
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <RevealOnScroll>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard title={t('dash.stats.pending_requests')} value={stats.activeRequests} icon={BellIcon} color="blue" />
                 <StatsCard title={t('dash.stats.active_contracts')} value={stats.activeContracts} icon={DocumentTextIcon} color="green" />
                 <StatsCard title={t('client.dashboard.stats.expenses')} value={`${stats.totalPayments.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" />
                 <StatsCard title={t('client.dashboard.stats.favorites')} value={stats.favoriteProperties} icon={HeartIcon} color="rose" />
-              </div>
+                </div>
+              </RevealOnScroll>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-bg-card rounded-3xl border border-border-main p-8 shadow-main">
+                <RevealOnScroll delay={100} className="lg:col-span-2">
+                  <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl transition-all duration-500">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-text-main">{t('client.requests.recent')}</h2>
                     <button onClick={() => setActiveTab('requests')} className="text-sm font-bold text-primary dark:text-secondary hover:underline">{t('client.requests.view_all')}</button>
@@ -257,9 +302,11 @@ const ClientDashboard = () => {
                     ))}
                     {requests.length === 0 && <p className="text-center py-8 text-text-muted italic">{t('client.requests.no_data')}</p>}
                   </div>
-                </div>
+                  </div>
+                </RevealOnScroll>
 
-                <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main h-fit">
+                <RevealOnScroll delay={200}>
+                  <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl transition-all duration-500 h-fit">
                    <h2 className="text-xl font-bold text-text-main mb-6">{t('client.support.title')}</h2>
                    <div className="space-y-4">
                       <Link to="/contact" className="flex items-center gap-4 p-4 bg-bg-soft rounded-2xl hover:bg-primary/5 transition-all group">
@@ -272,13 +319,15 @@ const ClientDashboard = () => {
                          </div>
                       </Link>
                    </div>
-                </div>
+                  </div>
+                </RevealOnScroll>
               </div>
             </div>
           )}
 
           {activeTab === 'requests' && (
-            <div className="bg-bg-card rounded-3xl border border-border-main shadow-main overflow-hidden">
+            <RevealOnScroll>
+              <div className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
                <div className="p-8 border-b border-border-main flex justify-between items-center">
                   <h2 className="text-2xl font-black text-text-main">{t('request.title')}</h2>
                </div>
@@ -329,15 +378,18 @@ const ClientDashboard = () => {
                         </tr>
                      ))}
                    </tbody>
-                 </table>
-               </div>
-            </div>
+                  </table>
+                </div>
+              </div>
+            </RevealOnScroll>
           )}
 
           {activeTab === 'contracts' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               {contracts.map(contract => (
-                 <div key={contract.id} className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-main hover:border-primary transition-all group">
+            <RevealOnScroll>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 {contracts.map((contract, i) => (
+                   <RevealOnScroll key={contract.id} delay={i * 100}>
+                     <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-primary transition-all duration-500 group h-full">
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">{contract.property?.title ? t(contract.property.title) : ''}</h3>
@@ -354,16 +406,18 @@ const ClientDashboard = () => {
                           <p className="text-[10px] font-black uppercase text-text-muted mb-1">{t('client.contracts.sign_date')}</p>
                           <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
                        </div>
-                    </div>
-                    <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block">{t('client.contracts.view')}</Link>
-                 </div>
+                      </div>
+                      <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
+                   </div>
+                 </RevealOnScroll>
                ))}
                {contracts.length === 0 && (
                  <div className="col-span-full py-20 text-center bg-bg-card rounded-3xl border-2 border-dashed border-border-main">
                     <p className="text-text-muted font-bold italic">{t('client.contracts.no_data')}</p>
                  </div>
                )}
-            </div>
+              </div>
+            </RevealOnScroll>
           )}
         </div>
       </div>

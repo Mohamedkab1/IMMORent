@@ -4,6 +4,37 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../context/LanguageContext';
 
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, React_useState] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          React_useState(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => { if (ref.current) observer.unobserve(ref.current); };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Login = () => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
@@ -69,31 +100,41 @@ const Login = () => {
         />
         
         <div className="relative z-20 flex flex-col justify-center px-20">
-          <Link to="/" className="text-3xl font-black text-white mb-12 tracking-tight">
-            IMMO<span className="text-secondary">Rent</span>
-          </Link>
-          <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-            {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
-          </h2>
-          <p className="text-xl text-white/80 max-w-md leading-relaxed mb-12">
-            {t('auth.hero.subtitle')}
-          </p>
+          <RevealOnScroll delay={100}>
+            <Link to="/" className="text-3xl font-black text-white mb-12 tracking-tight block">
+              IMMO<span className="text-secondary">Rent</span>
+            </Link>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={200}>
+            <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
+              {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
+            </h2>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={300}>
+            <p className="text-xl text-white/80 max-w-md leading-relaxed mb-12">
+              {t('auth.hero.subtitle')}
+            </p>
+          </RevealOnScroll>
           
-          <ul className="space-y-4">
-            {[
-              t('auth.hero.feature_1'),
-              t('auth.hero.feature_2'),
-              t('auth.hero.feature_3'),
-              t('auth.hero.feature_4')
-            ].map((item, i) => (
-              <li key={i} className="flex items-center text-white/90 font-medium">
-                <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
+          <RevealOnScroll delay={400}>
+            <ul className="space-y-4">
+              {[
+                t('auth.hero.feature_1'),
+                t('auth.hero.feature_2'),
+                t('auth.hero.feature_3'),
+                t('auth.hero.feature_4')
+              ].map((item, i) => (
+                <li key={i} className="flex items-center text-white/90 font-medium">
+                  <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </RevealOnScroll>
         </div>
         
         {/* Decorative elements */}
@@ -111,15 +152,15 @@ const Login = () => {
         {/* Animated background blob */}
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl -z-10 animate-float"></div>
         
-        <div className="w-full max-w-md mx-auto">
+        <RevealOnScroll delay={100} className="w-full max-w-md mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-text-main mb-3 tracking-tight">{t('auth.login.title')}</h1>
             <p className="text-text-sub font-medium">{t('auth.login.subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-text-sub" htmlFor="email">{t('auth.login.email_label')}</label>
+            <div className="space-y-2 group">
+              <label className="text-sm font-bold text-text-sub group-focus-within:text-primary transition-colors" htmlFor="email">{t('auth.login.email_label')}</label>
               <input
                 type="email"
                 id="email"
@@ -128,14 +169,14 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder={t('auth.login.email_placeholder')}
                 required
-                className="w-full px-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-text-muted"
+                className="w-full px-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-text-muted hover:border-primary/50"
                 disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 group">
               <div className="flex justify-between">
-                <label className="text-sm font-bold text-text-sub" htmlFor="password">{t('auth.login.password_label')}</label>
+                <label className="text-sm font-bold text-text-sub group-focus-within:text-primary transition-colors" htmlFor="password">{t('auth.login.password_label')}</label>
                 <Link to="/forgot-password" title={t('auth.login.forgot_password')} className="text-sm font-bold text-primary hover:text-primary-light transition-colors">{t('auth.login.forgot')}</Link>
               </div>
               <div className="relative">
@@ -147,7 +188,7 @@ const Login = () => {
                   onChange={handleChange}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-text-muted"
+                  className="w-full px-4 py-3 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-text-muted hover:border-primary/50"
                   disabled={loading}
                 />
                 <button
@@ -171,9 +212,9 @@ const Login = () => {
                 type="checkbox"
                 checked={formData.rememberMe}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary focus:ring-primary border-border-main rounded bg-bg-soft"
+                className="h-4 w-4 text-primary focus:ring-primary border-border-main rounded bg-bg-soft transition-all cursor-pointer"
               />
-              <label htmlFor="rememberMe" className="ml-2 block text-sm font-medium text-text-sub">
+              <label htmlFor="rememberMe" className="ml-2 block text-sm font-medium text-text-sub cursor-pointer select-none">
                 {t('auth.login.remember')}
               </label>
             </div>
@@ -214,10 +255,10 @@ const Login = () => {
           <div className="mt-10 text-center">
             <p className="text-text-sub font-medium">
               {t('auth.login.no_account')}{' '}
-              <Link to="/register" className="text-primary font-bold hover:underline">{t('auth.login.register_link')}</Link>
+              <Link to="/register" className="text-primary font-bold hover:underline transition-colors">{t('auth.login.register_link')}</Link>
             </p>
           </div>
-        </div>
+        </RevealOnScroll>
       </div>
     </div>
   );

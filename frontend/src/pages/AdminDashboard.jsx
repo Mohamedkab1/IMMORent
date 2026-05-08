@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
@@ -38,6 +38,40 @@ import { paymentService } from '../services/payments';
 import { settingService } from '../services/settings';
 import StatsCard from '../components/Common/StatsCard';
 import RevenueChart from '../components/Dashboard/RevenueChart';
+
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -516,17 +550,18 @@ const AdminDashboard = () => {
                 else if (activeTab === 'dashboard') loadDashboardStats();
                 toast.info('Actualisation...');
               }}
-              className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:scale-105 active:scale-95 transition-all"
+              className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:shadow-md hover:scale-105 active:scale-95 hover:text-primary transition-all"
             >
               <ArrowPathIcon className="w-5 h-5" />
             </button>
-            <div className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm relative cursor-pointer hover:scale-105 transition-all">
+            <div className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:shadow-md relative cursor-pointer hover:scale-105 hover:text-primary transition-all">
               <BellIcon className="w-5 h-5" />
               <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-bg-card"></span>
             </div>
           </div>
         </header>
 
+        <div className="animate-fade-in relative z-10">
         {/* Dashboard Tab Content */}
         {activeTab === 'dashboard' && (
           <div className="space-y-10">
@@ -537,89 +572,96 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard 
-                  title={t('dash.stats.total_properties')} 
-                  value={stats?.properties?.total || 0} 
-                  icon={BuildingOfficeIcon} 
-                  trend="+12%" 
-                  trendUp={true}
-                  color="blue"
-                />
-                <StatsCard 
-                  title={t('admin.tabs.users')} 
-                  value={stats?.users?.total || 0} 
-                  icon={UserGroupIcon} 
-                  trend="+5%" 
-                  trendUp={true}
-                  color="purple"
-                />
-                <StatsCard 
-                  title={t('dash.stats.revenue')} 
-                  value={`${stats?.revenue?.total || 0} DH`} 
-                  icon={CurrencyDollarIcon} 
-                  trend="+18%" 
-                  trendUp={true}
-                  color="amber"
-                />
-                <StatsCard 
-                  title={t('admin.tabs.agent_requests')} 
-                  value={stats?.requests?.total || 0} 
-                  icon={DocumentTextIcon} 
-                  trend="-2%" 
-                  trendUp={false}
-                  color="rose"
-                />
-              </div>
+              <RevealOnScroll>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatsCard 
+                    title={t('dash.stats.total_properties')} 
+                    value={stats?.properties?.total || 0} 
+                    icon={BuildingOfficeIcon} 
+                    trend="+12%" 
+                    trendUp={true}
+                    color="blue"
+                  />
+                  <StatsCard 
+                    title={t('admin.tabs.users')} 
+                    value={stats?.users?.total || 0} 
+                    icon={UserGroupIcon} 
+                    trend="+5%" 
+                    trendUp={true}
+                    color="purple"
+                  />
+                  <StatsCard 
+                    title={t('dash.stats.revenue')} 
+                    value={`${stats?.revenue?.total || 0} DH`} 
+                    icon={CurrencyDollarIcon} 
+                    trend="+18%" 
+                    trendUp={true}
+                    color="amber"
+                  />
+                  <StatsCard 
+                    title={t('admin.tabs.agent_requests')} 
+                    value={stats?.requests?.total || 0} 
+                    icon={DocumentTextIcon} 
+                    trend="-2%" 
+                    trendUp={false}
+                    color="rose"
+                  />
+                </div>
+              </RevealOnScroll>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 bg-bg-card rounded-[2.5rem] border border-border-main shadow-main p-8">
-                <div className="flex justify-between items-center mb-8">
-                  <div>
-                    <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.overview.performance')}</h3>
-                    <p className="text-sm text-text-muted font-bold uppercase tracking-wider mt-1">{t('admin.overview.evolution')}</p>
+              <RevealOnScroll delay={100} className="lg:col-span-2">
+                <div className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 p-8 h-full">
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.overview.performance')}</h3>
+                      <p className="text-sm text-text-muted font-bold uppercase tracking-wider mt-1">{t('admin.overview.evolution')}</p>
+                    </div>
+                    <select className="bg-bg-soft border-none rounded-xl text-xs font-bold text-text-sub px-4 py-2 outline-none">
+                      <option value="2024">{t('admin.overview.year', 'Année')} 2024</option>
+                      <option value="2023">{t('admin.overview.year', 'Année')} 2023</option>
+                    </select>
                   </div>
-                  <select className="bg-bg-soft border-none rounded-xl text-xs font-bold text-text-sub px-4 py-2 outline-none">
-                    <option value="2024">{t('admin.overview.year', 'Année')} 2024</option>
-                    <option value="2023">{t('admin.overview.year', 'Année')} 2023</option>
-                  </select>
+                  <div className="h-80">
+                    <RevenueChart data={stats?.revenue?.monthly || []} />
+                  </div>
                 </div>
-                <div className="h-80">
-                  <RevenueChart data={stats?.revenue?.monthly || []} />
-                </div>
-              </div>
+              </RevealOnScroll>
 
-              <div className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-main p-8">
-                <h3 className="text-xl font-black text-text-main tracking-tight mb-8">{t('admin.overview.alerts')}</h3>
-                <div className="space-y-4">
-                   <div className="p-5 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-3xl flex gap-4">
-                      <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
-                        <XCircleIcon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-rose-800 dark:text-rose-400 text-sm">{t('admin.alerts.late_payments.title')}</p>
-                        <p className="text-rose-600 dark:text-rose-500/80 text-xs mt-1 leading-relaxed">{t('admin.alerts.late_payments.desc')}</p>
-                      </div>
-                   </div>
-                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-3xl flex gap-4">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                        <BellIcon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-blue-800 dark:text-blue-400 text-sm">{t('admin.alerts.new_report.title')}</p>
-                        <p className="text-blue-600 dark:text-blue-500/80 text-xs mt-1 leading-relaxed">{t('admin.alerts.new_report.desc')}</p>
-                      </div>
-                   </div>
+              <RevealOnScroll delay={200}>
+                <div className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 p-8 h-full">
+                  <h3 className="text-xl font-black text-text-main tracking-tight mb-8">{t('admin.overview.alerts')}</h3>
+                  <div className="space-y-4">
+                     <div className="p-5 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-3xl flex gap-4 hover:-translate-y-1 transition-transform">
+                        <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
+                          <XCircleIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-rose-800 dark:text-rose-400 text-sm">{t('admin.alerts.late_payments.title')}</p>
+                          <p className="text-rose-600 dark:text-rose-500/80 text-xs mt-1 leading-relaxed">{t('admin.alerts.late_payments.desc')}</p>
+                        </div>
+                     </div>
+                     <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-3xl flex gap-4 hover:-translate-y-1 transition-transform">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                          <BellIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-blue-800 dark:text-blue-400 text-sm">{t('admin.alerts.new_report.title')}</p>
+                          <p className="text-blue-600 dark:text-blue-500/80 text-xs mt-1 leading-relaxed">{t('admin.alerts.new_report.desc')}</p>
+                        </div>
+                     </div>
+                  </div>
                 </div>
-              </div>
+              </RevealOnScroll>
             </div>
           </div>
         )}
 
         {/* Users Tab */}
         {activeTab === 'users' && (
-          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden">
              <div className="p-8 border-b border-border-main flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.users.title')}</h3>
@@ -737,11 +779,13 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
              </div>          </section>
+          </RevealOnScroll>
         )}
 
         {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <section className="bg-bg-card rounded-3xl border border-border-main shadow-xl overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden">
              <div className="p-8 border-b border-border-main flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-bg-soft">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.properties.title')}</h3>
@@ -880,11 +924,13 @@ const AdminDashboard = () => {
                )}
              </div>
           </section>
+          </RevealOnScroll>
         )}
 
         {/* Contracts Tab */}
         {activeTab === 'contracts' && (
-          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden">
              <div className="p-8 border-b border-border-main flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-bg-soft">
                 <div className="flex flex-col gap-1">
                    <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.contracts.title')}</h3>
@@ -968,11 +1014,13 @@ const AdminDashboard = () => {
                )}
              </div>
           </section>
+          </RevealOnScroll>
         )}
 
         {/* Payments Tab */}
         {activeTab === 'payments' && (
-          <section className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden">
              <div className="p-8 border-b border-border-main bg-bg-soft">
                 <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.payments.title')}</h3>
                 <p className="text-xs font-bold text-text-muted uppercase tracking-widest mt-1">{t('admin.payments.subtitle')}</p>
@@ -1039,12 +1087,14 @@ const AdminDashboard = () => {
                )}
              </div>
           </section>
+          </RevealOnScroll>
         )}
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (
-          <div className="max-w-4xl space-y-8">
-            <section className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-large p-10">
+          <RevealOnScroll>
+            <div className="max-w-4xl space-y-8">
+              <section className="bg-bg-card rounded-[2.5rem] border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 p-10">
                <div className="flex justify-between items-start mb-10">
                   <div>
                     <h3 className="text-2xl font-black text-text-main tracking-tight">{t('admin.tabs.settings')}</h3>
@@ -1093,11 +1143,13 @@ const AdminDashboard = () => {
                </button>
             </section>
           </div>
+          </RevealOnScroll>
         )}
 
         {/* Agent Requests Tab (kept for compatibility) */}
         {activeTab === 'agent-requests' && (
-          <section className="bg-bg-card rounded-3xl border border-border-main shadow-xl overflow-hidden">
+          <RevealOnScroll>
+            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-shadow duration-500 overflow-hidden">
              <div className="p-8 border-b border-border-main bg-bg-soft">
                 <h3 className="text-xl font-black text-text-main tracking-tight">{t('admin.agent_requests.title')}</h3>
                 <p className="text-xs font-bold text-text-muted uppercase tracking-widest mt-1">{t('admin.agent_requests.subtitle')}</p>
@@ -1160,7 +1212,9 @@ const AdminDashboard = () => {
                )}
              </div>
           </section>
+          </RevealOnScroll>
         )}
+        </div>
       </main>
     </div>
   );

@@ -111,21 +111,29 @@ public function store(StoreContractRequest $request)
         $rentalRequest->update(['status' => 'finalized']);
         
         // Notify the tenant/buyer
-        $rentalRequest->user->notify(new GeneralNotification([
+        $notifData = [
             'title' => 'Nouveau contrat disponible',
             'message' => "Un nouveau contrat a été créé pour le bien : {$property->title}.",
             'type' => 'contract',
             'link' => "/contracts/{$contract->id}",
-        ]));
+            'icon' => 'document-check'
+        ];
+        
+        $rentalRequest->user->notify(new \App\Notifications\GeneralNotification($notifData));
+        event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
 
         // Notify the owner/seller if different from agent
         if ($property->owner_id && $property->owner_id !== $property->user_id) {
-            $property->owner->notify(new GeneralNotification([
+            $ownerNotifData = [
                 'title' => 'Nouveau contrat signé',
                 'message' => "Votre bien {$property->title} a fait l'objet d'un nouveau contrat.",
                 'type' => 'contract',
                 'link' => "/contracts/{$contract->id}",
-            ]));
+                'icon' => 'briefcase'
+            ];
+            
+            $property->owner->notify(new \App\Notifications\GeneralNotification($ownerNotifData));
+            event(new \App\Events\RealTimeNotification($property->owner->id, $ownerNotifData));
         }
 
         return response()->json([

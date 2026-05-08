@@ -204,7 +204,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         try {
-            $user = $request->user()->load('role');
+            $user = $request->user()->load('role')->loadCount(['rentalRequests', 'contractsAsTenant', 'contractsAsAgent', 'properties']);
 
             return response()->json([
                 'success' => true,
@@ -215,11 +215,16 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'address' => $user->address,
+                        'profile_photo' => $user->profile_photo,
+                        'agent_status' => $user->agent_status,
                         'is_active' => $user->is_active,
                         'last_login_at' => $user->last_login_at,
                         'created_at' => $user->created_at,
                         'updated_at' => $user->updated_at,
-                        'profile_photo_url' => $user->profile_photo_url,
+                        'rental_requests_count' => $user->rental_requests_count,
+                        'contracts_as_tenant_count' => $user->contracts_as_tenant_count,
+                        'contracts_as_agent_count' => $user->contracts_as_agent_count,
+                        'properties_count' => $user->properties_count,
                         'role' => [
                             'id' => $user->role->id,
                             'name' => $user->role->name,
