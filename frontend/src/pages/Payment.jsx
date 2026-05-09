@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
 import { 
   CreditCardIcon, 
-  BanknotesIcon, 
+  BanknotesIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
@@ -25,7 +25,7 @@ const Payment = () => {
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   
   const formatDateForInput = (dateString) => {
@@ -77,7 +77,7 @@ const Payment = () => {
       setFormData(prev => ({ ...prev, [name]: formatted.substring(0, 19) }));
       return;
     }
-    
+
     if (name === 'expiryDate') {
       let formatted = value.replace(/\D/g, '');
       if (formatted.length >= 2) {
@@ -181,7 +181,7 @@ const Payment = () => {
   return (
     <div className="min-h-screen bg-bg-soft py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-text-main">
             {t('pay.finalize', 'Finaliser la réservation')}
@@ -192,10 +192,10 @@ const Payment = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           {/* Formulaire de gauche */}
           <div className="flex-1 space-y-6">
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Informations personnelles */}
               <div className="bg-bg-card rounded-2xl p-6 border border-border-main shadow-sm">
@@ -203,7 +203,7 @@ const Payment = () => {
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
                   {t('pay.your_info', 'Vos informations')}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-text-sub mb-1">{t('common.first_name', 'Prénom')}</label>
@@ -242,7 +242,7 @@ const Payment = () => {
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">2</span>
                   {t('pay.payment_method', 'Mode de paiement')}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
                   <button type="button" onClick={() => setPaymentMethod('card')} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-primary bg-primary/5 text-primary' : 'border-border-main text-text-sub hover:bg-bg-soft'}`}>
                     <CreditCardIcon className="w-6 h-6" />
@@ -307,8 +307,8 @@ const Payment = () => {
                 {t('pay.secure', 'Paiement 100% sécurisé et crypté')}
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary-hover hover:-translate-y-1 active:translate-y-0 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
@@ -331,11 +331,12 @@ const Payment = () => {
                 </div>
               </div>
               <div className="p-5">
+
                 <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{t(property.title, property.title)}</h4>
                 <p className="text-sm text-text-muted mb-4">{t(property.city, property.city)}</p>
                 
                 <div className="h-px bg-border-main mb-4"></div>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-text-sub">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
@@ -352,6 +353,7 @@ const Payment = () => {
                 <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
                   <span className="font-bold text-primary dark:text-white">{t('pay.total', 'Total à payer')}</span>
                   <span className="text-xl font-black text-primary dark:text-white">
+
                     {property.transaction_type === 'rent' 
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
                       : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH

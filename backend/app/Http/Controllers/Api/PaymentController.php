@@ -170,7 +170,11 @@ class PaymentController extends Controller
                     'icon' => 'currency-dollar'
                 ];
                 $agent->notify(new GeneralNotification($notifData));
-                event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+                try {
+                    event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+                } catch (\Exception $e) {
+                    Log::warning('Erreur RealTimeNotification (payment) dans PaymentController: ' . $e->getMessage());
+                }
             }
 
             return response()->json([
@@ -338,6 +342,15 @@ class PaymentController extends Controller
         if (!$payment) {
             return response()->json(['success' => false, 'message' => 'Paiement non trouvé'], 404);
         }
+
+        $payment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paiement supprimé avec succès'
+        ]);
+    }
+}
 
         $payment->delete();
 

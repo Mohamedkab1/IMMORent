@@ -60,7 +60,12 @@ const Profile = () => {
         setIsEditing(false);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || t('profile.update_error'));
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        Object.values(errors).flat().forEach(err => toast.error(err));
+      } else {
+        toast.error(error.response?.data?.message || t('profile.update_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -85,7 +90,12 @@ const Profile = () => {
         toast.success(t('profile.update_success'));
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || t('profile.update_error'));
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        Object.values(errors).flat().forEach(err => toast.error(err));
+      } else {
+        toast.error(error.response?.data?.message || t('profile.update_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -102,7 +112,12 @@ const Profile = () => {
         toast.success(t('profile.update_success'));
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || t('profile.update_error'));
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        Object.values(errors).flat().forEach(err => toast.error(err));
+      } else {
+        toast.error(error.response?.data?.message || t('profile.update_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +138,12 @@ const Profile = () => {
         setPasswordData({ current_password: '', password: '', password_confirmation: '' });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || t('profile.update_error'));
+      const errors = error.response?.data?.errors;
+      if (errors) {
+        Object.values(errors).flat().forEach(err => toast.error(err));
+      } else {
+        toast.error(error.response?.data?.message || t('profile.update_error'));
+      }
     } finally {
       setLoading(false);
     }

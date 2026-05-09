@@ -140,7 +140,11 @@ class MessageController extends Controller
                     $receiver->notify(new GeneralNotification($notifData));
                     
                     // Dispatch explicit real-time event for immediate UI update
-                    event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::warning('Real-time notification failed in MessageController: ' . $e->getMessage());
+                    }
                 }
 
                 return response()->json([
@@ -149,6 +153,11 @@ class MessageController extends Controller
                 ], 201);
             });
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur MessageController.store: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => $user->id ?? 'unknown',
+                'request' => $request->all()
+            ]);
             return response()->json(['success' => false, 'message' => 'Erreur lors de l\'envoi'], 500);
         }
     }

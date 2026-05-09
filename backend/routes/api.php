@@ -250,3 +250,4 @@ Route::middleware('auth:sanctum')->get('/test', function (Illuminate\Http\Reques
 // ROUTES DE TEST POUR CONTRAT PDF
 // ===========================================
 Route::middleware('auth:sanctum')->get('/test-pdf-contract/{id}', [TestPdfController::class, 'downloadContract']);
+Route::middleware('auth:sanctum')->get('/test-pdf-contract/{id}', [TestPdfController::class, 'downloadContract']);

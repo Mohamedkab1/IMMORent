@@ -5,7 +5,6 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   withCredentials: true,
@@ -47,7 +46,7 @@ api.interceptors.response.use(
       
       // Erreur 422 - Validation
       if (error.response.status === 422) {
-        console.error('Erreur de validation', error.response.data.errors);
+        console.error('Erreur de validation:', error.response.data.errors || error.response.data.message);
       }
       
       // Erreur 500 - Serveur
