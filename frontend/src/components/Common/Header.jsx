@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enGB, arMA } from 'date-fns/locale';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -43,6 +43,12 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
+  const getLocale = () => {
+    if (language === 'ar') return arMA;
+    if (language === 'en') return enGB;
+    return fr;
+  };
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -80,9 +86,9 @@ const Header = () => {
 
         // Show toast notification
         toast.info(
-          <div>
-            <div className="font-bold">{normalized.data.title || 'Nouvelle notification'}</div>
-            <div className="text-xs opacity-90">{normalized.data.message}</div>
+          <div className={language === 'ar' ? 'text-right' : 'text-left'}>
+            <div className="font-bold">{t(normalized.data.title, normalized.data.title) || t('nav.new_notification', 'Nouvelle notification')}</div>
+            <div className="text-xs opacity-90">{t(normalized.data.message, normalized.data.message)}</div>
           </div>,
           {
             icon: getNotifIcon(normalized.data.type),
@@ -149,7 +155,7 @@ const Header = () => {
         message: notif.message || notif.data?.message || '',
         link: notif.link || notif.data?.link || null,
         type: notif.type_notif || notif.type || notif.data?.type_notif || notif.data?.type || 'info',
-        title: notif.title || notif.data?.title || 'Notification'
+        title: notif.title || notif.data?.title || t('nav.notification', 'Notification')
       },
       created_at: notif.created_at || new Date().toISOString(),
       read_at: notif.read_at || null
@@ -214,6 +220,123 @@ const Header = () => {
     : user?.role?.slug === 'agent'
       ? '/dashboard/agent'
       : '/dashboard/client';
+
+  const translateNotification = (msg) => {
+    if (!msg) return '';
+    
+    // Pattern: "Votre demande pour [Title] a été approuvée"
+    if (msg.includes('Votre demande pour') && msg.includes('a été approuvée')) {
+       const title = msg.replace('Votre demande pour ', '').replace(' a été approuvée', '');
+       return t('notif.msg.req_approved', 'Votre demande pour {{title}} a été approuvée').replace('{{title}}', title);
+    }
+
+    // Pattern: "Votre demande pour [Title] a été refusée"
+    if (msg.includes('Votre demande pour') && msg.includes('a été refusée')) {
+       const title = msg.replace('Votre demande pour ', '').replace(' a été refusée', '');
+       return t('notif.msg.req_rejected', 'Votre demande pour {{title}} a été refusée').replace('{{title}}', title);
+    }
+    
+    // Pattern: "Un nouveau contrat a été créé pour le bien : [Title]"
+    if (msg.includes('Un nouveau contrat a été créé pour le bien : ')) {
+       const title = msg.replace('Un nouveau contrat a été créé pour le bien : ', '');
+       return t('notif.msg.contract_created', 'Un nouveau contrat a été créé pour le bien : {{title}}').replace('{{title}}', title);
+    }
+
+    // Pattern: "[Name] a envoyé une demande pour [Title]"
+    if (msg.includes(' a envoyé une demande pour ')) {
+       const parts = msg.split(' a envoyé une demande pour ');
+       const name = parts[0];
+       const title = parts[1];
+       return t('notif.msg.new_rental_req', '{{name}} a envoyé une demande pour {{title}}')
+              .replace('{{name}}', name)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Le client [Name] a annulé sa demande pour [Title]"
+    if (msg.includes('Le client ') && msg.includes(' a annulé sa demande pour ')) {
+       const parts = msg.replace('Le client ', '').split(' a annulé sa demande pour ');
+       const name = parts[0];
+       const title = parts[1];
+       return t('notif.msg.rental_req_cancelled', 'Le client {{name}} a annulé sa demande pour {{title}}')
+              .replace('{{name}}', name)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "L'utilisateur [Name] souhaite devenir agent."
+    if (msg.includes("L'utilisateur ") && msg.includes(" souhaite devenir agent.")) {
+       const name = msg.replace("L'utilisateur ", "").replace(" souhaite devenir agent.", "");
+       return t('notif.msg.user_wants_agent', "L'utilisateur {{name}} souhaite devenir agent.")
+              .replace('{{name}}', name);
+    }
+
+    // Pattern: "Nouvelle demande de visite pour le bien : [Title]"
+    if (msg.includes('Nouvelle demande de visite pour le bien : ')) {
+       const title = msg.replace('Nouvelle demande de visite pour le bien : ', '');
+       return t('notif.msg.new_visit_req', 'Nouvelle demande de visite pour le bien : {{title}}')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un nouveau paiement de [Amount] a été effectué pour le bien [Title]"
+    if (msg.includes('Un nouveau paiement de ') && msg.includes(' a été effectué pour le bien ')) {
+       const parts = msg.replace('Un nouveau paiement de ', '').split(' a été effectué pour le bien ');
+       const amount = parts[0];
+       const title = parts[1];
+       return t('notif.msg.payment_received_amount', 'Un nouveau paiement de {{amount}} a été effectué pour le bien {{title}}')
+              .replace('{{amount}}', amount)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un paiement de [Amount] a été reçu pour le bien : [Title]"
+    if (msg.includes('Un paiement de ') && msg.includes(' a été reçu pour le bien : ')) {
+       const parts = msg.replace('Un paiement de ', '').split(' a été reçu pour le bien : ');
+       const amount = parts[0];
+       const title = parts[1];
+       return t('notif.msg.payment_received_p1', 'Un paiement de {{amount}} a été reçu pour le bien : {{title}}')
+              .replace('{{amount}}', amount)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un paiement de [Amount] a été enregistré pour votre contrat."
+    if (msg.includes('Un paiement de ') && msg.includes(' a été enregistré pour votre contrat.')) {
+       const amount = msg.replace('Un paiement de ', '').split(' a été enregistré pour votre contrat.')[0];
+       return t('notif.msg.payment_registered_p1', 'Un paiement de {{amount}} a été enregistré for your contract.')
+              .replace('{{amount}}', amount);
+    }
+
+    // Pattern: "Le statut de votre paiement de [Amount] est désormais : [Status]"
+    if (msg.includes('Le statut de votre paiement de ') && msg.includes(' est désormais : ')) {
+       const amount = msg.replace('Le statut de votre paiement de ', '').split(' est désormais : ')[0];
+       const statusFr = msg.split(' est désormais : ')[1].replace('.', '');
+       const statusKey = statusFr === 'reçu' ? 'notif.msg.payment_status_paid' : 
+                         statusFr === 'en retard' ? 'notif.msg.payment_status_late' : 'notif.msg.payment_status_pending';
+       return t('notif.msg.payment_status_update_p1', 'Le statut de votre paiement de {{amount}} est désormais : {{status}}')
+              .replace('{{amount}}', amount)
+              .replace('{{status}}', t(statusKey, statusFr));
+    }
+
+    // Pattern: "Votre bien "[Title]" a été approuvé par l'administrateur."
+    if (msg.includes('Votre bien "') && msg.includes('" a été approuvé par l\'administrateur.')) {
+       const title = msg.split('Votre bien "')[1].split('" a été approuvé par l\'administrateur.')[0];
+       return t('notif.msg.prop_approved_by_admin', 'Votre annonce pour {{title}} a été approuvée par l\'administrateur.')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Votre bien "[Title]" a été rejeté par l'administrateur."
+    if (msg.includes('Votre bien "') && msg.includes('" a été rejeté par l\'administrateur.')) {
+       const title = msg.split('Votre bien "')[1].split('" a été rejeté par l\'administrateur.')[0];
+       return t('notif.msg.prop_rejected_by_admin', 'Votre bien "{{title}}" a été rejeté par l\'administrateur.')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Vous avez reçu un message de [Name]"
+    if (msg.includes('Vous avez reçu un message de ')) {
+       const name = msg.replace('Vous avez reçu un message de ', '');
+       return t('notif.msg.received_message_from', 'Vous avez reçu un message de {{name}}')
+              .replace('{{name}}', name);
+    }
+
+    return t(msg, msg);
+  };
 
   const navLinks = [
     { name: t('nav.home'), path: '/' },
@@ -334,7 +457,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-80 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={handleMarkAllRead} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -350,12 +473,12 @@ const Header = () => {
                             {getNotifIcon(notif.data?.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm leading-tight line-clamp-2 ${notif.read_at ? 'text-text-sub font-medium' : 'text-text-main font-bold'}`}>
-                              {notif.data?.message}
+                            <p className={`text-sm leading-tight ${notif.read_at ? 'text-text-sub font-medium' : 'text-text-main font-bold'}`}>
+                              {translateNotification(notif.data?.message)}
                             </p>
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[10px] font-bold text-text-muted">
-                                {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: getLocale() })}
                               </span>
                               {!notif.read_at && <span className="w-1.5 h-1.5 bg-primary dark:bg-secondary rounded-full"></span>}
                             </div>

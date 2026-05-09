@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { contractService } from '../services/contracts';
 import { toast } from 'react-toastify';
 import { 
@@ -24,6 +25,7 @@ const ContractDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin, isAgent } = useAuth();
+  const { t } = useLanguage();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -39,12 +41,12 @@ const ContractDetail = () => {
       if (response.success && response.data) {
         setContract(response.data);
       } else {
-        toast.error('Contrat non trouvé');
+        toast.error(t('ctr.not_found', 'Contrat non trouvé'));
         navigate('/dashboard');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error('Erreur lors du chargement du contrat');
+      toast.error(t('ctr.load_error', 'Erreur lors du chargement du contrat'));
       navigate('/dashboard');
     } finally {
       setLoading(false);
@@ -55,9 +57,9 @@ const ContractDetail = () => {
     setDownloading(true);
     try {
       await contractService.download(id);
-      toast.success('Téléchargement du contrat en cours...');
+      toast.success(t('admin.contracts.downloading', 'Téléchargement du contrat en cours...'));
     } catch (error) {
-      toast.error('Erreur lors du téléchargement');
+      toast.error(t('ctr.download_error', 'Erreur lors du téléchargement'));
     } finally {
       setDownloading(false);
     }
@@ -65,10 +67,10 @@ const ContractDetail = () => {
 
   const handleStatusChange = async (newStatus) => {
     const confirmMessage = newStatus === 'terminated' 
-      ? 'Êtes-vous sûr de vouloir résilier ce contrat ?'
+      ? t('ctr.confirm_terminate', 'Êtes-vous sûr de vouloir résilier ce contrat ?')
       : newStatus === 'completed'
-      ? 'Êtes-vous sûr de vouloir marquer ce contrat comme terminé ?'
-      : 'Êtes-vous sûr de vouloir marquer ce contrat comme expiré ?';
+      ? t('ctr.confirm_complete', 'Êtes-vous sûr de vouloir marquer ce contrat comme terminé ?')
+      : t('ctr.confirm_expire', 'Êtes-vous sûr de vouloir marquer ce contrat comme expiré ?');
     
     if (!window.confirm(confirmMessage)) return;
     
@@ -76,13 +78,13 @@ const ContractDetail = () => {
     try {
       const response = await contractService.updateStatus(id, newStatus);
       if (response.success) {
-        toast.success('Statut du contrat mis à jour');
+        toast.success(t('ctr.status_updated', 'Statut du contrat mis à jour'));
         fetchContract();
       } else {
-        toast.error(response.message || 'Erreur lors de la mise à jour');
+        toast.error(response.message || t('ctr.update_error', 'Erreur lors de la mise à jour'));
       }
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour du statut');
+      toast.error(t('ctr.status_error', 'Erreur lors de la mise à jour du statut'));
     } finally {
       setUpdating(false);
     }
@@ -90,10 +92,10 @@ const ContractDetail = () => {
 
   const getStatusBadge = (status, contractType) => {
     const statusConfig = {
-      active: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-700 dark:text-emerald-400', text: contractType === 'rent' ? 'Actif' : 'En cours', icon: CheckCircleIcon },
-      terminated: { bg: 'bg-rose-100 dark:bg-rose-900/30', color: 'text-rose-700 dark:text-rose-400', text: 'Résilié', icon: ExclamationTriangleIcon },
-      expired: { bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-500 dark:text-slate-400', text: 'Expiré', icon: ExclamationTriangleIcon },
-      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400', text: 'Terminé', icon: CheckCircleIcon }
+      active: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', color: 'text-emerald-700 dark:text-emerald-400', text: contractType === 'rent' ? t('contract.status.active', 'Actif') : t('ctr.in_progress', 'En cours'), icon: CheckCircleIcon },
+      terminated: { bg: 'bg-rose-100 dark:bg-rose-900/30', color: 'text-rose-700 dark:text-rose-400', text: t('contract.status.terminated', 'Résilié'), icon: ExclamationTriangleIcon },
+      expired: { bg: 'bg-slate-100 dark:bg-slate-800', color: 'text-slate-500 dark:text-slate-400', text: t('contract.status.expired', 'Expiré'), icon: ExclamationTriangleIcon },
+      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-700 dark:text-blue-400', text: t('ctr.completed', 'Terminé'), icon: CheckCircleIcon }
     };
     const config = statusConfig[status] || statusConfig.active;
     const Icon = config.icon;
@@ -111,14 +113,14 @@ const ContractDetail = () => {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
           <KeyIcon className="w-4 h-4" />
-          Contrat de location
+          {t('ctr.rental_contract', 'Contrat de location')}
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
           <TagIcon className="w-4 h-4" />
-          Contrat de vente
+          {t('ctr.sale_contract', 'Contrat de vente')}
         </span>
       );
     }
@@ -128,7 +130,7 @@ const ContractDetail = () => {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
         <div className="w-16 h-16 border-4 border-bg-card border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-text-muted font-medium">Chargement du contrat...</p>
+        <p className="text-text-muted font-medium">{t('common.loading', 'Chargement du contrat...')}</p>
       </div>
     );
   }
@@ -146,12 +148,12 @@ const ContractDetail = () => {
         {/* Navigation */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-sub hover:text-primary transition-colors font-medium">
           <ArrowLeftIcon className="w-4 h-4" />
-          Retour
+          {t('common.prev', 'Retour')}
         </button>
 
         {/* En-tête */}
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight mb-2">Contrat de {isRentContract ? 'location' : 'vente'}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight mb-2">{isRentContract ? t('ctr.rental_contract', 'Contrat de location') : t('ctr.sale_contract', 'Contrat de vente')}</h1>
           <p className="text-text-sub font-medium mb-4">N° {contract.contract_number}</p>
           <div className="flex flex-wrap gap-3">
             {getContractTypeBadge(contract.contract_type)}
@@ -164,18 +166,18 @@ const ContractDetail = () => {
           <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <HomeIcon className="w-5 h-5 text-primary" />
-              Informations du bien
+              {t('ctr.property_info', 'Informations du bien')}
             </h2>
-            <h3 className="font-bold text-text-main text-lg mb-2">{contract.property?.title}</h3>
+            <h3 className="font-bold text-text-main text-lg mb-2">{t(contract.property?.title, contract.property?.title)}</h3>
             <p className="flex items-center gap-1.5 text-text-sub font-medium text-sm mb-4">
               <MapPinIcon className="w-4 h-4" />
-              {contract.property?.address}, {contract.property?.city} {contract.property?.postal_code}
+              {t(contract.property?.address, contract.property?.address)}, {t(contract.property?.city, contract.property?.city)} {contract.property?.postal_code}
             </p>
             <div className="flex flex-wrap gap-4 text-text-sub font-medium text-sm">
-              <span className="flex items-center gap-1.5"><BuildingOfficeIcon className="w-4 h-4" /> {contract.property?.surface} m²</span>
-              <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.rooms} pièces</span>
+              <span className="flex items-center gap-1.5"><BuildingOfficeIcon className="w-4 h-4" /> {contract.property?.surface} {t('prop.surface_unit', 'm²')}</span>
+              <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.rooms} {t('prop.details.rooms', 'pièces')}</span>
               {contract.property?.bedrooms > 0 && (
-                <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.bedrooms} chambres</span>
+                <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.bedrooms} {t('prop.details.bedrooms', 'chambres')}</span>
               )}
             </div>
           </div>
@@ -184,19 +186,19 @@ const ContractDetail = () => {
           <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <UserIcon className="w-5 h-5 text-primary" />
-              Parties prenantes
+              {t('ctr.stakeholders', 'Parties prenantes')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {isRentContract ? (
                 <>
                   <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
-                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Locataire</h4>
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('admin.contracts.tenant', 'Locataire')}</h4>
                     <p className="font-bold text-text-main mb-1">{contract.tenant?.name}</p>
                     <p className="text-xs text-text-sub mb-1">{contract.tenant?.email}</p>
                     <p className="text-xs text-text-sub">{contract.tenant?.phone}</p>
                   </div>
                   <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
-                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Propriétaire</h4>
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('admin.contracts.owner', 'Propriétaire')}</h4>
                     <p className="font-bold text-text-main mb-1">{contract.owner?.name}</p>
                     <p className="text-xs text-text-sub mb-1">{contract.owner?.email}</p>
                     <p className="text-xs text-text-sub">{contract.owner?.phone}</p>
@@ -205,13 +207,13 @@ const ContractDetail = () => {
               ) : (
                 <>
                   <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
-                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Acheteur</h4>
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('ctr.buyer', 'Acheteur')}</h4>
                     <p className="font-bold text-text-main mb-1">{contract.buyer?.name}</p>
                     <p className="text-xs text-text-sub mb-1">{contract.buyer?.email}</p>
                     <p className="text-xs text-text-sub">{contract.buyer?.phone}</p>
                   </div>
                   <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
-                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Vendeur</h4>
+                    <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('ctr.seller', 'Vendeur')}</h4>
                     <p className="font-bold text-text-main mb-1">{contract.seller?.name}</p>
                     <p className="text-xs text-text-sub mb-1">{contract.seller?.email}</p>
                     <p className="text-xs text-text-sub">{contract.seller?.phone}</p>
@@ -219,7 +221,7 @@ const ContractDetail = () => {
                 </>
               )}
               <div className="bg-bg-soft rounded-2xl p-5 border border-border-main">
-                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Agent immobilier</h4>
+                <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">{t('admin.users.role_agent', 'Agent immobilier')}</h4>
                 <p className="font-bold text-text-main mb-1">{contract.agent?.name}</p>
                 <p className="text-xs text-text-sub mb-1">{contract.agent?.email}</p>
                 <p className="text-xs text-text-sub">{contract.agent?.phone}</p>
@@ -231,40 +233,40 @@ const ContractDetail = () => {
           <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <CurrencyEuroIcon className="w-5 h-5 text-primary" />
-              Conditions {isRentContract ? 'financières' : 'de vente'}
+              {isRentContract ? t('ctr.financial_conditions', 'Conditions financières') : t('ctr.sale_conditions', 'Conditions de vente')}
             </h2>
             {isRentContract ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                  <span className="text-sm text-text-sub font-medium">Loyer mensuel</span>
+                  <span className="text-sm text-text-sub font-medium">{t('ctr.monthly_rent', 'Loyer mensuel')}</span>
                   <span className="font-bold text-text-main">{contract.monthly_rent?.toLocaleString('fr-FR')} DH</span>
                 </div>
                 <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                  <span className="text-sm text-text-sub font-medium">Charges mensuelles</span>
+                  <span className="text-sm text-text-sub font-medium">{t('ctr.monthly_charges', 'Charges mensuelles')}</span>
                   <span className="font-bold text-text-main">{contract.charges?.toLocaleString('fr-FR')} DH</span>
                 </div>
                 <div className="flex justify-between items-center p-4 bg-primary/10 rounded-xl border border-primary/20 md:col-span-2">
-                  <span className="text-sm font-bold text-primary">Total mensuel</span>
+                  <span className="text-sm font-bold text-primary">{t('ctr.monthly_total', 'Total mensuel')}</span>
                   <span className="font-black text-primary text-lg">{(contract.monthly_rent + (contract.charges || 0)).toLocaleString('fr-FR')} DH</span>
                 </div>
                 <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
-                  <span className="text-sm text-text-sub font-medium">Dépôt de garantie</span>
+                  <span className="text-sm text-text-sub font-medium">{t('ctr.security_deposit', 'Dépôt de garantie')}</span>
                   <span className="font-bold text-text-main">{contract.security_deposit?.toLocaleString('fr-FR')} DH</span>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex justify-between items-center p-4 bg-primary/10 rounded-xl border border-primary/20 md:col-span-2">
-                  <span className="text-sm font-bold text-primary">Prix de vente</span>
+                  <span className="text-sm font-bold text-primary">{t('ctr.sale_price', 'Prix de vente')}</span>
                   <span className="font-black text-primary text-lg">{contract.sale_price?.toLocaleString('fr-FR')} DH</span>
                 </div>
                 <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                  <span className="text-sm text-text-sub font-medium">Date de vente</span>
+                  <span className="text-sm text-text-sub font-medium">{t('ctr.sale_date', 'Date de vente')}</span>
                   <span className="font-bold text-text-main">{new Date(contract.sale_date).toLocaleDateString('fr-FR')}</span>
                 </div>
                 {contract.charges > 0 && (
                   <div className="flex justify-between items-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                    <span className="text-sm text-text-sub font-medium">Frais annexes</span>
+                    <span className="text-sm text-text-sub font-medium">{t('ctr.extra_fees', 'Frais annexes')}</span>
                     <span className="font-bold text-text-main">{contract.charges?.toLocaleString('fr-FR')} DH</span>
                   </div>
                 )}
@@ -276,29 +278,29 @@ const ContractDetail = () => {
           <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <CalendarIcon className="w-5 h-5 text-primary" />
-              {isRentContract ? 'Période de location' : 'Dates importantes'}
+              {isRentContract ? t('ctr.rental_period', 'Période de location') : t('ctr.important_dates', 'Dates importantes')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isRentContract ? (
                 <>
                   <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de début</span>
+                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{t('ctr.start_date', 'Date de début')}</span>
                     <span className="block font-bold text-text-main">{new Date(contract.start_date).toLocaleDateString('fr-FR')}</span>
                   </div>
                   <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main">
-                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de fin</span>
+                    <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{t('ctr.end_date', 'Date de fin')}</span>
                     <span className="block font-bold text-text-main">{new Date(contract.end_date).toLocaleDateString('fr-FR')}</span>
                   </div>
                 </>
               ) : (
                 <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
-                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de signature</span>
+                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{t('ctr.sign_date', 'Date de signature')}</span>
                   <span className="block font-bold text-text-main">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
                 </div>
               )}
               {isRentContract && (
                 <div className="text-center p-4 bg-bg-soft rounded-xl border border-border-main md:col-span-2">
-                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Date de signature</span>
+                  <span className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">{t('ctr.sign_date', 'Date de signature')}</span>
                   <span className="block font-bold text-text-main">{new Date(contract.signed_at).toLocaleDateString('fr-FR')}</span>
                 </div>
               )}
@@ -307,7 +309,7 @@ const ContractDetail = () => {
 
           {/* Actions */}
           <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
-            <h2 className="text-lg font-bold text-text-main mb-6">Actions</h2>
+            <h2 className="text-lg font-bold text-text-main mb-6">{t('admin.prop.actions', 'Actions')}</h2>
             <div className="flex flex-wrap gap-4">
               <button 
                 onClick={handleDownload}
@@ -315,7 +317,7 @@ const ContractDetail = () => {
                 className="px-6 py-3 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
               >
                 <ArrowDownTrayIcon className="w-5 h-5" />
-                {downloading ? 'Téléchargement...' : 'Télécharger (PDF)'}
+                {downloading ? t('ctr.downloading', 'Téléchargement...') : t('common.download_pdf', 'Télécharger (PDF)')}
               </button>
 
               {contract.status === 'active' && !isAgent && !isAdmin && (
@@ -337,14 +339,14 @@ const ContractDetail = () => {
                         disabled={updating}
                         className="px-6 py-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        Résilier le contrat
+                        {t('ctr.terminate', 'Résilier le contrat')}
                       </button>
                       <button 
                         onClick={() => handleStatusChange('expired')}
                         disabled={updating}
                         className="px-6 py-3 bg-bg-soft text-text-main border border-border-main hover:bg-bg-card rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        Marquer comme expiré
+                        {t('ctr.mark_expired', 'Marquer comme expiré')}
                       </button>
                     </>
                   ) : (
@@ -353,7 +355,7 @@ const ContractDetail = () => {
                       disabled={updating}
                       className="px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Marquer comme terminé
+                      {t('ctr.mark_completed', 'Marquer comme terminé')}
                     </button>
                   )}
                 </>
@@ -363,8 +365,8 @@ const ContractDetail = () => {
 
           {/* Note */}
           <p className="text-center text-xs font-medium text-text-muted p-4">
-            Ce contrat a été généré automatiquement par la plateforme IMMORent.
-            Pour toute question, veuillez contacter votre agent immobilier.
+            {t('ctr.auto_generated', 'Ce contrat a été généré automatiquement par la plateforme IMMORent.')}
+            {' '}{t('ctr.contact_agent', 'Pour toute question, veuillez contacter votre agent immobilier.')}
           </p>
         </div>
       </div>

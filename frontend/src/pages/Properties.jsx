@@ -226,6 +226,25 @@ const Properties = () => {
             </div>
 
             <div className="space-y-2 border-b border-border-main pb-6 group">
+              <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.type')}</label>
+              <select
+                name="type"
+                value={filters.type}
+                onChange={handleFilterChange}
+                className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border border-border-main rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-main transition-all appearance-none cursor-pointer shadow-inner"
+              >
+                <option value="">{t('prop.filter.all_types', 'Tous les types')}</option>
+                <option value="apartment">{t('prop.types.apartment', 'Appartement')}</option>
+                <option value="house">{t('prop.types.house', 'Maison')}</option>
+                <option value="villa">{t('prop.types.villa', 'Villa')}</option>
+                <option value="studio">{t('prop.types.studio', 'Studio')}</option>
+                <option value="office">{t('prop.types.office', 'Bureau')}</option>
+                <option value="commercial">{t('prop.types.commercial', 'Local commercial')}</option>
+                <option value="land">{t('prop.types.land', 'Terrain')}</option>
+              </select>
+            </div>
+
+            <div className="space-y-2 border-b border-border-main pb-6 group">
               <label className="text-xs font-bold text-text-sub uppercase tracking-wider group-focus-within:text-primary transition-colors">{t('prop.filter.budget')}</label>
               <div className="flex items-center gap-2">
                 <input

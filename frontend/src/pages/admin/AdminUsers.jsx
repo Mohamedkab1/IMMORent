@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   PlusIcon, PencilIcon, TrashIcon, EyeIcon, MagnifyingGlassIcon, XMarkIcon,
@@ -15,14 +16,15 @@ const AdminUsers = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', address: '', password: '', password_confirmation: '', role_id: '3'
   });
 
   const roles = [
-    { id: 1, name: 'Administrateur', slug: 'admin' },
-    { id: 2, name: 'Agent immobilier', slug: 'agent' },
-    { id: 3, name: 'Client', slug: 'client' }
+    { id: 1, name: t('admin.users.role_admin', 'Administrateur'), slug: 'admin' },
+    { id: 2, name: t('admin.users.role_agent', 'Agent immobilier'), slug: 'agent' },
+    { id: 3, name: t('admin.users.role_client', 'Client'), slug: 'client' }
   ];
 
   useEffect(() => { fetchUsers(); }, []);
@@ -55,39 +57,39 @@ const AdminUsers = () => {
   const openEditModal = (u) => { setEditingUser(u); setFormData({ name: u.name, email: u.email, phone: u.phone || '', address: u.address || '', password: '', password_confirmation: '', role_id: u.role.id.toString() }); setShowModal(true); };
   const closeModal = () => { setShowModal(false); resetForm(); };
   const confirmDelete = (u) => { setUserToDelete(u); setShowDeleteConfirm(true); };
-  const handleDelete = () => { if (userToDelete) { setUsers(users.filter(u => u.id !== userToDelete.id)); toast.success('Utilisateur supprimé'); setShowDeleteConfirm(false); setUserToDelete(null); } };
-  const toggleUserStatus = (userId) => { setUsers(users.map(u => u.id === userId ? { ...u, is_active: !u.is_active } : u)); toast.success('Statut modifié'); };
+  const handleDelete = () => { if (userToDelete) { setUsers(users.filter(u => u.id !== userToDelete.id)); toast.success(t('admin.users.deleted', 'Utilisateur supprimé')); setShowDeleteConfirm(false); setUserToDelete(null); } };
+  const toggleUserStatus = (userId) => { setUsers(users.map(u => u.id === userId ? { ...u, is_active: !u.is_active } : u)); toast.success(t('admin.users.status_changed', 'Statut modifié')); };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!editingUser && !formData.password) { toast.error('Mot de passe requis'); return; }
-    if (!editingUser && formData.password !== formData.password_confirmation) { toast.error('Mots de passe différents'); return; }
+    if (!editingUser && !formData.password) { toast.error(t('admin.users.pwd_required', 'Mot de passe requis')); return; }
+    if (!editingUser && formData.password !== formData.password_confirmation) { toast.error(t('admin.users.pwd_mismatch', 'Mots de passe différents')); return; }
     if (editingUser) {
       setUsers(users.map(u => u.id === editingUser.id ? { ...u, name: formData.name, email: formData.email, phone: formData.phone, address: formData.address, role: roles.find(r => r.id.toString() === formData.role_id) } : u));
-      toast.success('Utilisateur modifié');
+      toast.success(t('admin.users.updated', 'Utilisateur modifié'));
     } else {
       setUsers([...users, { id: users.length + 1, name: formData.name, email: formData.email, phone: formData.phone, address: formData.address, role: roles.find(r => r.id.toString() === formData.role_id), is_active: true, created_at: new Date().toISOString().split('T')[0] }]);
-      toast.success('Utilisateur ajouté');
+      toast.success(t('admin.users.added', 'Utilisateur ajouté'));
     }
     closeModal();
   };
 
-  if (loading) return <div className="loading"><div className="spinner"></div><p>Chargement...</p></div>;
+  if (loading) return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement...')}</p></div>;
 
   return (
     <>
       <div className="admin-users">
-        <div className="header"><h1>Gestion des utilisateurs</h1><button className="btn-add" onClick={openAddModal}><PlusIcon /> Ajouter</button></div>
+        <div className="header"><h1>{t('admin.users.title', 'Gestion des utilisateurs')}</h1><button className="btn-add" onClick={openAddModal}><PlusIcon /> {t('admin.add.add_btn', 'Ajouter')}</button></div>
         <div className="stats-cards">
-          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>Total</span><strong>{users.length}</strong></div></div>
-          <div className="stat-card"><div className="stat-icon"><ShieldCheckIcon /></div><div><span>Admin</span><strong>{users.filter(u => u.role.slug === 'admin').length}</strong></div></div>
-          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>Agents</span><strong>{users.filter(u => u.role.slug === 'agent').length}</strong></div></div>
-          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>Clients</span><strong>{users.filter(u => u.role.slug === 'client').length}</strong></div></div>
+          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>{t('admin.prop.total', 'Total')}</span><strong>{users.length}</strong></div></div>
+          <div className="stat-card"><div className="stat-icon"><ShieldCheckIcon /></div><div><span>{t('admin.users.role_admin', 'Admin')}</span><strong>{users.filter(u => u.role.slug === 'admin').length}</strong></div></div>
+          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>{t('admin.users.role_agent', 'Agents')}</span><strong>{users.filter(u => u.role.slug === 'agent').length}</strong></div></div>
+          <div className="stat-card"><div className="stat-icon"><UserIcon /></div><div><span>{t('admin.users.role_client', 'Clients')}</span><strong>{users.filter(u => u.role.slug === 'client').length}</strong></div></div>
         </div>
-        <div className="search-section"><div className="search-wrapper"><MagnifyingGlassIcon className="search-icon" /><input type="text" className="search-input" placeholder="Rechercher par ID, nom ou email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />{searchTerm && <button className="clear-search" onClick={() => setSearchTerm('')}><XMarkIcon /></button>}</div><div className="search-info">{filteredUsers.length} utilisateur(s)</div></div>
-        <div className="table-container"><table className="data-table"><thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead><tbody>{filteredUsers.map(u => (<tr key={u.id}><td>{u.id}</td><td><strong>{u.name}</strong></td><td>{u.email}</td><td>{u.phone || '-'}</td><td>{getRoleBadge(u.role)}</td><td><button className={`status-toggle ${u.is_active ? 'active' : 'inactive'}`} onClick={() => toggleUserStatus(u.id)}>{u.is_active ? 'Actif' : 'Inactif'}</button></td><td className="actions"><button className="btn-icon" onClick={() => openEditModal(u)}><PencilIcon /></button><button className="btn-icon delete" onClick={() => confirmDelete(u)}><TrashIcon /></button></td></tr>))}</tbody></table></div>
+        <div className="search-section"><div className="search-wrapper"><MagnifyingGlassIcon className="search-icon" /><input type="text" className="search-input" placeholder={t('admin.users.search_ph', 'Rechercher par ID, nom ou email...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />{searchTerm && <button className="clear-search" onClick={() => setSearchTerm('')}><XMarkIcon /></button>}</div><div className="search-info">{filteredUsers.length} {t('admin.users.users_count', 'utilisateur(s)')}</div></div>
+        <div className="table-container"><table className="data-table"><thead><tr><th>{t('admin.prop.id', 'ID')}</th><th>{t('auth.name', 'Nom')}</th><th>{t('auth.email', 'Email')}</th><th>{t('admin.users.phone', 'Téléphone')}</th><th>{t('admin.users.role', 'Rôle')}</th><th>{t('admin.edit.status', 'Statut')}</th><th>{t('admin.prop.actions', 'Actions')}</th></tr></thead><tbody>{filteredUsers.map(u => (<tr key={u.id}><td>{u.id}</td><td><strong>{u.name}</strong></td><td>{u.email}</td><td>{u.phone || '-'}</td><td>{getRoleBadge(u.role)}</td><td><button className={`status-toggle ${u.is_active ? 'active' : 'inactive'}`} onClick={() => toggleUserStatus(u.id)}>{u.is_active ? t('admin.users.active', 'Actif') : t('admin.users.inactive', 'Inactif')}</button></td><td className="actions"><button className="btn-icon" onClick={() => openEditModal(u)}><PencilIcon /></button><button className="btn-icon delete" onClick={() => confirmDelete(u)}><TrashIcon /></button></td></tr>))}</tbody></table></div>
       </div>
-      {showModal && (<div className="modal-overlay" onClick={closeModal}><div className="modal-content" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>{editingUser ? 'Modifier' : 'Ajouter'}</h2><button className="close-modal" onClick={closeModal}><XMarkIcon /></button></div><form onSubmit={handleSubmit} className="modal-form"><div className="form-group"><label><UserIcon /> Nom</label><input type="text" name="name" value={formData.name} onChange={handleChange} required /></div><div className="form-group"><label><EnvelopeIcon /> Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div><div className="form-group"><label><PhoneIcon /> Téléphone</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} /></div><div className="form-group"><label>Adresse</label><textarea name="address" rows="2" value={formData.address} onChange={handleChange} /></div><div className="form-group"><label><ShieldCheckIcon /> Rôle</label><select name="role_id" value={formData.role_id} onChange={handleChange}>{roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></div>{!editingUser && (<><div className="form-group"><label>Mot de passe</label><input type="password" name="password" value={formData.password} onChange={handleChange} required /></div><div className="form-group"><label>Confirmation</label><input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} required /></div></>)}<div className="modal-actions"><button type="button" className="btn-cancel" onClick={closeModal}>Annuler</button><button type="submit" className="btn-submit">{editingUser ? 'Modifier' : 'Ajouter'}</button></div></form></div></div>)}
-      {showDeleteConfirm && (<div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}><div className="modal-content confirm" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>Confirmer</h2></div><div className="modal-body"><p>Supprimer <strong>{userToDelete?.name}</strong> ?</p><p className="warning">Action irréversible</p></div><div className="modal-actions"><button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>Annuler</button><button className="btn-delete" onClick={handleDelete}>Supprimer</button></div></div></div>)}
+      {showModal && (<div className="modal-overlay" onClick={closeModal}><div className="modal-content" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>{editingUser ? t('common.edit', 'Modifier') : t('admin.add.add_btn', 'Ajouter')}</h2><button className="close-modal" onClick={closeModal}><XMarkIcon /></button></div><form onSubmit={handleSubmit} className="modal-form"><div className="form-group"><label><UserIcon /> {t('auth.name', 'Nom')}</label><input type="text" name="name" value={formData.name} onChange={handleChange} required /></div><div className="form-group"><label><EnvelopeIcon /> {t('auth.email', 'Email')}</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div><div className="form-group"><label><PhoneIcon /> {t('admin.users.phone', 'Téléphone')}</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} /></div><div className="form-group"><label>{t('admin.users.address', 'Adresse')}</label><textarea name="address" rows="2" value={formData.address} onChange={handleChange} /></div><div className="form-group"><label><ShieldCheckIcon /> {t('admin.users.role', 'Rôle')}</label><select name="role_id" value={formData.role_id} onChange={handleChange}>{roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></div>{!editingUser && (<><div className="form-group"><label>{t('auth.pwd', 'Mot de passe')}</label><input type="password" name="password" value={formData.password} onChange={handleChange} required /></div><div className="form-group"><label>{t('auth.pwd_confirm', 'Confirmation')}</label><input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} required /></div></>)}<div className="modal-actions"><button type="button" className="btn-cancel" onClick={closeModal}>{t('common.cancel', 'Annuler')}</button><button type="submit" className="btn-submit">{editingUser ? t('common.edit', 'Modifier') : t('admin.add.add_btn', 'Ajouter')}</button></div></form></div></div>)}
+      {showDeleteConfirm && (<div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}><div className="modal-content confirm" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>{t('admin.prop.del_confirm_title', 'Confirmer')}</h2></div><div className="modal-body"><p>{t('common.delete', 'Supprimer')} <strong>{userToDelete?.name}</strong> ?</p><p className="warning">{t('admin.prop.del_warning', 'Action irréversible')}</p></div><div className="modal-actions"><button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>{t('common.cancel', 'Annuler')}</button><button className="btn-delete" onClick={handleDelete}>{t('common.delete', 'Supprimer')}</button></div></div></div>)}
       <style>{`
         .admin-users { padding: 1.5rem; background: #f8f9fa; min-height: calc(100vh - 70px); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }

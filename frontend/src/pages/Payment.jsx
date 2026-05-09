@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
 import { 
@@ -8,46 +10,67 @@ import {
   BuildingLibraryIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
+  const { t, language } = useLanguage();
   const [property, setProperty] = useState(null);
+  const [invoiceUrl, setInvoiceUrl] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   
   const [paymentMethod, setPaymentMethod] = useState('card');
+  
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    entryDate: '',
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    entryDate: formatDateForInput(location.state?.request?.start_date || location.state?.contract?.start_date),
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardName: ''
+    cardName: user?.name || ''
   });
 
   useEffect(() => {
     // Si la propriété a été passée dans l'état de la navigation, on l'utilise
     if (location.state?.property) {
       setProperty(location.state.property);
+      const start_date = location.state.request?.start_date || location.state.contract?.start_date;
+      if (start_date) {
+        const formattedDate = formatDateForInput(start_date);
+        console.log('Setting entryDate to:', formattedDate, 'from raw:', start_date);
+        setFormData(prev => ({ ...prev, entryDate: formattedDate }));
+      }
     } else {
       // Sinon, on pourrait faire un appel API pour récupérer la propriété par son ID
       // Pour l'instant, on redirige si on n'a pas les données
-      toast.error("Données de la propriété introuvables. Redirection...");
+      toast.error(t('pay.data_missing', "Données de la propriété introuvables. Redirection..."));
       navigate(`/properties/${id}`);
     }
-  }, [location, navigate, id]);
+  }, [location, navigate, id, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     
+    // Empêcher la modification de la date si elle vient de la demande
+    if (name === 'entryDate' && (location.state?.request?.start_date || location.state?.contract?.start_date)) return;
+
     // Formatage simple pour la carte bancaire
     if (name === 'cardNumber') {
       const formatted = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
@@ -80,14 +103,14 @@ const Payment = () => {
       // 1. Créer l'intention de paiement
       const intentRes = await paymentService.createIntent({
         propertyId: property.id,
-        contractId: location.state?.contractId,
+        contractId: location.state?.contract?.id || location.state?.request?.contract_id || location.state?.contractId,
         amount: property.price,
         currency: 'MAD',
         method: paymentMethod
       });
 
       if (intentRes.paymentId) {
-        // 2. Confirmer le paiement (simulation de succès pour l'instant si c'est par carte, ou direct pour virement/agence)
+        // 2. Confirmer le paiement
         const confirmRes = await paymentService.confirm({
           paymentId: intentRes.paymentId,
           status: 'paid'
@@ -95,19 +118,16 @@ const Payment = () => {
 
         if (confirmRes.success) {
           setSuccess(true);
-          toast.success("Paiement effectué avec succès !");
-          
-          // Redirection après un petit délai
-          setTimeout(() => {
-            navigate('/payments/history');
-          }, 3000);
+          setInvoiceUrl(confirmRes.invoiceUrl);
+          toast.success(t('pay.success_msg', "Paiement effectué avec succès !"));
         } else {
           toast.error(confirmRes.message || "Erreur lors de la confirmation");
         }
       }
     } catch (error) {
       console.error('Erreur paiement:', error);
-      toast.error("Une erreur est survenue lors du paiement.");
+      const serverMessage = error.response?.data?.message || t('pay.error_msg', "Une erreur est survenue lors du paiement.");
+      toast.error(serverMessage);
     } finally {
       setLoading(false);
     }
@@ -125,20 +145,34 @@ const Payment = () => {
           <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircleIcon className="w-14 h-14 text-green-500" />
           </div>
-          <h2 className="text-2xl font-black text-text-main mb-2">Paiement Réussi !</h2>
+          <h2 className="text-2xl font-black text-text-main mb-2">{t('pay.success_title', 'Paiement Réussi !')}</h2>
           <p className="text-text-sub mb-8">
-            Votre réservation pour <strong>{property.title}</strong> a été confirmée. Un email récapitulatif vous a été envoyé.
+            {t('pay.success_desc', 'Votre réservation pour')} <strong>{t(property.title, property.title)}</strong> {t('pay.success_desc2', 'a été confirmée. Un email récapitulatif vous a été envoyé.')}
           </p>
-          <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm">
-             <span className="font-semibold text-text-sub">Montant payé:</span>
-             <span className="font-black text-text-main">{property.price?.toLocaleString('fr-FR')} DH</span>
+          <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm border border-border-main">
+             <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
+             <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
           </div>
-          <button 
-            onClick={() => navigate('/payments/history')}
-            className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-colors"
-          >
-            Voir mon historique
-          </button>
+          
+          <div className="flex flex-col gap-3">
+            {invoiceUrl && (
+              <a 
+                href={invoiceUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                {t('pay.view_invoice', 'Voir votre facture')}
+              </a>
+            )}
+            <button 
+              onClick={() => navigate('/payments/history')}
+              className="w-full py-3 bg-bg-soft text-text-main border border-border-main rounded-xl font-bold hover:bg-bg-card transition-all"
+            >
+              {t('pay.view_history', 'Voir mon historique')}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -150,10 +184,10 @@ const Payment = () => {
         
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-text-main">
-            Finaliser la réservation
+            {t('pay.finalize', 'Finaliser la réservation')}
           </h1>
           <p className="text-text-sub mt-2">
-            Veuillez remplir vos informations et procéder au paiement.
+            {t('pay.fill_info', 'Veuillez remplir vos informations et procéder au paiement.')}
           </p>
         </div>
 
@@ -167,29 +201,37 @@ const Payment = () => {
               <div className="bg-bg-card rounded-2xl p-6 border border-border-main shadow-sm">
                 <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
-                  Vos informations
+                  {t('pay.your_info', 'Vos informations')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-text-sub mb-1">Prénom</label>
+                    <label className="block text-sm font-semibold text-text-sub mb-1">{t('common.first_name', 'Prénom')}</label>
                     <input required type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-text-sub mb-1">Nom</label>
+                    <label className="block text-sm font-semibold text-text-sub mb-1">{t('common.last_name', 'Nom')}</label>
                     <input required type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-text-sub mb-1">Email</label>
+                    <label className="block text-sm font-semibold text-text-sub mb-1">{t('common.email', 'Email')}</label>
                     <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-text-sub mb-1">Téléphone</label>
+                    <label className="block text-sm font-semibold text-text-sub mb-1">{t('common.phone', 'Téléphone')}</label>
                     <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-text-sub mb-1">Date d'entrée souhaitée</label>
-                    <input required type="date" name="entryDate" value={formData.entryDate} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.entry_date', 'Date d\'entrée souhaitée')}</label>
+                    <input 
+                      required 
+                      type="date" 
+                      name="entryDate" 
+                      value={formData.entryDate} 
+                      onChange={handleChange} 
+                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)} 
+                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`} 
+                    />
                   </div>
                 </div>
               </div>
@@ -198,32 +240,32 @@ const Payment = () => {
               <div className="bg-bg-card rounded-2xl p-6 border border-border-main shadow-sm">
                 <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">2</span>
-                  Mode de paiement
+                  {t('pay.payment_method', 'Mode de paiement')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
                   <button type="button" onClick={() => setPaymentMethod('card')} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-primary bg-primary/5 text-primary' : 'border-border-main text-text-sub hover:bg-bg-soft'}`}>
                     <CreditCardIcon className="w-6 h-6" />
-                    <span className="text-sm font-bold">Carte Bancaire</span>
+                    <span className="text-sm font-bold">{t('pay.card', 'Carte Bancaire')}</span>
                   </button>
                   <button type="button" onClick={() => setPaymentMethod('transfer')} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'transfer' ? 'border-primary bg-primary/5 text-primary' : 'border-border-main text-text-sub hover:bg-bg-soft'}`}>
                     <BuildingLibraryIcon className="w-6 h-6" />
-                    <span className="text-sm font-bold">Virement</span>
+                    <span className="text-sm font-bold">{t('pay.transfer', 'Virement')}</span>
                   </button>
                   <button type="button" onClick={() => setPaymentMethod('agency')} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'agency' ? 'border-primary bg-primary/5 text-primary' : 'border-border-main text-text-sub hover:bg-bg-soft'}`}>
                     <BanknotesIcon className="w-6 h-6" />
-                    <span className="text-sm font-bold">En agence</span>
+                    <span className="text-sm font-bold">{t('pay.agency', 'En agence')}</span>
                   </button>
                 </div>
 
                 {paymentMethod === 'card' && (
                   <div className="space-y-4 animate-fade-in">
                     <div>
-                      <label className="block text-sm font-semibold text-text-sub mb-1">Nom sur la carte</label>
+                      <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.card_name', 'Nom sur la carte')}</label>
                       <input required type="text" name="cardName" value={formData.cardName} onChange={handleChange} placeholder="John Doe" className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none font-mono" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-text-sub mb-1">Numéro de carte</label>
+                      <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.card_number', 'Numéro de carte')}</label>
                       <div className="relative">
                         <CreditCardIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                         <input required type="text" name="cardNumber" value={formData.cardNumber} onChange={handleChange} placeholder="0000 0000 0000 0000" className="w-full pl-10 pr-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none font-mono tracking-widest" />
@@ -231,7 +273,7 @@ const Payment = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-text-sub mb-1">Expiration (MM/YY)</label>
+                        <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.expiry', 'Expiration (MM/YY)')}</label>
                         <input required type="text" name="expiryDate" value={formData.expiryDate} onChange={handleChange} placeholder="MM/YY" className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none font-mono" />
                       </div>
                       <div>
@@ -244,17 +286,17 @@ const Payment = () => {
 
                 {paymentMethod === 'transfer' && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-xl text-blue-800 dark:text-blue-300 text-sm animate-fade-in">
-                    <p className="font-bold mb-2">Instructions de virement :</p>
-                    <p>Veuillez transférer le montant sur le RIB suivant : <strong>1234 5678 9101 1121 3141 5161</strong>.</p>
-                    <p className="mt-1">Votre réservation sera validée à la réception des fonds.</p>
+                    <p className="font-bold mb-2">{t('pay.transfer_inst', 'Instructions de virement :')}</p>
+                    <p>{t('pay.transfer_desc', 'Veuillez transférer le montant sur le RIB suivant :')} <strong>1234 5678 9101 1121 3141 5161</strong>.</p>
+                    <p className="mt-1">{t('pay.transfer_notice', 'Votre réservation sera validée à la réception des fonds.')}</p>
                   </div>
                 )}
 
                 {paymentMethod === 'agency' && (
                   <div className="p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-xl text-orange-800 dark:text-orange-300 text-sm animate-fade-in">
-                    <p className="font-bold mb-2">Paiement en agence :</p>
-                    <p>Vous disposez de 48h pour vous présenter à notre agence et finaliser le paiement.</p>
-                    <p className="mt-1">Adresse : 123 Boulevard de la Résistance, Casablanca.</p>
+                    <p className="font-bold mb-2">{t('pay.agency_inst', 'Paiement en agence :')}</p>
+                    <p>{t('pay.agency_desc', 'Vous disposez de 48h pour vous présenter à notre agence et finaliser le paiement.')}</p>
+                    <p className="mt-1">{t('pay.agency_address', 'Adresse : 123 Boulevard de la Résistance, Casablanca.')}</p>
                   </div>
                 )}
 
@@ -262,7 +304,7 @@ const Payment = () => {
 
               <div className="flex items-center gap-2 text-xs text-text-muted mt-4">
                 <ShieldCheckIcon className="w-4 h-4 text-green-500" />
-                Paiement 100% sécurisé et crypté
+                {t('pay.secure', 'Paiement 100% sécurisé et crypté')}
               </div>
 
               <button 
@@ -271,9 +313,9 @@ const Payment = () => {
                 className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary-hover hover:-translate-y-1 active:translate-y-0 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <><ArrowPathIcon className="w-5 h-5 animate-spin" /> Traitement en cours...</>
+                  <><ArrowPathIcon className="w-5 h-5 animate-spin" /> {t('pay.processing', 'Traitement en cours...')}</>
                 ) : (
-                  `Confirmer la réservation - ${property.price?.toLocaleString('fr-FR')} DH`
+                  `${t('pay.confirm', 'Confirmer la réservation')} - ${property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH`
                 )}
               </button>
             </form>
@@ -285,34 +327,34 @@ const Payment = () => {
               <div className="h-48 overflow-hidden relative">
                 <img src={propertyImage} alt={property.title} className="w-full h-full object-cover" />
                 <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm text-primary text-xs font-bold rounded-lg shadow-sm">
-                  {property.transaction_type === 'sale' ? 'Vente' : 'Location'}
+                  {property.transaction_type === 'sale' ? t('common.buy', 'Vente') : t('common.rent', 'Location')}
                 </div>
               </div>
               <div className="p-5">
-                <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{property.title}</h4>
-                <p className="text-sm text-text-muted mb-4">{property.city}</p>
+                <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{t(property.title, property.title)}</h4>
+                <p className="text-sm text-text-muted mb-4">{t(property.city, property.city)}</p>
                 
                 <div className="h-px bg-border-main mb-4"></div>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-text-sub">Prix {property.transaction_type === 'rent' ? 'mensuel' : 'de base'}</span>
-                    <span className="font-semibold text-text-main">{property.price?.toLocaleString('fr-FR')} DH</span>
+                    <span className="text-text-sub">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
+                    <span className="font-semibold text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
                   </div>
                   {property.transaction_type === 'rent' && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-sub">Frais de dossier</span>
+                      <span className="text-text-sub">{t('pay.fee', 'Frais de dossier')}</span>
                       <span className="font-semibold text-text-main">500 DH</span>
                     </div>
                   )}
                 </div>
 
                 <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
-                  <span className="font-bold text-primary dark:text-white">Total à payer</span>
+                  <span className="font-bold text-primary dark:text-white">{t('pay.total', 'Total à payer')}</span>
                   <span className="text-xl font-black text-primary dark:text-white">
                     {property.transaction_type === 'rent' 
-                      ? (property.price + 500).toLocaleString('fr-FR')
-                      : property.price?.toLocaleString('fr-FR')} DH
+                      ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
+                      : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
                   </span>
                 </div>
               </div>

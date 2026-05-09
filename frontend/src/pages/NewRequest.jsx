@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { propertyService } from '../services/properties';
 import { requestService } from '../services/requests';
 import { toast } from 'react-toastify';
@@ -22,6 +23,7 @@ const NewRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useLanguage();
   
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,13 +42,13 @@ const NewRequest = () => {
 
   useEffect(() => {
     if (!propertyId) {
-      toast.error('Aucun bien sélectionné');
+      toast.error(t('req.no_property', 'Aucun bien sélectionné'));
       navigate('/properties');
       return;
     }
     const id = parseInt(propertyId);
     if (isNaN(id)) {
-      toast.error('ID invalide');
+      toast.error(t('req.invalid_id', 'ID invalide'));
       navigate('/properties');
       return;
     }
@@ -77,11 +79,11 @@ const NewRequest = () => {
           }));
         }
       } else {
-        toast.error('Bien non trouvé');
+        toast.error(t('req.not_found', 'Bien non trouvé'));
         navigate('/properties');
       }
     } catch (error) {
-      toast.error('Erreur de chargement');
+      toast.error(t('req.load_error', 'Erreur de chargement'));
       navigate('/properties');
     } finally {
       setLoading(false);
@@ -103,11 +105,11 @@ const NewRequest = () => {
       const startDate = new Date(formData.start_date);
       const endDate = new Date(formData.end_date);
       
-      if (!formData.start_date) newErrors.start_date = 'Date de début requise';
-      else if (startDate < today) newErrors.start_date = 'Date de début dans le passé';
+      if (!formData.start_date) newErrors.start_date = t('req.err.start_req', 'Date de début requise');
+      else if (startDate < today) newErrors.start_date = t('req.err.start_past', 'Date de début dans le passé');
       
-      if (!formData.end_date) newErrors.end_date = 'Date de fin requise';
-      else if (endDate <= startDate) newErrors.end_date = 'Date de fin après début';
+      if (!formData.end_date) newErrors.end_date = t('req.err.end_req', 'Date de fin requise');
+      else if (endDate <= startDate) newErrors.end_date = t('req.err.end_after', 'Date de fin après début');
     }
     
     setErrors(newErrors);
@@ -119,12 +121,12 @@ const NewRequest = () => {
     if (!validateForm()) return;
 
     if (!user) {
-      toast.info('Connectez-vous');
+      toast.info(t('req.login_req', 'Connectez-vous'));
       navigate('/login');
       return;
     }
     if (user.role?.slug !== 'client') {
-      toast.error('Seuls les clients peuvent faire une demande');
+      toast.error(t('req.client_only', 'Seuls les clients peuvent faire une demande'));
       return;
     }
 
@@ -143,7 +145,7 @@ const NewRequest = () => {
         navigate('/dashboard/client?refresh=true');
       } else {
         // Cas où l'API retourne success: false sans exception
-        toast.error(response.message || 'Erreur lors de l\'envoi');
+        toast.error(response.message || t('req.send_error', 'Erreur lors de l\'envoi'));
       }
     } catch (error) {
       if (error.response?.status === 422) {
@@ -153,7 +155,7 @@ const NewRequest = () => {
         Object.values(validationErrors).forEach(err => toast.error(Array.isArray(err) ? err[0] : err));
       } else if (error.response?.status === 400) {
         // ✅ Erreur métier : bien réservé, dates conflictuelles, etc.
-        const serverMessage = error.response.data?.message || 'Cette réservation est impossible.';
+        const serverMessage = error.response.data?.message || t('req.impossible', 'Cette réservation est impossible.');
         const propertyStatus = error.response.data?.property_status;
 
         // Afficher un toast d'erreur rouge bien visible
@@ -162,14 +164,14 @@ const NewRequest = () => {
         // Si c'est un conflit de dates, surligner les champs
         if (propertyStatus === 'date_conflict') {
           setErrors({
-            start_date: 'Ces dates sont déjà prises',
-            end_date: 'Ces dates sont déjà prises'
+            start_date: t('req.dates_taken', 'Ces dates sont déjà prises'),
+            end_date: t('req.dates_taken', 'Ces dates sont déjà prises')
           });
         }
       } else if (error.response?.status === 404) {
-        toast.error('Bien introuvable. Veuillez réessayer.');
+        toast.error(t('req.not_found_retry', 'Bien introuvable. Veuillez réessayer.'));
       } else {
-        toast.error(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+        toast.error(error.response?.data?.message || t('req.send_error_req', 'Erreur lors de l\'envoi de la demande'));
       }
     } finally {
       setSubmitting(false);
@@ -180,7 +182,7 @@ const NewRequest = () => {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
         <div className="w-16 h-16 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-text-muted font-medium">Chargement...</p>
+        <p className="text-text-muted font-medium">{t('common.loading', 'Chargement...')}</p>
       </div>
     );
   }
@@ -188,20 +190,20 @@ const NewRequest = () => {
   if (!property) return null;
 
   const isRent = property.transaction_type === 'rent';
-  const requestType = isRent ? 'location' : 'achat';
+  const requestType = isRent ? t('common.rent', 'location') : t('common.buy', 'achat');
   const TypeIcon = isRent ? KeyIcon : TagIcon;
 
   // ✅ Seuls 'sold' et 'unavailable' bloquent totalement la réservation
   const blockedStatuses = {
-    sold:        { color: 'gray', icon: '🏷️', msg: 'Ce bien a déjà été vendu et n\'est plus disponible.' },
-    unavailable: { color: 'gray', icon: '⛔', msg: 'Ce bien n\'est plus disponible à la réservation.' },
+    sold:        { color: 'gray', icon: '🏷️', msg: t('req.status.sold', 'Ce bien a déjà été vendu et n\'est plus disponible.') },
+    unavailable: { color: 'gray', icon: '⛔', msg: t('req.status.unavailable', 'Ce bien n\'est plus disponible à la réservation.') },
   };
   const blockedInfo = blockedStatuses[property.status];
 
   // ✅ Infos pour biens loués/réservés (réservables sur dates libres)
   const infoStatuses = {
-    rented:   { color: 'blue',  icon: 'ℹ️', msg: 'Ce bien est actuellement loué. Vous pouvez quand même le réserver pour des dates futures libres — le système vérifiera les conflits automatiquement.' },
-    reserved: { color: 'amber', icon: '⚠️', msg: 'Ce bien a déjà une réservation en cours. Choisissez des dates différentes et le système vérifiera la disponibilité.' },
+    rented:   { color: 'blue',  icon: 'ℹ️', msg: t('req.status.rented', 'Ce bien est actuellement loué. Vous pouvez quand même le réserver pour des dates futures libres — le système vérifiera les conflits automatiquement.') },
+    reserved: { color: 'amber', icon: '⚠️', msg: t('req.status.reserved', 'Ce bien a déjà une réservation en cours. Choisissez des dates différentes et le système vérifiera la disponibilité.') },
   };
   const infoStatus = infoStatuses[property.status];
 
@@ -214,7 +216,7 @@ const NewRequest = () => {
             className="flex items-center gap-2 text-text-sub hover:text-primary font-bold transition-colors mb-6 group"
           >
             <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            Retour au bien
+            {t('req.back', 'Retour au bien')}
           </button>
           
           <div className="flex items-center gap-3">
@@ -222,8 +224,8 @@ const NewRequest = () => {
                 <ClipboardDocumentCheckIcon className="w-6 h-6" />
             </div>
             <div>
-                <h1 className="text-3xl font-black text-text-main tracking-tight">Demande de {requestType}</h1>
-                <p className="text-text-sub font-medium">Réservez ce bien immobilièr ou planifiez une visite personnalisée.</p>
+                <h1 className="text-3xl font-black text-text-main tracking-tight">{t('req.title', 'Demande de')} {requestType}</h1>
+                <p className="text-text-sub font-medium">{t('req.subtitle', 'Réservez ce bien immobilièr ou planifiez une visite personnalisée.')}</p>
             </div>
           </div>
         </div>
@@ -235,7 +237,7 @@ const NewRequest = () => {
             <div className="bg-bg-card rounded-3xl p-6 border border-border-main shadow-huge sticky top-24">
               <h2 className="text-lg font-bold text-text-main mb-6 flex items-center gap-2">
                   <HomeIcon className="w-5 h-5 text-primary" />
-                  Bien sélectionné
+                  {t('req.selected_prop', 'Bien sélectionné')}
               </h2>
               
               <div className="rounded-2xl overflow-hidden mb-6 bg-bg-soft relative group">
@@ -247,7 +249,7 @@ const NewRequest = () => {
                 />
                 <div className="absolute top-4 right-4">
                   <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-lg ${isRent ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
-                    {isRent ? 'Location' : 'Vente'}
+                    {isRent ? t('common.rent', 'Location') : t('common.buy', 'Vente')}
                   </span>
                 </div>
               </div>
@@ -261,10 +263,10 @@ const NewRequest = () => {
                     </p>
                     <p className="flex items-center gap-3 text-text-sub font-medium">
                         <CurrencyEuroIcon className="w-5 h-5 text-primary" /> 
-                        <span className="font-bold text-text-main">{property.price.toLocaleString()} DH</span>{isRent ? <span className="text-xs">/mois</span> : ''}
+                        <span className="font-bold text-text-main">{property.price.toLocaleString()} DH</span>{isRent ? <span className="text-xs">{t('prop.per_month', '/mois')}</span> : ''}
                     </p>
                     <p className="flex items-center gap-3 text-text-sub font-medium">
-                        <HomeIcon className="w-5 h-5 text-primary" /> {property.surface} m² - {property.rooms} pièces
+                        <HomeIcon className="w-5 h-5 text-primary" /> {property.surface} m² - {property.rooms} {t('prop.rooms', 'pièces')}
                     </p>
                 </div>
               </div>
@@ -280,7 +282,7 @@ const NewRequest = () => {
                 <div className="flex items-start gap-4 p-5 mb-8 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-2xl">
                   <span className="text-2xl flex-shrink-0">{blockedInfo.icon}</span>
                   <div>
-                    <h4 className="font-bold text-rose-700 dark:text-rose-400 mb-1">Réservation impossible</h4>
+                    <h4 className="font-bold text-rose-700 dark:text-rose-400 mb-1">{t('req.booking_impossible', 'Réservation impossible')}</h4>
                     <p className="text-sm text-rose-600 dark:text-rose-300">{blockedInfo.msg}</p>
                   </div>
                 </div>
@@ -296,7 +298,7 @@ const NewRequest = () => {
                   <span className="text-2xl flex-shrink-0">{infoStatus.icon}</span>
                   <div>
                     <h4 className={`font-bold mb-1 ${infoStatus.color === 'blue' ? 'text-blue-700 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                      {infoStatus.color === 'blue' ? 'Bien actuellement loué' : 'Bien déjà réservé sur certaines dates'}
+                      {infoStatus.color === 'blue' ? t('req.currently_rented', 'Bien actuellement loué') : t('req.already_reserved', 'Bien déjà réservé sur certaines dates')}
                     </h4>
                     <p className={`text-sm ${infoStatus.color === 'blue' ? 'text-blue-600 dark:text-blue-300' : 'text-amber-600 dark:text-amber-300'}`}>
                       {infoStatus.msg}
@@ -307,7 +309,7 @@ const NewRequest = () => {
 
               <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 text-primary rounded-xl font-bold mb-8">
                 <TypeIcon className="w-5 h-5" />
-                Détails de la demande
+                {t('req.details_title', 'Détails de la demande')}
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-8">
@@ -315,7 +317,7 @@ const NewRequest = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4" /> Date de début
+                          <CalendarIcon className="w-4 h-4" /> {t('req.start_date', 'Date de début')}
                       </label>
                       <input 
                         type="date" 
@@ -331,7 +333,7 @@ const NewRequest = () => {
 
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4" /> Date de fin
+                          <CalendarIcon className="w-4 h-4" /> {t('req.end_date', 'Date de fin')}
                       </label>
                       <input 
                         type="date" 
@@ -349,22 +351,22 @@ const NewRequest = () => {
                   <div className="flex items-start gap-4 p-5 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-500 rounded-2xl font-medium border border-amber-200 dark:border-amber-800/30">
                     <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
                     <div>
-                        <h4 className="font-bold mb-1">Demande d'achat</h4>
-                        <p className="text-sm opacity-90">Vous êtes sur le point de soumettre une intention d'achat pour ce bien. L'agent responsable vous contactera dans les plus brefs délais pour convenir d'une visite et discuter des étapes suivantes.</p>
+                        <h4 className="font-bold mb-1">{t('req.buy_request', 'Demande d\'achat')}</h4>
+                        <p className="text-sm opacity-90">{t('req.buy_notice', 'Vous êtes sur le point de soumettre une intention d\'achat pour ce bien. L\'agent responsable vous contactera dans les plus brefs délais pour convenir d\'une visite et discuter des étapes suivantes.')}</p>
                     </div>
                   </div>
                 )}
 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                      <UserIcon className="w-4 h-4" /> Message destiné à l'agent
+                      <UserIcon className="w-4 h-4" /> {t('req.msg_agent', 'Message destiné à l\'agent')}
                   </label>
                   <textarea 
                     name="message" 
                     value={formData.message} 
                     onChange={handleChange} 
                     rows="5" 
-                    placeholder="Précisez ici vos attentes, vos disponibilités pour une visite, ou toute autre question concernant ce bien..." 
+                    placeholder={t('req.msg_placeholder', "Précisez ici vos attentes, vos disponibilités pour une visite, ou toute autre question concernant ce bien...")}
                     className="w-full p-4 bg-bg-soft border border-border-main rounded-xl text-text-main font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                   />
                 </div>
@@ -375,7 +377,7 @@ const NewRequest = () => {
                     className="flex-1 py-4 px-6 bg-bg-soft border border-border-main text-text-main rounded-xl font-bold hover:bg-border-main transition-colors flex items-center justify-center" 
                     onClick={() => navigate(-1)}
                    >
-                    Annuler
+                    {t('common.cancel', 'Annuler')}
                   </button>
                   <button 
                     type="submit" 
@@ -386,17 +388,17 @@ const NewRequest = () => {
                     {submitting ? (
                         <>
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            Envoi en cours...
+                            {t('req.sending', 'Envoi en cours...')}
                         </>
                     ) : (
-                        <>Envoyer la demande de {requestType}</>
+                        <>{t('req.send_btn', 'Envoyer la demande de')} {requestType}</>
                     )}
                   </button>
                 </div>
                 
                 <div className="flex items-center justify-center gap-2 text-xs font-bold text-text-muted mt-6">
                   <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
-                  Généralement, l'agent répond en moins de 24 heures.
+                  {t('req.agent_response', 'Généralement, l\'agent répond en moins de 24 heures.')}
                 </div>
               </form>
             </div>

@@ -439,8 +439,8 @@ const AdminDashboard = () => {
   const getStatusBadge = (status) => {
     const isActive = status === 'active' || status === 1 || status === true;
     return isActive 
-      ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">Actif</span>
-      : <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded-full text-[10px] font-bold">Inactif</span>;
+      ? <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">{t('common.status.active', 'Actif')}</span>
+      : <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded-full text-[10px] font-bold">{t('common.status.inactive', 'Inactif')}</span>;
   };
 
   // --- Render Helpers ---
@@ -693,7 +693,7 @@ const AdminDashboard = () => {
                        )}
                        <input 
                          type="text" 
-                         placeholder="Rechercher par nom, email ou ID..." 
+                         placeholder={t('admin.users.search_placeholder', 'Rechercher par nom, email ou ID...')} 
                          value={userSearch}
                          onChange={(e) => setUserSearch(e.target.value)}
                          className="w-full pl-11 pr-4 py-3 bg-bg-soft border border-transparent focus:bg-bg-card border-border-main rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-text-main"
@@ -763,7 +763,7 @@ const AdminDashboard = () => {
                             <td className="px-4 py-5 text-center">{getStatusBadge(u.is_active)}</td>
                             <td className="px-4 py-5">
                               <div className="text-xs text-text-sub font-bold">
-                                {new Date(u.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                {new Date(u.created_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </div>
                             </td>
                             <td className="px-4 py-5 text-right">
@@ -788,7 +788,7 @@ const AdminDashboard = () => {
                         ))}
                         {users.length === 0 && (
                           <tr>
-                            <td colSpan="5" className="p-20 text-center text-text-muted italic">Aucun utilisateur correspondant</td>
+                             <td colSpan="5" className="p-20 text-center text-text-muted italic">{t('admin.users.no_match', 'Aucun utilisateur correspondant')}</td>
                           </tr>
                         )}
                       </>
@@ -817,7 +817,7 @@ const AdminDashboard = () => {
                        )}
                        <input 
                          type="text" 
-                         placeholder="Rechercher par titre, ville ou ID..." 
+                         placeholder={t('admin.properties.search_placeholder', 'Rechercher par titre, ville ou ID...')} 
                          value={propertySearch}
                          onChange={(e) => setPropertySearch(e.target.value)}
                          className="w-full pl-11 pr-4 py-3 bg-bg-card border border-border-main rounded-2xl text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all text-text-main"
@@ -838,7 +838,7 @@ const AdminDashboard = () => {
              
              <div className="overflow-x-auto">
                {loadingProperties ? (
-                 <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">Chargement...</div>
+                  <div className="p-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">{t('common.loading', 'Chargement...')}</div>
                ) : (
                  <table className="w-full text-left border-collapse">
                    <thead>
@@ -878,13 +878,13 @@ const AdminDashboard = () => {
                           </td>
                          <td className="px-4 py-5 text-center">
                             {p.is_approved ? (
-                              <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-wider">Approuvé</span>
+                              <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-wider">{t('common.status.approved', 'Approuvé')}</span>
                             ) : (
                               <button 
                                 onClick={() => handleApproveProperty(p.id)}
                                 className="px-3 py-1.5 bg-amber-100 text-amber-700 hover:bg-amber-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
                               >
-                                En attente
+                                {t('common.status.pending', 'En attente')}
                               </button>
                             )}
                          </td>
@@ -1000,9 +1000,11 @@ const AdminDashboard = () => {
                             </div>
                          </td>
                          <td className="px-4 py-5">
-                            <div className="text-[11px] font-bold text-text-sub">
-                               {c.start_date ? `Du ${new Date(c.start_date).toLocaleDateString()} au ${new Date(c.end_date).toLocaleDateString()}` : `Le ${new Date(c.sale_date).toLocaleDateString()}`}
-                            </div>
+                             <div className="text-[11px] font-bold text-text-sub">
+                                {c.start_date 
+                                  ? `${t('common.from', 'Du')} ${new Date(c.start_date).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR')} ${t('common.to', 'au')} ${new Date(c.end_date).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR')}` 
+                                  : `${t('common.on', 'Le')} ${new Date(c.sale_date).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR')}`}
+                             </div>
                          </td>
                          <td className="px-4 py-5">
                              <select value={c.status} onChange={(e) => handleUpdateContractStatus(c.id, e.target.value)} className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border-none outline-none cursor-pointer bg-slate-100 dark:bg-slate-800 text-text-muted">
@@ -1062,16 +1064,16 @@ const AdminDashboard = () => {
                      {payments.map(pay => (
                        <tr key={pay.id} className="hover:bg-bg-soft/50 transition-colors group">
                          <td className="px-4 py-5">
-                            <div className="font-black text-text-main text-sm">{pay.payment_number}</div>
-                            <div className="text-[10px] font-bold text-text-muted mt-0.5">{new Date(pay.payment_date).toLocaleDateString()}</div>
-                         </td>
+                             <div className="font-black text-text-main text-sm">{pay.payment_number}</div>
+                             <div className="text-[10px] font-bold text-text-muted mt-0.5">{new Date(pay.payment_date).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR')}</div>
+                          </td>
                          <td className="px-4 py-5">
                             <div className="text-xs font-bold text-text-main">{t('admin.contracts.table.number')}: {pay.contract?.contract_number}</div>
                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">{pay.tenant?.name}</div>
                          </td>
-                         <td className="px-4 py-5">
-                            <div className="text-sm font-black text-text-main">{number_format(pay.amount)} DH</div>
-                         </td>
+                          <td className="px-4 py-5">
+                             <div className="text-sm font-black text-text-main">{number_format(pay.amount, language)} DH</div>
+                          </td>
                          <td className="px-4 py-5 text-center">
                              <span className="px-2 py-1 bg-bg-soft text-text-sub rounded-lg text-[9px] font-bold uppercase tracking-tighter">
                                 {pay.payment_method === 'bank_transfer' ? t('admin.payments.method.bank') : pay.payment_method}
@@ -1089,9 +1091,9 @@ const AdminDashboard = () => {
                                <option value="cancelled">{t('admin.payments.status.cancelled')}</option>
                             </select>
                          </td>
-                         <td className="px-4 py-5 text-right">
-                            <button className="text-primary hover:underline text-xs font-bold">Justificatif</button>
-                         </td>
+                          <td className="px-4 py-5 text-right">
+                             <button className="text-primary hover:underline text-xs font-bold">{t('admin.payments.receipt', 'Justificatif')}</button>
+                          </td>
                        </tr>
                      ))}
                      {payments.length === 0 && (
@@ -1196,11 +1198,11 @@ const AdminDashboard = () => {
                             <div className="text-xs font-bold text-text-main">{req.email}</div>
                             <div className="text-[10px] font-bold text-text-muted mt-0.5">{req.phone || t('common.no_phone')}</div>
                          </td>
-                         <td className="px-4 py-5">
-                            <div className="text-xs font-bold text-text-sub">
-                               {new Date(req.updated_at).toLocaleDateString()}
-                            </div>
-                         </td>
+                          <td className="px-4 py-5">
+                             <div className="text-xs font-bold text-text-sub">
+                                {new Date(req.updated_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR')}
+                             </div>
+                          </td>
                          <td className="px-4 py-5 text-right">
                             <div className="flex justify-end gap-2">
                                <button 
@@ -1237,7 +1239,8 @@ const AdminDashboard = () => {
   );
 };
 
-const number_format = (number) => {
-  return new Intl.NumberFormat('fr-FR').format(number);
+const number_format = (number, lang = 'fr') => {
+  const locale = lang === 'ar' ? 'ar-MA' : lang === 'en' ? 'en-US' : 'fr-FR';
+  return new Intl.NumberFormat(locale).format(number);
 };
 export default AdminDashboard;
