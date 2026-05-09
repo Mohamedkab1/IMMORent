@@ -25,7 +25,7 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Payment::with(['contract.property', 'tenant']);
+        $query = Payment::with(['contract.property', 'property', 'tenant', 'invoice']);
 
         if ($user->isAdmin()) {
             // All payments
