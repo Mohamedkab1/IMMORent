@@ -158,7 +158,11 @@ class RentalRequestController extends Controller
                     'icon' => 'document-text'
                 ];
                 $owner->notify(new GeneralNotification($notifData));
-                event(new \App\Events\RealTimeNotification($owner->id, $notifData));
+                try {
+                    event(new \App\Events\RealTimeNotification($owner->id, $notifData));
+                } catch (\Exception $e) {
+                    Log::warning('Erreur RealTimeNotification (store) dans RentalRequestController: ' . $e->getMessage());
+                }
                 
                 // Envoi de l'email
                 Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
@@ -278,7 +282,11 @@ class RentalRequestController extends Controller
                 ];
 
                 $client->notify(new \App\Notifications\GeneralNotification($notifData));
-                event(new \App\Events\RealTimeNotification($client->id, $notifData));
+                try {
+                    event(new \App\Events\RealTimeNotification($client->id, $notifData));
+                } catch (\Exception $e) {
+                    Log::warning('Erreur RealTimeNotification (process) dans RentalRequestController: ' . $e->getMessage());
+                }
 
                 Log::info('Notification envoyée au client', [
                     'client_id' => $client->id,
@@ -357,7 +365,11 @@ class RentalRequestController extends Controller
                     'icon' => 'x-mark'
                 ];
                 $agent->notify(new GeneralNotification($notifData));
-                event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+                try {
+                    event(new \App\Events\RealTimeNotification($agent->id, $notifData));
+                } catch (\Exception $e) {
+                    Log::warning('Erreur RealTimeNotification (cancel) dans RentalRequestController: ' . $e->getMessage());
+                }
             }
 
             return response()->json([

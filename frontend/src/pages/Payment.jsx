@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { 
-  CreditCardIcon, 
-  BanknotesIcon, 
+import {
+  CreditCardIcon,
+  BanknotesIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
@@ -18,7 +18,7 @@ const Payment = () => {
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [formData, setFormData] = useState({
     firstName: '',
@@ -46,14 +46,14 @@ const Payment = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Formatage simple pour la carte bancaire
     if (name === 'cardNumber') {
       const formatted = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
       setFormData(prev => ({ ...prev, [name]: formatted.substring(0, 19) }));
       return;
     }
-    
+
     if (name === 'expiryDate') {
       let formatted = value.replace(/\D/g, '');
       if (formatted.length >= 2) {
@@ -80,7 +80,7 @@ const Payment = () => {
       setLoading(false);
       setSuccess(true);
       toast.success("Réservation confirmée avec succès !");
-      
+
       // Redirection après un petit délai
       setTimeout(() => {
         navigate('/dashboard'); // ou une autre page appropriée
@@ -105,10 +105,10 @@ const Payment = () => {
             Votre réservation pour <strong>{property.title}</strong> a été confirmée. Un email récapitulatif vous a été envoyé.
           </p>
           <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm">
-             <span className="font-semibold text-text-sub">Montant payé:</span>
-             <span className="font-black text-text-main">{property.price?.toLocaleString('fr-FR')} DH</span>
+            <span className="font-semibold text-text-sub">Montant payé:</span>
+            <span className="font-black text-text-main">{property.price?.toLocaleString('fr-FR')} DH</span>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
             className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-colors"
           >
@@ -122,7 +122,7 @@ const Payment = () => {
   return (
     <div className="min-h-screen bg-bg-soft py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-text-main">
             Finaliser la réservation
@@ -133,10 +133,10 @@ const Payment = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           {/* Formulaire de gauche */}
           <div className="flex-1 space-y-6">
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Informations personnelles */}
               <div className="bg-bg-card rounded-2xl p-6 border border-border-main shadow-sm">
@@ -144,7 +144,7 @@ const Payment = () => {
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">1</span>
                   Vos informations
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-text-sub mb-1">Prénom</label>
@@ -175,7 +175,7 @@ const Payment = () => {
                   <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">2</span>
                   Mode de paiement
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
                   <button type="button" onClick={() => setPaymentMethod('card')} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card' ? 'border-primary bg-primary/5 text-primary' : 'border-border-main text-text-sub hover:bg-bg-soft'}`}>
                     <CreditCardIcon className="w-6 h-6" />
@@ -240,8 +240,8 @@ const Payment = () => {
                 Paiement 100% sécurisé et crypté
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary-hover hover:-translate-y-1 active:translate-y-0 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
@@ -266,9 +266,9 @@ const Payment = () => {
               <div className="p-5">
                 <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{property.title}</h4>
                 <p className="text-sm text-text-muted mb-4">{property.city}</p>
-                
+
                 <div className="h-px bg-border-main mb-4"></div>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-text-sub">Prix {property.transaction_type === 'rent' ? 'mensuel' : 'de base'}</span>
@@ -285,7 +285,7 @@ const Payment = () => {
                 <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
                   <span className="font-bold text-primary dark:text-white">Total à payer</span>
                   <span className="text-xl font-black text-primary dark:text-white">
-                    {property.transaction_type === 'rent' 
+                    {property.transaction_type === 'rent'
                       ? (property.price + 500).toLocaleString('fr-FR')
                       : property.price?.toLocaleString('fr-FR')} DH
                   </span>

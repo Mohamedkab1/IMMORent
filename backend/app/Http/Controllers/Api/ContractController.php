@@ -120,7 +120,11 @@ public function store(StoreContractRequest $request)
         ];
         
         $rentalRequest->user->notify(new \App\Notifications\GeneralNotification($notifData));
-        event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
+        try {
+            event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
+        } catch (\Exception $e) {
+            Log::warning('Erreur RealTimeNotification (client) dans ContractController: ' . $e->getMessage());
+        }
 
         // Notify the owner/seller if different from agent
         if ($property->owner_id && $property->owner_id !== $property->user_id) {
@@ -133,7 +137,11 @@ public function store(StoreContractRequest $request)
             ];
             
             $property->owner->notify(new \App\Notifications\GeneralNotification($ownerNotifData));
-            event(new \App\Events\RealTimeNotification($property->owner->id, $ownerNotifData));
+            try {
+                event(new \App\Events\RealTimeNotification($property->owner->id, $ownerNotifData));
+            } catch (\Exception $e) {
+                Log::warning('Erreur RealTimeNotification (owner) dans ContractController: ' . $e->getMessage());
+            }
         }
 
         return response()->json([

@@ -158,7 +158,7 @@ class UserController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $data = $request->except(['profile_photo', 'password', 'role_id', 'remove_photo', 'current_password']);
+        $data = $request->except(['profile_photo', 'password', 'role_id', 'remove_photo', 'current_password', '_method']);
 
         // Photo Removal
         if ($request->remove_photo) {
