@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { paymentService } from '../services/payments';
 import { 
   CreditCardIcon, 
   BanknotesIcon, 
@@ -71,21 +72,45 @@ const Payment = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulation d'un appel d'API de paiement (ex: Stripe)
-    setTimeout(() => {
+    try {
+      // 1. Créer l'intention de paiement
+      const intentRes = await paymentService.createIntent({
+        propertyId: property.id,
+        contractId: location.state?.contractId,
+        amount: property.price,
+        currency: 'MAD',
+        method: paymentMethod
+      });
+
+      if (intentRes.paymentId) {
+        // 2. Confirmer le paiement (simulation de succès pour l'instant si c'est par carte, ou direct pour virement/agence)
+        const confirmRes = await paymentService.confirm({
+          paymentId: intentRes.paymentId,
+          status: 'paid'
+        });
+
+        if (confirmRes.success) {
+          setSuccess(true);
+          toast.success("Paiement effectué avec succès !");
+          
+          // Redirection après un petit délai
+          setTimeout(() => {
+            navigate('/payments/history');
+          }, 3000);
+        } else {
+          toast.error(confirmRes.message || "Erreur lors de la confirmation");
+        }
+      }
+    } catch (error) {
+      console.error('Erreur paiement:', error);
+      toast.error("Une erreur est survenue lors du paiement.");
+    } finally {
       setLoading(false);
-      setSuccess(true);
-      toast.success("Réservation confirmée avec succès !");
-      
-      // Redirection après un petit délai
-      setTimeout(() => {
-        navigate('/dashboard'); // ou une autre page appropriée
-      }, 3000);
-    }, 2000);
+    }
   };
 
   if (!property) return null;
@@ -109,10 +134,10 @@ const Payment = () => {
              <span className="font-black text-text-main">{property.price?.toLocaleString('fr-FR')} DH</span>
           </div>
           <button 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/payments/history')}
             className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-colors"
           >
-            Aller au tableau de bord
+            Voir mon historique
           </button>
         </div>
       </div>

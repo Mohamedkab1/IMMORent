@@ -31,6 +31,7 @@ import Notifications from './pages/Notifications';
 import Dashboard from './pages/Dashboard';
 import Favorites from './pages/Favorites';
 import Payment from './pages/Payment';
+import PaymentsHistory from './pages/PaymentsHistory';
 import ChatWidget from './components/Common/ChatWidget';
 import PageLoader from './components/Common/PageLoader';
 
@@ -71,6 +72,7 @@ function App() {
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                   <Route path="/properties/:id/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+                  <Route path="/payments/history" element={<ProtectedRoute><PaymentsHistory /></ProtectedRoute>} />
                   
                   {/* Dashboard Routes with specific roles */}
                   <Route path="/dashboard/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
