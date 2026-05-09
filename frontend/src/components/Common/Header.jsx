@@ -221,6 +221,123 @@ const Header = () => {
       ? '/dashboard/agent'
       : '/dashboard/client';
 
+  const translateNotification = (msg) => {
+    if (!msg) return '';
+    
+    // Pattern: "Votre demande pour [Title] a été approuvée"
+    if (msg.includes('Votre demande pour') && msg.includes('a été approuvée')) {
+       const title = msg.replace('Votre demande pour ', '').replace(' a été approuvée', '');
+       return t('notif.msg.req_approved', 'Votre demande pour {{title}} a été approuvée').replace('{{title}}', title);
+    }
+
+    // Pattern: "Votre demande pour [Title] a été refusée"
+    if (msg.includes('Votre demande pour') && msg.includes('a été refusée')) {
+       const title = msg.replace('Votre demande pour ', '').replace(' a été refusée', '');
+       return t('notif.msg.req_rejected', 'Votre demande pour {{title}} a été refusée').replace('{{title}}', title);
+    }
+    
+    // Pattern: "Un nouveau contrat a été créé pour le bien : [Title]"
+    if (msg.includes('Un nouveau contrat a été créé pour le bien : ')) {
+       const title = msg.replace('Un nouveau contrat a été créé pour le bien : ', '');
+       return t('notif.msg.contract_created', 'Un nouveau contrat a été créé pour le bien : {{title}}').replace('{{title}}', title);
+    }
+
+    // Pattern: "[Name] a envoyé une demande pour [Title]"
+    if (msg.includes(' a envoyé une demande pour ')) {
+       const parts = msg.split(' a envoyé une demande pour ');
+       const name = parts[0];
+       const title = parts[1];
+       return t('notif.msg.new_rental_req', '{{name}} a envoyé une demande pour {{title}}')
+              .replace('{{name}}', name)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Le client [Name] a annulé sa demande pour [Title]"
+    if (msg.includes('Le client ') && msg.includes(' a annulé sa demande pour ')) {
+       const parts = msg.replace('Le client ', '').split(' a annulé sa demande pour ');
+       const name = parts[0];
+       const title = parts[1];
+       return t('notif.msg.rental_req_cancelled', 'Le client {{name}} a annulé sa demande pour {{title}}')
+              .replace('{{name}}', name)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "L'utilisateur [Name] souhaite devenir agent."
+    if (msg.includes("L'utilisateur ") && msg.includes(" souhaite devenir agent.")) {
+       const name = msg.replace("L'utilisateur ", "").replace(" souhaite devenir agent.", "");
+       return t('notif.msg.user_wants_agent', "L'utilisateur {{name}} souhaite devenir agent.")
+              .replace('{{name}}', name);
+    }
+
+    // Pattern: "Nouvelle demande de visite pour le bien : [Title]"
+    if (msg.includes('Nouvelle demande de visite pour le bien : ')) {
+       const title = msg.replace('Nouvelle demande de visite pour le bien : ', '');
+       return t('notif.msg.new_visit_req', 'Nouvelle demande de visite pour le bien : {{title}}')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un nouveau paiement de [Amount] a été effectué pour le bien [Title]"
+    if (msg.includes('Un nouveau paiement de ') && msg.includes(' a été effectué pour le bien ')) {
+       const parts = msg.replace('Un nouveau paiement de ', '').split(' a été effectué pour le bien ');
+       const amount = parts[0];
+       const title = parts[1];
+       return t('notif.msg.payment_received_amount', 'Un nouveau paiement de {{amount}} a été effectué pour le bien {{title}}')
+              .replace('{{amount}}', amount)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un paiement de [Amount] a été reçu pour le bien : [Title]"
+    if (msg.includes('Un paiement de ') && msg.includes(' a été reçu pour le bien : ')) {
+       const parts = msg.replace('Un paiement de ', '').split(' a été reçu pour le bien : ');
+       const amount = parts[0];
+       const title = parts[1];
+       return t('notif.msg.payment_received_p1', 'Un paiement de {{amount}} a été reçu pour le bien : {{title}}')
+              .replace('{{amount}}', amount)
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Un paiement de [Amount] a été enregistré pour votre contrat."
+    if (msg.includes('Un paiement de ') && msg.includes(' a été enregistré pour votre contrat.')) {
+       const amount = msg.replace('Un paiement de ', '').split(' a été enregistré pour votre contrat.')[0];
+       return t('notif.msg.payment_registered_p1', 'Un paiement de {{amount}} a été enregistré for your contract.')
+              .replace('{{amount}}', amount);
+    }
+
+    // Pattern: "Le statut de votre paiement de [Amount] est désormais : [Status]"
+    if (msg.includes('Le statut de votre paiement de ') && msg.includes(' est désormais : ')) {
+       const amount = msg.replace('Le statut de votre paiement de ', '').split(' est désormais : ')[0];
+       const statusFr = msg.split(' est désormais : ')[1].replace('.', '');
+       const statusKey = statusFr === 'reçu' ? 'notif.msg.payment_status_paid' : 
+                         statusFr === 'en retard' ? 'notif.msg.payment_status_late' : 'notif.msg.payment_status_pending';
+       return t('notif.msg.payment_status_update_p1', 'Le statut de votre paiement de {{amount}} est désormais : {{status}}')
+              .replace('{{amount}}', amount)
+              .replace('{{status}}', t(statusKey, statusFr));
+    }
+
+    // Pattern: "Votre bien "[Title]" a été approuvé par l'administrateur."
+    if (msg.includes('Votre bien "') && msg.includes('" a été approuvé par l\'administrateur.')) {
+       const title = msg.split('Votre bien "')[1].split('" a été approuvé par l\'administrateur.')[0];
+       return t('notif.msg.prop_approved_by_admin', 'Votre annonce pour {{title}} a été approuvée par l\'administrateur.')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Votre bien "[Title]" a été rejeté par l'administrateur."
+    if (msg.includes('Votre bien "') && msg.includes('" a été rejeté par l\'administrateur.')) {
+       const title = msg.split('Votre bien "')[1].split('" a été rejeté par l\'administrateur.')[0];
+       return t('notif.msg.prop_rejected_by_admin', 'Votre bien "{{title}}" a été rejeté par l\'administrateur.')
+              .replace('{{title}}', title);
+    }
+
+    // Pattern: "Vous avez reçu un message de [Name]"
+    if (msg.includes('Vous avez reçu un message de ')) {
+       const name = msg.replace('Vous avez reçu un message de ', '');
+       return t('notif.msg.received_message_from', 'Vous avez reçu un message de {{name}}')
+              .replace('{{name}}', name);
+    }
+
+    return t(msg, msg);
+  };
+
   const navLinks = [
     { name: t('nav.home'), path: '/' },
     { name: t('nav.properties'), path: '/properties' },
@@ -357,7 +474,7 @@ const Header = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm leading-tight ${notif.read_at ? 'text-text-sub font-medium' : 'text-text-main font-bold'}`}>
-                              {t(notif.data?.message, notif.data?.message)}
+                              {translateNotification(notif.data?.message)}
                             </p>
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[10px] font-bold text-text-muted">
