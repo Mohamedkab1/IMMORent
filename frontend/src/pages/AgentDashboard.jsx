@@ -556,9 +556,9 @@ const AgentDashboard = () => {
                          </div>
                        </td>
                        <td className="p-4">
-                         <div className="text-xs text-text-main bg-bg-soft px-2 py-1 rounded inline-block border border-border-main">
-                           {property.surface} m² • {property.rooms} p.
-                         </div>
+                          <div className="text-xs text-text-main bg-bg-soft px-2 py-1 rounded inline-block border border-border-main">
+                            {property.surface} m² • {property.rooms} {t('prop.filter.rooms')}
+                          </div>
                        </td>
                        <td className="p-4 text-sm font-bold text-text-main text-right">
                          {(property.price || 0).toLocaleString()} DH
@@ -781,7 +781,7 @@ const AgentDashboard = () => {
                       </div>
                       
                       <div className="text-xs text-text-muted">
-                        {t('agent.reviews.posted_on')} {new Date(review.created_at).toLocaleDateString(t('common.locale', 'fr-FR'), { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {t('agent.reviews.posted_on')} {new Date(review.created_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </div>
                     </div>
 
