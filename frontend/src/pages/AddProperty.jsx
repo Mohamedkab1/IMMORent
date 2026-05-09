@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { propertyService } from '../services/properties';
 import { toast } from 'react-toastify';
 import { 
@@ -48,6 +49,7 @@ const ChangeView = ({ center }) => {
 const AddProperty = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAgent, isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -95,29 +97,29 @@ const AddProperty = () => {
       }
     } catch (error) { 
       setCategories([
-        { id: 1, name: 'Appartement' }, 
-        { id: 2, name: 'Maison' }, 
-        { id: 3, name: 'Local commercial' }, 
-        { id: 4, name: 'Terrain' }, 
-        { id: 5, name: 'Studio' }
+        { id: 1, name: t('prop.types.apartment', 'Appartement') }, 
+        { id: 2, name: t('prop.types.house', 'Maison') }, 
+        { id: 3, name: t('prop.types.commercial', 'Local commercial') }, 
+        { id: 4, name: t('prop.types.land', 'Terrain') }, 
+        { id: 5, name: t('prop.types.studio', 'Studio') }
       ]); 
       setFormData(prev => ({ ...prev, category_id: 1 })); 
     }
   };
 
   const propertyTypes = [
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
-    { value: 'villa', label: 'Villa' },
-    { value: 'studio', label: 'Studio' },
-    { value: 'office', label: 'Bureau' },
-    { value: 'commercial', label: 'Local commercial' },
-    { value: 'land', label: 'Terrain' }
+    { value: 'apartment', label: t('prop.types.apartment', 'Appartement') },
+    { value: 'house', label: t('prop.types.house', 'Maison') },
+    { value: 'villa', label: t('prop.types.villa', 'Villa') },
+    { value: 'studio', label: t('prop.types.studio', 'Studio') },
+    { value: 'office', label: t('prop.types.office', 'Bureau') },
+    { value: 'commercial', label: t('prop.types.commercial', 'Local commercial') },
+    { value: 'land', label: t('prop.types.land', 'Terrain') }
   ];
 
   const transactionTypes = [
-    { value: 'rent', label: 'Location', icon: KeyIcon, description: 'Location mensuelle' },
-    { value: 'sale', label: 'Vente', icon: TagIcon, description: 'Vente définitive' }
+    { value: 'rent', label: t('common.rent', 'Location'), icon: KeyIcon, description: t('prop.rent_desc', 'Location mensuelle') },
+    { value: 'sale', label: t('common.buy', 'Vente'), icon: TagIcon, description: t('prop.sale_desc', 'Vente définitive') }
   ];
 
   const handleChange = (e) => { 
@@ -167,7 +169,7 @@ const AddProperty = () => {
   const handleImageChange = (e) => { 
     const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/')); 
     if (images.length + files.length > 10) {
-       toast.warning('Maximum 10 photos autorisées.');
+       toast.warning(t('admin.add.val.max_images', 'Maximum 10 photos autorisées.'));
        return;
     }
     setImages(prev => [...prev, ...files]); 
@@ -194,16 +196,16 @@ const AddProperty = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.title.trim()) errors.title = 'Le titre est requis';
-    if (!formData.description.trim()) errors.description = 'La description est requise';
-    if (!formData.price || formData.price <= 0) errors.price = 'Le prix doit être supérieur à zéro';
-    if (!formData.address.trim()) errors.address = 'L\'adresse est requise';
-    if (!formData.city.trim()) errors.city = 'La ville est requise';
-    if (!formData.postal_code.trim()) errors.postal_code = 'Le code postal est requis';
-    if (!formData.surface || formData.surface <= 0) errors.surface = 'La surface est requise';
-    if (formData.type !== 'land' && (!formData.rooms || formData.rooms <= 0)) errors.rooms = 'Le nombre de pièces est requis';
-    if (!formData.type) errors.type = 'Le type de bien est requis';
-    if (!formData.category_id) errors.category_id = 'La catégorie est requise';
+    if (!formData.title.trim()) errors.title = t('admin.add.val.title', 'Le titre est requis');
+    if (!formData.description.trim()) errors.description = t('admin.add.val.description', 'La description est requise');
+    if (!formData.price || formData.price <= 0) errors.price = t('admin.add.val.price', 'Le prix doit être supérieur à zéro');
+    if (!formData.address.trim()) errors.address = t('admin.add.val.address', 'L\'adresse est requise');
+    if (!formData.city.trim()) errors.city = t('admin.add.val.city', 'La ville est requise');
+    if (!formData.postal_code.trim()) errors.postal_code = t('admin.add.val.postal', 'Le code postal est requis');
+    if (!formData.surface || formData.surface <= 0) errors.surface = t('admin.add.val.surface', 'La surface est requise');
+    if (formData.type !== 'land' && (!formData.rooms || formData.rooms <= 0)) errors.rooms = t('admin.add.val.rooms', 'Le nombre de pièces est requis');
+    if (!formData.type) errors.type = t('admin.add.val.type', 'Le type de bien est requis');
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -211,13 +213,13 @@ const AddProperty = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) { 
-      toast.error('Veuillez corriger les erreurs dans le formulaire.');
+      toast.error(t('admin.add.val.form_errors', 'Veuillez corriger les erreurs dans le formulaire.'));
       // Scroll to first error here optimally
       return; 
     }
     
     if (images.length === 0) {
-      toast.warning('Veuillez ajouter au moins une photo.');
+      toast.warning(t('admin.add.val.image_required', 'Veuillez ajouter au moins une photo.'));
       return;
     }
 
@@ -245,7 +247,7 @@ const AddProperty = () => {
       
       const res = await propertyService.create(data);
       if (res.success) { 
-        toast.success('Bien immobilier ajouté avec succès !'); 
+        toast.success(t('admin.add.success_title', 'Bien immobilier ajouté avec succès !')); 
         setNewPropertyId(res.data.id);
         setShowSuccessModal(true);
       } else {
@@ -255,7 +257,7 @@ const AddProperty = () => {
       if (error.response?.status === 422) {
          Object.values(error.response.data.errors).forEach(e => toast.error(e[0])); 
       } else {
-         toast.error('Erreur de connexion au serveur.'); 
+         toast.error(t('admin.add.val.server_error', 'Erreur de connexion au serveur.')); 
       }
     } finally { setLoading(false); }
   };
@@ -265,10 +267,10 @@ const AddProperty = () => {
       <div className="min-h-screen bg-bg-soft flex justify-center items-center px-4">
         <div className="bg-bg-card p-8 rounded-3xl shadow-xl text-center max-w-md w-full border border-border-main">
           <LockClosedIcon className="w-20 h-20 text-rose-500 mx-auto mb-6 bg-rose-50 dark:bg-rose-900/30 p-4 rounded-full" />
-          <h2 className="text-2xl font-black text-text-main mb-2">Accès restreint</h2>
-          <p className="text-text-muted mb-8 font-medium">Vous n'avez pas les autorisations nécessaires pour accéder à cette interface de création.</p>
+          <h2 className="text-2xl font-black text-text-main mb-2">{t('admin.add.restricted', 'Accès restreint')}</h2>
+          <p className="text-text-muted mb-8 font-medium">{t('admin.add.no_auth', "Vous n'avez pas les autorisations nécessaires pour accéder à cette interface de création.")}</p>
           <button onClick={() => navigate('/dashboard')} className="w-full py-3.5 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
-            Retourner au tableau de bord
+            {t('admin.add.back_dash', 'Retourner au tableau de bord')}
           </button>
         </div>
       </div>
@@ -285,8 +287,8 @@ const AddProperty = () => {
             <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
           </button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">Ajouter un bien</h1>
-            <p className="text-sm text-text-muted mt-1 font-medium">Remplissez les informations ci-dessous pour publier une nouvelle annonce.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">{t('admin.add.title', 'Ajouter un bien')}</h1>
+            <p className="text-sm text-text-muted mt-1 font-medium">{t('admin.add.subtitle', 'Remplissez les informations ci-dessous pour publier une nouvelle annonce.')}</p>
           </div>
         </div>
 
@@ -298,17 +300,17 @@ const AddProperty = () => {
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                  <DocumentTextIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Informations générales</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gen_info', 'Informations générales')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  Titre de l'annonce <span className="text-rose-500">*</span>
+                  {t('admin.add.ad_title', 'Titre de l\'annonce')} <span className="text-rose-500">*</span>
                 </label>
                 <input 
                   type="text" name="title" value={formData.title} onChange={handleChange} 
-                  placeholder="Ex: Superbe appartement lumineux en plein coeur de ville" 
+                  placeholder={t('admin.add.title_ph', "Ex: Superbe appartement lumineux en plein coeur de ville")} 
                   className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.title ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                 />
                 {validationErrors.title && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.title}</p>}
@@ -316,48 +318,33 @@ const AddProperty = () => {
 
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  Description <span className="text-rose-500">*</span>
+                  {t('common.description', 'Description')} <span className="text-rose-500">*</span>
                 </label>
                 <textarea 
                   name="description" rows="5" value={formData.description} onChange={handleChange} 
-                  placeholder="Décrivez les atouts de votre bien en détail..." 
+                  placeholder={t('admin.add.desc_ph', "Décrivez les atouts de votre bien en détail...")}
                   className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all resize-y ${validationErrors.description ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                 />
                 {validationErrors.description && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.description}</p>}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    Type de bien <span className="text-rose-500">*</span>
-                  </label>
-                  <select 
-                    name="type" value={formData.type} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
-                  >
-                    {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                  {validationErrors.type && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.type}</p>}
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    Catégorie <span className="text-rose-500">*</span>
-                  </label>
-                  <select 
-                    name="category_id" value={formData.category_id} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.category_id ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
-                  >
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                  {validationErrors.category_id && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.category_id}</p>}
-                </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
+                  {t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span>
+                </label>
+                <select 
+                  name="type" value={formData.type} onChange={handleChange} 
+                  className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
+                >
+                  {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+                {validationErrors.type && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.type}</p>}
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    Type de transaction <span className="text-rose-500">*</span>
+                    {t('admin.add.trans_type', 'Type de transaction')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="flex gap-4">
                     {transactionTypes.map(type => (
@@ -376,16 +363,16 @@ const AddProperty = () => {
 
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> Prix <span className="text-rose-500">*</span>
+                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> {t('admin.add.price', 'Prix')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <input 
                       type="number" name="price" value={formData.price} onChange={handleChange} 
-                      placeholder="Montant" 
+                      placeholder={t('admin.add.amount', "Montant")} 
                       className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       DH {formData.transaction_type === 'rent' ? '/ ms' : ''}
+                       DH {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
                     </div>
                   </div>
                   {validationErrors.price && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.price}</p>}
@@ -401,18 +388,18 @@ const AddProperty = () => {
               <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                  <MapPinIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Localisation</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.loc', 'Localisation')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2 relative">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  Adresse complète <span className="text-rose-500">*</span>
+                  {t('admin.add.full_address', 'Adresse complète')} <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input 
                     type="text" name="address" value={formData.address} onChange={handleChange} 
-                    placeholder="Numéro, rue, bâtiment..." 
+                    placeholder={t('admin.add.addr_ph', "Numéro, rue, bâtiment...")}
                     className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     autoComplete="off"
                   />
@@ -447,11 +434,11 @@ const AddProperty = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    Ville <span className="text-rose-500">*</span>
+                    {t('admin.add.city', 'Ville')} <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="text" name="city" value={formData.city} onChange={handleChange} 
-                    placeholder="Ville" 
+                    placeholder={t('admin.add.city', 'Ville')}
                     className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                   />
                   {validationErrors.city && <p className="text-rose-500 text-xs font-semibold">{validationErrors.city}</p>}
@@ -459,11 +446,11 @@ const AddProperty = () => {
                 
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    Code postal <span className="text-rose-500">*</span>
+                    {t('admin.add.postal', 'Code postal')} <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} 
-                    placeholder="Ex: 20000" 
+                    placeholder={t('admin.add.postal_ph', 'Ex: 20000')} 
                     className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                   />
                   {validationErrors.postal_code && <p className="text-rose-500 text-xs font-semibold">{validationErrors.postal_code}</p>}
@@ -478,19 +465,19 @@ const AddProperty = () => {
               <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
                  <HomeIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Caractéristiques du bien</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.features_title', 'Caractéristiques du bien')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                    Surface <span className="text-rose-500">*</span>
+                    {t('admin.add.surface', 'Surface')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <input 
                       type="number" name="surface" value={formData.surface} onChange={handleChange} 
-                      placeholder="Ex: 80" 
+                      placeholder={t('admin.add.surface_ph', 'Ex: 80')} 
                       className={`w-full ps-4 pe-10 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.surface ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">m²</div>
@@ -502,7 +489,7 @@ const AddProperty = () => {
                   <>
                     <div className="space-y-2">
                       <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        Pièces <span className="text-rose-500">*</span>
+                        {t('admin.add.rooms', 'Pièces')} <span className="text-rose-500">*</span>
                       </label>
                       <input 
                         type="number" name="rooms" value={formData.rooms} onChange={handleChange} 
@@ -513,7 +500,7 @@ const AddProperty = () => {
 
                     <div className="space-y-2">
                       <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        Chambres
+                        {t('admin.add.bedrooms', 'Chambres')}
                       </label>
                       <input 
                         type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} 
@@ -523,7 +510,7 @@ const AddProperty = () => {
 
                     <div className="space-y-2">
                       <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        Salles de bain
+                        {t('admin.add.bathrooms', 'Salles de bain')}
                       </label>
                       <input 
                         type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} 
@@ -542,21 +529,21 @@ const AddProperty = () => {
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                  <StarIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Équipements & Prestations</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.equipments', 'Équipements & Prestations')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
                <div className="flex flex-col sm:flex-row gap-3">
                  <input 
                    type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => {if(e.key === 'Enter') { e.preventDefault(); addFeature(); }}} 
-                   placeholder="Ex: Climatisation, Garage, Piscine..." 
+                   placeholder={t('admin.add.feat_ph', "Ex: Climatisation, Garage, Piscine...")}
                    className="flex-1 px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
                  />
                  <button 
                    type="button" onClick={addFeature} 
                    className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
                  >
-                   <PlusIcon className="w-5 h-5"/> Ajouter
+                   <PlusIcon className="w-5 h-5"/> {t('admin.add.add_btn', 'Ajouter')}
                  </button>
                </div>
                
@@ -581,7 +568,7 @@ const AddProperty = () => {
               <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
                  <PhotoIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Galerie Photos <span className="text-rose-500">*</span></h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gallery', 'Galerie Photos')} <span className="text-rose-500">*</span></h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
@@ -594,8 +581,8 @@ const AddProperty = () => {
                    <div className="w-16 h-16 bg-bg-card shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                      <PhotoIcon className="w-8 h-8 text-primary" />
                    </div>
-                   <span className="text-text-main font-bold text-lg mb-1">Cliquer pour importer</span>
-                   <span className="text-text-sub text-sm font-medium px-4 text-center">PNG, JPG ou WEBP. Max 10 photos.</span>
+                   <span className="text-text-main font-bold text-lg mb-1">{t('admin.add.click_upload', 'Cliquer pour importer')}</span>
+                   <span className="text-text-sub text-sm font-medium px-4 text-center">{t('admin.add.upload_info', 'PNG, JPG ou WEBP. Max 10 photos.')}</span>
                  </label>
                </div>
 
@@ -603,12 +590,12 @@ const AddProperty = () => {
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                    {imagePreviews.map((preview, i) => (
                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main shadow-sm group">
-                       <img src={preview} alt="Prévisualisation" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                       <img src={preview} alt={t('common.preview', 'Prévisualisation')} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                        <button 
                          type="button" onClick={() => removeImage(i)}
                          className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
-                         title="Supprimer"
+                         title={t('common.delete', 'Supprimer')}
                        >
                          <XMarkIcon className="w-5 h-5"/>
                        </button>
@@ -622,11 +609,11 @@ const AddProperty = () => {
           {/* Floating Actions Line */}
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
             <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card hover:bg-bg-soft text-text-main border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
-              Annuler
+              {t('common.cancel', 'Annuler')}
             </button>
             <button type="submit" disabled={loading} className="px-10 py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
               {loading && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-              {loading ? 'Publication en cours...' : 'Publier l\'annonce'}
+              {loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}
             </button>
           </div>
           
@@ -641,8 +628,8 @@ const AddProperty = () => {
               <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckIcon className="w-10 h-10 stroke-[3]" />
               </div>
-              <h2 className="text-3xl font-black text-text-main mb-2">Bien ajouté !</h2>
-              <p className="text-text-muted font-medium mb-8">Votre annonce est maintenant en ligne. Vous pouvez la partager dès maintenant.</p>
+              <h2 className="text-3xl font-black text-text-main mb-2">{t('admin.add.success_title', 'Bien ajouté !')}</h2>
+              <p className="text-text-muted font-medium mb-8">{t('admin.add.success_msg', 'Votre annonce est maintenant en ligne. Vous pouvez la partager dès maintenant.')}</p>
 
               <div className="space-y-4">
                 <div className="relative group">
@@ -664,14 +651,14 @@ const AddProperty = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <a 
-                    href={`https://wa.me/?text=${encodeURIComponent("Découvrez ce bien : " + window.location.origin + "/properties/" + newPropertyId)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(t('admin.add.share_msg', 'Découvrez ce bien : ') + window.location.origin + "/properties/" + newPropertyId)}`}
                     target="_blank" rel="noreferrer"
                     className="flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg shadow-green-500/20"
                   >
                     <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> WhatsApp
                   </a>
                   <a 
-                    href={`mailto:?subject=Bien immobilier&body=${encodeURIComponent("Découvrez ce bien : " + window.location.origin + "/properties/" + newPropertyId)}`}
+                    href={`mailto:?subject=${encodeURIComponent(t('admin.add.share_title', 'Bien immobilier'))}&body=${encodeURIComponent(t('admin.add.share_msg', 'Découvrez ce bien : ') + window.location.origin + "/properties/" + newPropertyId)}`}
                     className="flex items-center justify-center gap-2 py-4 bg-bg-soft border border-border-main text-text-main rounded-2xl font-bold hover:bg-bg-card transition-all"
                   >
                     <EnvelopeIcon className="w-5 h-5" /> Email
@@ -680,10 +667,10 @@ const AddProperty = () => {
 
                 {navigator.share && (
                   <button 
-                    onClick={() => navigator.share({ title: 'Bien immobilier', url: `${window.location.origin}/properties/${newPropertyId}` })}
+                    onClick={() => navigator.share({ title: t('admin.add.share_title', 'Bien immobilier'), url: `${window.location.origin}/properties/${newPropertyId}` })}
                     className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all shadow-xl shadow-primary/20"
                   >
-                    <ShareIcon className="w-5 h-5" /> Plus d'options
+                    <ShareIcon className="w-5 h-5" /> {t('admin.add.more_options', 'Plus d\'options')}
                   </button>
                 )}
 
@@ -713,7 +700,7 @@ const AddProperty = () => {
                   }}
                   className="w-full py-4 text-text-muted font-bold hover:text-text-main transition-colors"
                 >
-                  Fermer et ajouter un autre bien
+                  {t('admin.add.close_add_another', 'Fermer et ajouter un autre bien')}
                 </button>
               </div>
             </div>

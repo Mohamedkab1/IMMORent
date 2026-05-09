@@ -336,7 +336,7 @@ const Profile = () => {
                                     value={formData.phone} 
                                     onChange={handleChange} 
                                     disabled={!isEditing}
-                                    placeholder="06 XX XX XX XX"
+                                    placeholder={t('profile.phone_placeholder', '06 XX XX XX XX')}
                                     className={`w-full px-5 py-4 rounded-2xl border transition-all duration-300 font-medium ${isEditing ? 'bg-bg-main border-primary shadow-lg shadow-primary/5 text-text-main' : 'bg-bg-soft border-border-main text-text-muted cursor-not-allowed'}`}
                                 />
                             </div>
@@ -403,7 +403,7 @@ const Profile = () => {
                                      <form onSubmit={handlePasswordSubmit} className="space-y-4">
                                          <div>
                                              <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
-                                                 {t('auth.login.password_label')} (actuel)
+                                                 {t('auth.login.password_label')} ({t('profile.current')})
                                              </label>
                                              <input 
                                                  type="password" 
@@ -415,7 +415,7 @@ const Profile = () => {
                                          </div>
                                          <div>
                                              <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
-                                                 {t('auth.register.password_label')} (nouveau)
+                                                 {t('auth.register.password_label')} ({t('profile.new')})
                                              </label>
                                              <input 
                                                  type="password" 

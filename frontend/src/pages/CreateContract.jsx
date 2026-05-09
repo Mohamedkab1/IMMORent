@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { propertyService } from '../services/properties';
@@ -24,6 +25,7 @@ const CreateContract = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [request, setRequest] = useState(null);
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ const CreateContract = () => {
 
   useEffect(() => {
     if (!requestId) {
-      toast.error('Aucune demande sélectionnée');
+      toast.error(t('ctr.no_request', 'Aucune demande sélectionnée'));
       navigate('/dashboard/agent');
       return;
     }
@@ -107,12 +109,12 @@ const CreateContract = () => {
           }));
         }
       } else {
-        toast.error('Demande non trouvée');
+        toast.error(t('ctr.request_not_found', 'Demande non trouvée'));
         navigate('/dashboard/agent');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error('Erreur de chargement');
+      toast.error(t('ctr.load_error_short', 'Erreur de chargement'));
       navigate('/dashboard/agent');
     } finally {
       setLoading(false);
@@ -192,7 +194,7 @@ const CreateContract = () => {
           toast.error(err[0]);
         });
       } else {
-        toast.error(error.response?.data?.message || 'Erreur lors de la création');
+        toast.error(error.response?.data?.message || t('ctr.create_error', 'Erreur lors de la création'));
       }
     } finally {
       setSubmitting(false);
@@ -202,17 +204,17 @@ const CreateContract = () => {
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg-soft">
       <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
-      <p className="text-text-sub font-medium">Préparation du contrat...</p>
+      <p className="text-text-sub font-medium">{t('ctr.preparing', 'Préparation du contrat...')}</p>
     </div>
   );
 
   if (!request || !property) return null;
 
   const isRent = property.transaction_type === 'rent';
-  const contractTypeLabel = isRent ? 'Location' : 'Vente';
+  const contractTypeLabel = isRent ? t('common.rent', 'Location') : t('common.buy', 'Vente');
   
   const formatDisplayDate = (date) => {
-    if (!date) return 'Non définie';
+    if (!date) return t('ctr.not_defined', 'Non définie');
     return new Date(date).toLocaleDateString('fr-FR', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
@@ -226,14 +228,14 @@ const CreateContract = () => {
           className="flex items-center gap-2 text-text-sub hover:text-secondary transition-colors mb-6 font-medium group"
         >
           <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Retour au tableau de bord
+          {t('ctr.back_dashboard', 'Retour au tableau de bord')}
         </button>
 
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold text-text-main tracking-tight">
-            Créer un <span className="text-secondary">contrat de {contractTypeLabel}</span>
+            {t('ctr.create_title', 'Créer un')} <span className="text-secondary">{isRent ? t('ctr.rental_contract', 'contrat de Location') : t('ctr.sale_contract', 'contrat de Vente')}</span>
           </h1>
-          <p className="text-text-sub mt-2">Finalisation de la transaction pour le bien "{property.title}"</p>
+          <p className="text-text-sub mt-2">{t('ctr.finalization', 'Finalisation de la transaction pour le bien')} "{property.title}"</p>
         </header>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -241,7 +243,7 @@ const CreateContract = () => {
           <aside className="lg:col-span-1 space-y-6">
             <div className="bg-bg-card rounded-3xl p-6 shadow-main border border-border-main">
               <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
-                <InformationCircleIcon className="w-5 h-5 text-secondary" /> Détails de la demande
+                <InformationCircleIcon className="w-5 h-5 text-secondary" /> {t('ctr.request_details', 'Détails de la demande')}
               </h2>
               
               <div className="space-y-6">
@@ -250,7 +252,7 @@ const CreateContract = () => {
                     <UserIcon className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Client</span>
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">{t('admin.req.client', 'Client')}</span>
                     <p className="text-sm font-bold text-text-main">{request.user?.name}</p>
                     <p className="text-xs text-text-sub">{request.user?.email}</p>
                   </div>
@@ -261,7 +263,7 @@ const CreateContract = () => {
                     <HomeIcon className="w-5 h-5 text-secondary" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Bien Immobilier</span>
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">{t('ctr.real_estate', 'Bien Immobilier')}</span>
                     <p className="text-sm font-bold text-text-main">{property.title}</p>
                     <p className="text-xs text-text-sub flex items-center gap-1">
                       <MapPinIcon className="w-3 h-3" /> {property.city}
@@ -275,15 +277,15 @@ const CreateContract = () => {
                       <CalendarIcon className="w-5 h-5 text-emerald-500" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Période souhaitée</span>
+                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">{t('ctr.desired_period', 'Période souhaitée')}</span>
                       <p className="text-xs font-bold text-text-main mt-1">
-                        Du {formatDisplayDate(request.start_date)}
+                        {t('ctr.from', 'Du')} {formatDisplayDate(request.start_date)}
                       </p>
                       <p className="text-xs font-bold text-text-main">
-                        Au {formatDisplayDate(request.end_date)}
+                        {t('ctr.to', 'Au')} {formatDisplayDate(request.end_date)}
                       </p>
                       <div className="flex items-center gap-1 text-[10px] text-emerald-600 mt-1 font-bold">
-                        <ClockIcon className="w-3 h-3" /> Durée: {daysCount} jours
+                        <ClockIcon className="w-3 h-3" /> {t('ctr.duration', 'Durée')}: {daysCount} {t('ctr.days', 'jours')}
                       </div>
                     </div>
                   </div>
@@ -293,7 +295,7 @@ const CreateContract = () => {
                       <CurrencyEuroIcon className="w-5 h-5 text-emerald-500" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Conditions de vente</span>
+                      <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">{t('ctr.sale_conditions', 'Conditions de vente')}</span>
                       <p className="text-sm font-bold text-text-main">{property.price.toLocaleString()} DH</p>
                     </div>
                   </div>
@@ -304,19 +306,19 @@ const CreateContract = () => {
             {isRent && (
               <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10">
                 <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
-                  <CheckCircleIcon className="w-4 h-4" /> Estimation financière
+                  <CheckCircleIcon className="w-4 h-4" /> {t('ctr.financial_estimate', 'Estimation financière')}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-xs">
-                    <span className="text-text-sub">Loyer/mois</span>
+                    <span className="text-text-sub">{t('ctr.rent_per_month', 'Loyer/mois')}</span>
                     <span className="text-text-main font-bold">{monthlyRate.toLocaleString()} DH</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-text-sub">Base journalière</span>
+                    <span className="text-text-sub">{t('ctr.daily_rate', 'Base journalière')}</span>
                     <span className="text-text-main font-bold">{Math.round(dailyRate).toLocaleString()} DH</span>
                   </div>
                   <div className="pt-3 border-t border-primary/10 flex justify-between items-center">
-                    <span className="text-sm font-bold text-text-main">Total estimé</span>
+                    <span className="text-sm font-bold text-text-main">{t('ctr.estimated_total', 'Total estimé')}</span>
                     <span className="text-xl font-black text-primary">{Math.round(calculatedTotal).toLocaleString()} DH</span>
                   </div>
                 </div>
@@ -331,7 +333,7 @@ const CreateContract = () => {
                 <div className={`p-2 rounded-xl bg-secondary/20`}>
                   {isRent ? <KeyIcon className="w-6 h-6 text-secondary" /> : <TagIcon className="w-6 h-6 text-secondary" />}
                 </div>
-                <h2 className="text-xl font-bold text-text-main uppercase tracking-tight">Configuration du contrat</h2>
+                <h2 className="text-xl font-bold text-text-main uppercase tracking-tight">{t('ctr.config', 'Configuration du contrat')}</h2>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -340,18 +342,18 @@ const CreateContract = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-secondary" /> Date de début
+                          <CalendarIcon className="w-4 h-4 text-secondary" /> {t('ctr.start_date', 'Date de début')}
                         </label>
                         <input 
                           type="date" name="start_date" 
                           value={formData.start_date} onChange={handleChange} required 
                           className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                         />
-                        <p className="text-[10px] text-text-muted italic px-1">Souhait client: {formatDisplayDate(request.start_date)}</p>
+                        <p className="text-[10px] text-text-muted italic px-1">{t('ctr.client_wish', 'Souhait client')}: {formatDisplayDate(request.start_date)}</p>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-secondary" /> Date de fin
+                          <CalendarIcon className="w-4 h-4 text-secondary" /> {t('ctr.end_date', 'Date de fin')}
                         </label>
                         <input 
                           type="date" name="end_date" 
@@ -359,14 +361,14 @@ const CreateContract = () => {
                           min={formData.start_date}
                           className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                         />
-                        <p className="text-[10px] text-text-muted italic px-1">Souhait client: {formatDisplayDate(request.end_date)}</p>
+                        <p className="text-[10px] text-text-muted italic px-1">{t('ctr.client_wish', 'Souhait client')}: {formatDisplayDate(request.end_date)}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Loyer mensuel (DH)
+                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> {t('ctr.monthly_rent_dh', 'Loyer mensuel (DH)')}
                         </label>
                         <input 
                           type="number" name="monthly_rent" 
@@ -376,7 +378,7 @@ const CreateContract = () => {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Caution / Dépôt (DH)
+                          <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> {t('ctr.deposit_dh', 'Caution / Dépôt (DH)')}
                         </label>
                         <input 
                           type="number" name="security_deposit" 
@@ -390,7 +392,7 @@ const CreateContract = () => {
                   <>
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                        <CalendarIcon className="w-4 h-4 text-secondary" /> Date effective de la vente
+                        <CalendarIcon className="w-4 h-4 text-secondary" /> {t('ctr.effective_sale_date', 'Date effective de la vente')}
                       </label>
                       <input 
                         type="date" name="sale_date" 
@@ -400,7 +402,7 @@ const CreateContract = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                        <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Prix de vente final (DH)
+                        <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> {t('ctr.final_sale_price', 'Prix de vente final (DH)')}
                       </label>
                       <input 
                         type="number" name="sale_price" 
@@ -413,12 +415,12 @@ const CreateContract = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-text-main flex items-center gap-2">
-                    <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> Frais annexes / Charges (DH)
+                    <CurrencyEuroIcon className="w-4 h-4 text-secondary" /> {t('ctr.extra_charges', 'Frais annexes / Charges (DH)')}
                   </label>
                   <input 
                     type="number" name="charges" 
                     value={formData.charges} onChange={handleChange} 
-                    placeholder="0"
+                    placeholder={t('common.zero', '0')}
                     className="w-full bg-bg-soft border-border-main rounded-2xl p-3 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-sm text-text-main"
                   />
                 </div>
@@ -429,7 +431,7 @@ const CreateContract = () => {
                     onClick={() => navigate(-1)} 
                     className="flex-1 px-8 py-4 bg-bg-soft text-text-main rounded-2xl font-bold hover:bg-border-main transition-colors border border-border-main"
                   >
-                    Annuler
+                    {t('common.cancel', 'Annuler')}
                   </button>
                   <button 
                     type="submit" 
@@ -439,9 +441,9 @@ const CreateContract = () => {
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Enregistrement...
+                        {t('admin.settings.saving', 'Enregistrement...')}
                       </span>
-                    ) : `Générer le contrat de ${contractTypeLabel}`}
+                    ) : t('ctr.generate', 'Générer le contrat de') + ` ${contractTypeLabel}`}
                   </button>
                 </div>
               </form>
@@ -449,7 +451,7 @@ const CreateContract = () => {
             
             <div className="mt-8 flex items-start gap-3 p-4 bg-bg-card rounded-2xl border border-border-main text-[10px] text-text-muted leading-relaxed">
               <InformationCircleIcon className="w-5 h-5 flex-shrink-0 text-secondary" />
-              <p>En générant ce contrat, vous confirmez que les informations ci-dessus ont été vérifiées and acceptées par toutes les parties. Le statut du bien sera automatiquement mis à jour en "{isRent ? 'Loué' : 'Vendu'}". Les documents PDF seront disponibles immédiatement après validation.</p>
+              <p>{t('ctr.validation_info', 'En générant ce contrat, vous confirmez que les informations ci-dessus ont été vérifiées et acceptées par toutes les parties. Le statut du bien sera automatiquement mis à jour. Les documents PDF seront disponibles immédiatement après validation.')}</p>
             </div>
           </main>
         </div>

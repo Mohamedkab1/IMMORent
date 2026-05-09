@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../../context/LanguageContext';
 import { 
   EyeIcon, 
   CheckCircleIcon, 
@@ -22,6 +23,7 @@ const AdminProperties = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState(null);
+  const { t } = useLanguage();
 
   useEffect(() => { fetchProperties(); }, []);
 
@@ -45,28 +47,28 @@ const AdminProperties = () => {
 
   const getStatusBadge = (status) => {
     const config = { 
-      available: { bg: '#dcfce7', color: '#059669', text: 'Disponible' }, 
-      rented: { bg: '#f3f4f6', color: '#6b7280', text: 'Loué' }, 
-      pending: { bg: '#fef3c7', color: '#d97706', text: 'En attente' } 
+      available: { bg: '#dcfce7', color: '#059669', text: t('prop.status.available', 'Disponible') }, 
+      rented: { bg: '#f3f4f6', color: '#6b7280', text: t('prop.status.rented', 'Loué') }, 
+      pending: { bg: '#fef3c7', color: '#d97706', text: t('prop.status.pending', 'En attente') } 
     };
     const c = config[status] || config.available;
     return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
   };
 
   const getTypeLabel = (type) => {
-    const types = { apartment: 'Appartement', house: 'Maison', studio: 'Studio', commercial: 'Commercial', land: 'Terrain' };
+    const types = { apartment: t('prop.types.apartment', 'Appartement'), house: t('prop.types.house', 'Maison'), studio: t('prop.types.studio', 'Studio'), commercial: t('prop.types.commercial', 'Commercial'), land: t('prop.types.land', 'Terrain') };
     return types[type] || type;
   };
 
   const handleVerify = (id) => { 
     setProperties(properties.map(p => p.id === id ? { ...p, verified: true, status: 'available' } : p)); 
-    toast.success('Bien vérifié'); 
+    toast.success(t('admin.prop.verified_success', 'Bien vérifié')); 
   };
   
   const handleReject = (id) => { 
-    if (window.confirm('Refuser ce bien ?')) { 
+    if (window.confirm(t('admin.prop.reject_confirm', 'Refuser ce bien ?'))) { 
       setProperties(properties.filter(p => p.id !== id)); 
-      toast.success('Bien refusé'); 
+      toast.success(t('admin.prop.rejected_success', 'Bien refusé')); 
     } 
   };
   
@@ -78,7 +80,7 @@ const AdminProperties = () => {
   const handleDelete = () => { 
     if (propertyToDelete) { 
       setProperties(properties.filter(p => p.id !== propertyToDelete.id)); 
-      toast.success('Bien supprimé'); 
+      toast.success(t('admin.prop.deleted_success', 'Bien supprimé')); 
       setShowDeleteConfirm(false); 
       setPropertyToDelete(null); 
     } 
@@ -91,44 +93,44 @@ const AdminProperties = () => {
     pending: properties.filter(p => p.status === 'pending' || !p.verified).length 
   };
 
-  if (loading) return <div className="loading"><div className="spinner"></div><p>Chargement...</p></div>;
+  if (loading) return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement...')}</p></div>;
 
   return (
     <>
       <div className="admin-properties">
         <div className="header">
-          <h1>Gestion des biens</h1>
+          <h1>{t('admin.prop.title', 'Gestion des biens')}</h1>
         </div>
 
         <div className="stats-cards">
           <div className="stat-card">
             <div className="stat-icon"><BuildingOfficeIcon /></div>
-            <div><span>Total</span><strong>{stats.total}</strong></div>
+            <div><span>{t('admin.prop.total', 'Total')}</span><strong>{stats.total}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><HomeIcon /></div>
-            <div><span>Disponibles</span><strong>{stats.available}</strong></div>
+            <div><span>{t('prop.status.available', 'Disponibles')}</span><strong>{stats.available}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><HomeIcon /></div>
-            <div><span>Loués</span><strong>{stats.rented}</strong></div>
+            <div><span>{t('prop.status.rented', 'Loués')}</span><strong>{stats.rented}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ClockIcon /></div>
-            <div><span>En attente</span><strong>{stats.pending}</strong></div>
+            <div><span>{t('prop.status.pending', 'En attente')}</span><strong>{stats.pending}</strong></div>
           </div>
         </div>
 
         <div className="filters-section">
           <div className="search-wrapper">
             <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" className="search-input" placeholder={t('common.search', 'Rechercher...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">Tous</option>
-            <option value="available">Disponibles</option>
-            <option value="rented">Loués</option>
-            <option value="pending">En attente</option>
+            <option value="all">{t('common.all', 'Tous')}</option>
+            <option value="available">{t('prop.status.available', 'Disponibles')}</option>
+            <option value="rented">{t('prop.status.rented', 'Loués')}</option>
+            <option value="pending">{t('prop.status.pending', 'En attente')}</option>
           </select>
         </div>
 
@@ -136,15 +138,15 @@ const AdminProperties = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Titre</th>
-                <th>Ville</th>
-                <th>Type</th>
-                <th>Prix</th>
-                <th>Statut</th>
-                <th>Agent</th>
-                <th>Vérifié</th>
-                <th>Actions</th>
+                <th>{t('admin.prop.id', 'ID')}</th>
+                <th>{t('admin.prop.table_title', 'Titre')}</th>
+                <th>{t('admin.add.city', 'Ville')}</th>
+                <th>{t('admin.add.prop_type', 'Type')}</th>
+                <th>{t('admin.add.price', 'Prix')}</th>
+                <th>{t('admin.edit.status', 'Statut')}</th>
+                <th>{t('admin.prop.agent', 'Agent')}</th>
+                <th>{t('admin.prop.verified', 'Vérifié')}</th>
+                <th>{t('admin.prop.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -154,19 +156,19 @@ const AdminProperties = () => {
                   <td><strong>{p.title}</strong></td>
                   <td><MapPinIcon className="inline-icon" /> {p.city}</td>
                   <td>{getTypeLabel(p.type)}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {p.price.toLocaleString()}DH{p.type === 'rent' ? '/mois' : ''}</td>
+                  <td><CurrencyEuroIcon className="inline-icon" /> {p.price.toLocaleString()}DH{p.type === 'rent' ? t('prop.per_month', '/ ms') : ''}</td>
                   <td>{getStatusBadge(p.status)}</td>
                   <td>{p.user.name}</td>
                   <td>{p.verified ? <CheckCircleIcon className="text-success" /> : <XCircleIcon className="text-warning" />}</td>
                   <td className="actions">
-                    <Link to={`/properties/${p.id}`} className="btn-icon" title="Voir"><EyeIcon /></Link>
+                    <Link to={`/properties/${p.id}`} className="btn-icon" title={t('common.view', 'Voir')}><EyeIcon /></Link>
                     {!p.verified && (
                       <>
-                        <button className="btn-icon success" onClick={() => handleVerify(p.id)} title="Vérifier"><CheckCircleIcon /></button>
-                        <button className="btn-icon warning" onClick={() => handleReject(p.id)} title="Refuser"><XCircleIcon /></button>
+                        <button className="btn-icon success" onClick={() => handleVerify(p.id)} title={t('admin.prop.verify', 'Vérifier')}><CheckCircleIcon /></button>
+                        <button className="btn-icon warning" onClick={() => handleReject(p.id)} title={t('admin.prop.reject', 'Refuser')}><XCircleIcon /></button>
                       </>
                     )}
-                    <button className="btn-icon delete" onClick={() => confirmDelete(p)} title="Supprimer"><TrashIcon /></button>
+                    <button className="btn-icon delete" onClick={() => confirmDelete(p)} title={t('common.delete', 'Supprimer')}><TrashIcon /></button>
                   </td>
                 </tr>
               ))}
@@ -179,15 +181,15 @@ const AdminProperties = () => {
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="modal-content confirm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Confirmer la suppression</h2>
+              <h2>{t('admin.prop.del_confirm_title', 'Confirmer la suppression')}</h2>
             </div>
             <div className="modal-body">
-              <p>Êtes-vous sûr de vouloir supprimer le bien <strong>{propertyToDelete?.title}</strong> ?</p>
-              <p className="warning">Cette action est irréversible.</p>
+              <p>{t('admin.prop.del_confirm_msg', 'Êtes-vous sûr de vouloir supprimer le bien')} <strong>{propertyToDelete?.title}</strong> ?</p>
+              <p className="warning">{t('admin.prop.del_warning', 'Cette action est irréversible.')}</p>
             </div>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>Annuler</button>
-              <button className="btn-delete" onClick={handleDelete}>Supprimer</button>
+              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>{t('common.cancel', 'Annuler')}</button>
+              <button className="btn-delete" onClick={handleDelete}>{t('common.delete', 'Supprimer')}</button>
             </div>
           </div>
         </div>

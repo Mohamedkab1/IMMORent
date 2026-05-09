@@ -1,15 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const NotFound = () => {
+  const { t } = useLanguage();
   return (
     <>
       <div className="not-found">
         <div className="not-found-content">
           <h1>404</h1>
-          <h2>Page non trouvée</h2>
-          <p>Désolé, la page que vous recherchez n'existe pas ou a été déplacée.</p>
-          <Link to="/" className="btn-home">Retour à l'accueil</Link>
+          <h2>{t('common.not_found_title', 'Page non trouvée')}</h2>
+          <p>{t('common.not_found_desc', "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.")}</p>
+          <Link to="/" className="btn-home">{t('common.back_home', "Retour à l'accueil")}</Link>
         </div>
       </div>
 

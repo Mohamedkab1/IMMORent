@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   EyeIcon, 
@@ -25,6 +26,7 @@ const AdminContracts = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [contractToDelete, setContractToDelete] = useState(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchContracts();
@@ -49,9 +51,9 @@ const AdminContracts = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      active: { bg: '#dcfce7', color: '#059669', text: 'Actif' },
-      terminated: { bg: '#fee2e2', color: '#dc2626', text: 'Résilié' },
-      expired: { bg: '#f3f4f6', color: '#6b7280', text: 'Expiré' }
+      active: { bg: '#dcfce7', color: '#059669', text: t('contract.status.active', 'Actif') },
+      terminated: { bg: '#fee2e2', color: '#dc2626', text: t('contract.status.terminated', 'Résilié') },
+      expired: { bg: '#f3f4f6', color: '#6b7280', text: t('contract.status.expired', 'Expiré') }
     };
     const c = config[status] || config.active;
     return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
@@ -65,14 +67,14 @@ const AdminContracts = () => {
   const handleDelete = () => {
     if (contractToDelete) {
       setContracts(contracts.filter(c => c.id !== contractToDelete.id));
-      toast.success('Contrat supprimé');
+      toast.success(t('admin.contracts.deleted_success', 'Contrat supprimé'));
       setShowDeleteConfirm(false);
       setContractToDelete(null);
     }
   };
 
   const handleDownload = (contract) => {
-    toast.info(`Téléchargement du contrat ${contract.contract_number}...`);
+    toast.info(t('admin.contracts.downloading', 'Téléchargement du contrat {{num}}...', { num: contract.contract_number }).replace('{{num}}', contract.contract_number));
   };
 
   const stats = {
@@ -83,41 +85,41 @@ const AdminContracts = () => {
   };
 
   if (loading) {
-    return <div className="loading"><div className="spinner"></div><p>Chargement des contrats...</p></div>;
+    return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement des contrats...')}</p></div>;
   }
 
   return (
     <>
       <div className="admin-contracts">
         <div className="header">
-          <h1>Gestion des contrats</h1>
+          <h1>{t('admin.contracts.title', 'Gestion des contrats')}</h1>
         </div>
 
         <div className="stats-cards">
           <div className="stat-card">
             <div className="stat-icon"><DocumentTextIcon /></div>
-            <div><span>Total contrats</span><strong>{stats.total}</strong></div>
+            <div><span>{t('admin.contracts.total', 'Total contrats')}</span><strong>{stats.total}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><CheckCircleIcon /></div>
-            <div><span>Contrats actifs</span><strong>{stats.active}</strong></div>
+            <div><span>{t('admin.contracts.active', 'Contrats actifs')}</span><strong>{stats.active}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><CurrencyEuroIcon /></div>
-            <div><span>CA mensuel</span><strong>{contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0).toLocaleString()}DH</strong></div>
+            <div><span>{t('admin.contracts.monthly_rev', 'CA mensuel')}</span><strong>{contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0).toLocaleString()}DH</strong></div>
           </div>
         </div>
 
         <div className="filters-section">
           <div className="search-wrapper">
             <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder="Rechercher par n° contrat, bien ou locataire..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" className="search-input" placeholder={t('admin.contracts.search_ph', 'Rechercher par n° contrat, bien ou locataire...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">Tous les statuts</option>
-            <option value="active">Actifs</option>
-            <option value="expired">Expirés</option>
-            <option value="terminated">Résiliés</option>
+            <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
+            <option value="active">{t('contract.status.active', 'Actifs')}</option>
+            <option value="expired">{t('contract.status.expired', 'Expirés')}</option>
+            <option value="terminated">{t('contract.status.terminated', 'Résiliés')}</option>
           </select>
         </div>
 
@@ -125,14 +127,14 @@ const AdminContracts = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>N° Contrat</th>
-                <th>Bien</th>
-                <th>Locataire</th>
-                <th>Propriétaire</th>
-                <th>Loyer</th>
-                <th>Période</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th>{t('admin.contracts.contract_num', 'N° Contrat')}</th>
+                <th>{t('admin.req.property', 'Bien')}</th>
+                <th>{t('admin.contracts.tenant', 'Locataire')}</th>
+                <th>{t('admin.contracts.owner', 'Propriétaire')}</th>
+                <th>{t('admin.contracts.rent', 'Loyer')}</th>
+                <th>{t('admin.req.period', 'Période')}</th>
+                <th>{t('admin.edit.status', 'Statut')}</th>
+                <th>{t('admin.prop.actions', 'Actions')}</th>
                </tr>
             </thead>
             <tbody>
@@ -142,13 +144,13 @@ const AdminContracts = () => {
                   <td><strong>{c.property.title}</strong><br/>{c.property.city}</td>
                   <td><strong>{c.tenant.name}</strong><br/>{c.tenant.email}</td>
                   <td>{c.owner.name}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {c.monthly_rent}DH / mois</td>
+                  <td><CurrencyEuroIcon className="inline-icon" /> {c.monthly_rent}DH / {t('prop.month_short', 'mois')}</td>
                   <td><CalendarIcon className="inline-icon" /> {new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}</td>
                   <td>{getStatusBadge(c.status)}</td>
                   <td className="actions">
-                    <Link to={`/contracts/${c.id}`} className="btn-icon" title="Voir"><EyeIcon /></Link>
-                    <button className="btn-icon" onClick={() => handleDownload(c)} title="Télécharger PDF"><ArrowDownTrayIcon /></button>
-                    <button className="btn-icon delete" onClick={() => confirmDelete(c)} title="Supprimer"><TrashIcon /></button>
+                    <Link to={`/contracts/${c.id}`} className="btn-icon" title={t('common.view', 'Voir')}><EyeIcon /></Link>
+                    <button className="btn-icon" onClick={() => handleDownload(c)} title={t('common.download_pdf', 'Télécharger PDF')}><ArrowDownTrayIcon /></button>
+                    <button className="btn-icon delete" onClick={() => confirmDelete(c)} title={t('common.delete', 'Supprimer')}><TrashIcon /></button>
                   </td>
                 </tr>
               ))}
@@ -161,15 +163,15 @@ const AdminContracts = () => {
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
           <div className="modal-content confirm" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Confirmer la suppression</h2>
+              <h2>{t('admin.prop.del_confirm_title', 'Confirmer la suppression')}</h2>
             </div>
             <div className="modal-body">
-              <p>Êtes-vous sûr de vouloir supprimer le contrat <strong>{contractToDelete?.contract_number}</strong> ?</p>
-              <p className="warning">Cette action est irréversible.</p>
+              <p>{t('admin.contracts.del_confirm_msg', 'Êtes-vous sûr de vouloir supprimer le contrat')} <strong>{contractToDelete?.contract_number}</strong> ?</p>
+              <p className="warning">{t('admin.prop.del_warning', 'Cette action est irréversible.')}</p>
             </div>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>Annuler</button>
-              <button className="btn-delete" onClick={handleDelete}>Supprimer</button>
+              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>{t('common.cancel', 'Annuler')}</button>
+              <button className="btn-delete" onClick={handleDelete}>{t('common.delete', 'Supprimer')}</button>
             </div>
           </div>
         </div>

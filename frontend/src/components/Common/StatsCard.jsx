@@ -1,7 +1,9 @@
 import React from 'react';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid';
+import { useLanguage } from '../../context/LanguageContext';
 
 const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue" }) => {
+  const { t } = useLanguage();
   const colorClasses = {
     blue: "bg-blue-500 shadow-blue-500/20",
     green: "bg-emerald-500 shadow-emerald-500/20",
@@ -31,7 +33,7 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
                 {trend === 'up' ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
                 {trendValue}
               </span>
-              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">vs mois dernier</span>
+              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">{t('admin.dashboard.vs_last_month', 'vs mois dernier')}</span>
             </div>
           )}
         </div>

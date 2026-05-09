@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   CogIcon, 
@@ -17,6 +18,7 @@ import {
 
 const AdminSettings = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState({
     site_name: 'IMMORent',
@@ -41,7 +43,7 @@ const AdminSettings = () => {
     e.preventDefault();
     setSaving(true);
     setTimeout(() => {
-      toast.success('Paramètres enregistrés avec succès');
+      toast.success(t('admin.settings.saved_success', 'Paramètres enregistrés avec succès'));
       setSaving(false);
     }, 1000);
   };
@@ -50,105 +52,105 @@ const AdminSettings = () => {
     <>
       <div className="admin-settings">
         <div className="header">
-          <h1>Paramètres généraux</h1>
-          <p>Configurez les paramètres de la plateforme IMMORent Maroc</p>
+          <h1>{t('admin.settings.title', 'Paramètres généraux')}</h1>
+          <p>{t('admin.settings.subtitle', 'Configurez les paramètres de la plateforme IMMORent Maroc')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="settings-form">
           <div className="settings-section">
-            <h2><GlobeAltIcon className="section-icon" /> Informations générales</h2>
+            <h2><GlobeAltIcon className="section-icon" /> {t('admin.settings.general_info', 'Informations générales')}</h2>
             <div className="form-row">
               <div className="form-group">
-                <label>Nom du site</label>
+                <label>{t('admin.settings.site_name', 'Nom du site')}</label>
                 <input type="text" name="site_name" value={settings.site_name} onChange={handleChange} />
               </div>
               <div className="form-group">
-                <label>Description</label>
+                <label>{t('common.description', 'Description')}</label>
                 <textarea name="site_description" rows="2" value={settings.site_description} onChange={handleChange} />
               </div>
             </div>
           </div>
 
           <div className="settings-section">
-            <h2><CogIcon className="section-icon" /> Coordonnées</h2>
+            <h2><CogIcon className="section-icon" /> {t('admin.settings.contact_info', 'Coordonnées')}</h2>
             <div className="form-row">
               <div className="form-group">
-                <label>Email de contact</label>
+                <label>{t('admin.settings.contact_email', 'Email de contact')}</label>
                 <input type="email" name="contact_email" value={settings.contact_email} onChange={handleChange} />
               </div>
               <div className="form-group">
-                <label>Téléphone</label>
+                <label>{t('admin.users.phone', 'Téléphone')}</label>
                 <input type="tel" name="contact_phone" value={settings.contact_phone} onChange={handleChange} />
               </div>
             </div>
             <div className="form-group">
-              <label>Adresse</label>
+              <label>{t('admin.users.address', 'Adresse')}</label>
               <textarea name="address" rows="2" value={settings.address} onChange={handleChange} />
             </div>
           </div>
 
           <div className="settings-section">
-            <h2><ShieldCheckIcon className="section-icon" /> Sécurité et inscriptions</h2>
+            <h2><ShieldCheckIcon className="section-icon" /> {t('admin.settings.security_reg', 'Sécurité et inscriptions')}</h2>
             <div className="toggle-group">
-              <label>Mode maintenance</label>
+              <label>{t('admin.settings.maintenance_mode', 'Mode maintenance')}</label>
               <div>
                 <input type="checkbox" name="maintenance_mode" checked={settings.maintenance_mode} onChange={handleChange} />
-                <span>Activer le mode maintenance (site inaccessible aux utilisateurs)</span>
+                <span>{t('admin.settings.maintenance_desc', 'Activer le mode maintenance (site inaccessible aux utilisateurs)')}</span>
               </div>
             </div>
             <div className="toggle-group">
-              <label>Inscriptions</label>
+              <label>{t('admin.settings.registrations', 'Inscriptions')}</label>
               <div>
                 <input type="checkbox" name="registration_enabled" checked={settings.registration_enabled} onChange={handleChange} />
-                <span>Autoriser les nouvelles inscriptions</span>
+                <span>{t('admin.settings.reg_desc', 'Autoriser les nouvelles inscriptions')}</span>
               </div>
             </div>
             <div className="toggle-group">
-              <label>Validation automatique</label>
+              <label>{t('admin.settings.auto_approve', 'Validation automatique')}</label>
               <div>
                 <input type="checkbox" name="auto_approve_properties" checked={settings.auto_approve_properties} onChange={handleChange} />
-                <span>Approuver automatiquement les nouveaux biens (sinon validation manuelle)</span>
+                <span>{t('admin.settings.auto_approve_desc', 'Approuver automatiquement les nouveaux biens (sinon validation manuelle)')}</span>
               </div>
             </div>
           </div>
 
           <div className="settings-section">
-            <h2><BellIcon className="section-icon" /> Notifications</h2>
+            <h2><BellIcon className="section-icon" /> {t('admin.settings.notifications', 'Notifications')}</h2>
             <div className="toggle-group">
-              <label>Notifications email</label>
+              <label>{t('admin.settings.email_notif', 'Notifications email')}</label>
               <div>
                 <input type="checkbox" name="notifications_enabled" checked={settings.notifications_enabled} onChange={handleChange} />
-                <span>Activer les notifications par email</span>
+                <span>{t('admin.settings.email_notif_desc', 'Activer les notifications par email')}</span>
               </div>
             </div>
           </div>
 
           <div className="settings-section">
-            <h2><PhotoIcon className="section-icon" /> Médias</h2>
+            <h2><PhotoIcon className="section-icon" /> {t('admin.settings.media', 'Médias')}</h2>
             <div className="form-row">
               <div className="form-group">
-                <label>Nombre max d'images par bien</label>
+                <label>{t('admin.settings.max_images', 'Nombre max d\'images par bien')}</label>
                 <input type="number" name="max_images_per_property" value={settings.max_images_per_property} onChange={handleChange} min="1" max="20" />
               </div>
               <div className="form-group">
-                <label>Taille max des images (MB)</label>
+                <label>{t('admin.settings.max_size', 'Taille max des images (MB)')}</label>
                 <input type="number" name="max_file_size_mb" value={settings.max_file_size_mb} onChange={handleChange} min="1" max="20" step="1" />
               </div>
             </div>
           </div>
 
           <div className="settings-section">
-            <h2><PaintBrushIcon className="section-icon" /> Apparence</h2>
+            <h2><PaintBrushIcon className="section-icon" /> {t('admin.settings.appearance', 'Apparence')}</h2>
             <div className="form-row">
               <div className="form-group">
-                <label>Couleur principale</label>
+                <label>{t('admin.settings.primary_color', 'Couleur principale')}</label>
                 <div className="color-preview">
                   <div className="color-box" style={{ background: '#0f2b4d' }}></div>
                   <span>#0f2b4d</span>
                 </div>
               </div>
               <div className="form-group">
-                <label>Couleur secondaire</label>
+                <label>{t('admin.settings.secondary_color', 'Couleur secondaire')}</label>
                 <div className="color-preview">
                   <div className="color-box" style={{ background: '#d4af37' }}></div>
                   <span>#d4af37</span>
@@ -159,7 +161,7 @@ const AdminSettings = () => {
 
           <div className="form-actions">
             <button type="submit" className="btn-save" disabled={saving}>
-              <CheckCircleIcon className="btn-icon" /> {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+              <CheckCircleIcon className="btn-icon" /> {saving ? t('admin.settings.saving', 'Enregistrement...') : t('admin.edit.save', 'Enregistrer les modifications')}
             </button>
           </div>
         </form>
