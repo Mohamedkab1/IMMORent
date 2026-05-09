@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   EyeIcon, 
@@ -20,6 +21,7 @@ const AdminRequests = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchRequests();
@@ -45,10 +47,10 @@ const AdminRequests = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      pending: { bg: '#fef3c7', color: '#d97706', text: 'En attente', icon: ClockIcon },
-      approved: { bg: '#dcfce7', color: '#059669', text: 'Approuvée', icon: CheckCircleIcon },
-      rejected: { bg: '#fee2e2', color: '#dc2626', text: 'Refusée', icon: XCircleIcon },
-      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: 'Annulée', icon: XCircleIcon }
+      pending: { bg: '#fef3c7', color: '#d97706', text: t('req.status.pending', 'En attente'), icon: ClockIcon },
+      approved: { bg: '#dcfce7', color: '#059669', text: t('req.status.approved', 'Approuvée'), icon: CheckCircleIcon },
+      rejected: { bg: '#fee2e2', color: '#dc2626', text: t('req.status.rejected', 'Refusée'), icon: XCircleIcon },
+      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: t('req.status.cancelled', 'Annulée'), icon: XCircleIcon }
     };
     const c = config[status] || config.pending;
     const Icon = c.icon;
@@ -72,16 +74,16 @@ const AdminRequests = () => {
     setRequests(requests.map(r => 
       r.id === id ? { ...r, status: 'approved', processed_at: new Date().toISOString() } : r
     ));
-    toast.success('Demande approuvée');
+    toast.success(t('admin.req.approved_success', 'Demande approuvée'));
   };
 
   const handleReject = (id) => {
-    const reason = prompt('Motif du refus :');
+    const reason = prompt(t('admin.req.reject_reason_prompt', 'Motif du refus :'));
     if (reason) {
       setRequests(requests.map(r => 
         r.id === id ? { ...r, status: 'rejected', rejection_reason: reason, processed_at: new Date().toISOString() } : r
       ));
-      toast.success('Demande refusée');
+      toast.success(t('admin.req.rejected_success', 'Demande refusée'));
     }
   };
 
@@ -93,45 +95,45 @@ const AdminRequests = () => {
   };
 
   if (loading) {
-    return <div className="loading"><div className="spinner"></div><p>Chargement des demandes...</p></div>;
+    return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement des demandes...')}</p></div>;
   }
 
   return (
     <>
       <div className="admin-requests">
         <div className="header">
-          <h1>Gestion des demandes</h1>
+          <h1>{t('admin.req.title', 'Gestion des demandes')}</h1>
         </div>
 
         <div className="stats-cards">
           <div className="stat-card">
             <div className="stat-icon"><DocumentTextIcon /></div>
-            <div><span>Total demandes</span><strong>{stats.total}</strong></div>
+            <div><span>{t('admin.req.total', 'Total demandes')}</span><strong>{stats.total}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ClockIcon /></div>
-            <div><span>En attente</span><strong>{stats.pending}</strong></div>
+            <div><span>{t('req.status.pending', 'En attente')}</span><strong>{stats.pending}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><CheckCircleIcon /></div>
-            <div><span>Approuvées</span><strong>{stats.approved}</strong></div>
+            <div><span>{t('req.status.approved', 'Approuvées')}</span><strong>{stats.approved}</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><XCircleIcon /></div>
-            <div><span>Refusées</span><strong>{stats.rejected}</strong></div>
+            <div><span>{t('req.status.rejected', 'Refusées')}</span><strong>{stats.rejected}</strong></div>
           </div>
         </div>
 
         <div className="filters-section">
           <div className="search-wrapper">
             <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder="Rechercher par n° demande, client ou bien..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" className="search-input" placeholder={t('admin.req.search_ph', 'Rechercher par n° demande, client ou bien...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">Tous les statuts</option>
-            <option value="pending">En attente</option>
-            <option value="approved">Approuvées</option>
-            <option value="rejected">Refusées</option>
+            <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
+            <option value="pending">{t('req.status.pending', 'En attente')}</option>
+            <option value="approved">{t('req.status.approved', 'Approuvées')}</option>
+            <option value="rejected">{t('req.status.rejected', 'Refusées')}</option>
           </select>
         </div>
 
@@ -139,14 +141,14 @@ const AdminRequests = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>N° Demande</th>
-                <th>Client</th>
-                <th>Bien</th>
-                <th>Agent</th>
-                <th>Période</th>
-                <th>Date demande</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th>{t('admin.req.req_num', 'N° Demande')}</th>
+                <th>{t('admin.req.client', 'Client')}</th>
+                <th>{t('admin.req.property', 'Bien')}</th>
+                <th>{t('admin.prop.agent', 'Agent')}</th>
+                <th>{t('admin.req.period', 'Période')}</th>
+                <th>{t('admin.req.date', 'Date demande')}</th>
+                <th>{t('admin.edit.status', 'Statut')}</th>
+                <th>{t('admin.prop.actions', 'Actions')}</th>
                </tr>
             </thead>
             <tbody>
@@ -160,11 +162,11 @@ const AdminRequests = () => {
                   <td>{new Date(r.created_at).toLocaleDateString()}</td>
                   <td>{getStatusBadge(r.status)}</td>
                   <td className="actions">
-                    <button className="btn-icon" title="Voir détails"><EyeIcon /></button>
+                    <button className="btn-icon" title={t('common.view_details', 'Voir détails')}><EyeIcon /></button>
                     {r.status === 'pending' && (
                       <>
-                        <button className="btn-icon success" onClick={() => handleApprove(r.id)} title="Approuver"><CheckCircleIcon /></button>
-                        <button className="btn-icon warning" onClick={() => handleReject(r.id)} title="Refuser"><XCircleIcon /></button>
+                        <button className="btn-icon success" onClick={() => handleApprove(r.id)} title={t('admin.req.approve', 'Approuver')}><CheckCircleIcon /></button>
+                        <button className="btn-icon warning" onClick={() => handleReject(r.id)} title={t('admin.prop.reject', 'Refuser')}><XCircleIcon /></button>
                       </>
                     )}
                    </td>

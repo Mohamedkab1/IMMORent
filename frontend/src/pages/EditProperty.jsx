@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { propertyService } from '../services/properties';
 import { toast } from 'react-toastify';
 import { 
@@ -25,6 +26,7 @@ const EditProperty = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, isAgent, isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [property, setProperty] = useState(null);
@@ -80,8 +82,8 @@ const EditProperty = () => {
         setCategories(catRes.data);
       } else {
         setCategories([
-          { id: 1, name: 'Appartement' }, { id: 2, name: 'Maison' }, 
-          { id: 3, name: 'Local commercial' }, { id: 4, name: 'Terrain' }, { id: 5, name: 'Studio' }
+          { id: 1, name: t('prop.types.apartment', 'Appartement') }, { id: 2, name: t('prop.types.house', 'Maison') }, 
+          { id: 3, name: t('prop.types.commercial', 'Local commercial') }, { id: 4, name: t('prop.types.land', 'Terrain') }, { id: 5, name: t('prop.types.studio', 'Studio') }
         ]);
       }
     } catch (error) { 
@@ -93,21 +95,21 @@ const EditProperty = () => {
   };
 
   const propertyTypes = [
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
-    { value: 'villa', label: 'Villa' },
-    { value: 'studio', label: 'Studio' },
-    { value: 'office', label: 'Bureau' },
-    { value: 'commercial', label: 'Local commercial' },
-    { value: 'land', label: 'Terrain' }
+    { value: 'apartment', label: t('prop.types.apartment', 'Appartement') },
+    { value: 'house', label: t('prop.types.house', 'Maison') },
+    { value: 'villa', label: t('prop.types.villa', 'Villa') },
+    { value: 'studio', label: t('prop.types.studio', 'Studio') },
+    { value: 'office', label: t('prop.types.office', 'Bureau') },
+    { value: 'commercial', label: t('prop.types.commercial', 'Local commercial') },
+    { value: 'land', label: t('prop.types.land', 'Terrain') }
   ];
   const statusOptions = [
-    { value: 'available', label: 'Disponible' }, { value: 'rented', label: 'Loué' }, 
-    { value: 'reserved', label: 'Réservé' }, { value: 'unavailable', label: 'Indisponible' }
+    { value: 'available', label: t('prop.status.available', 'Disponible') }, { value: 'rented', label: t('prop.status.rented', 'Loué') }, 
+    { value: 'reserved', label: t('prop.status.reserved', 'Réservé') }, { value: 'unavailable', label: t('prop.status.unavailable', 'Indisponible') }
   ];
   const transactionTypes = [
-    { value: 'rent', label: 'Location', icon: KeyIcon },
-    { value: 'sale', label: 'Vente', icon: TagIcon }
+    { value: 'rent', label: t('common.rent', 'Location'), icon: KeyIcon },
+    { value: 'sale', label: t('common.buy', 'Vente'), icon: TagIcon }
   ];
 
   const handleChange = (e) => {
@@ -218,7 +220,7 @@ const EditProperty = () => {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
         <div className="w-16 h-16 border-4 border-bg-card border-t-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-text-muted font-medium">Chargement des détails...</p>
+        <p className="text-text-muted font-medium">{t('admin.edit.loading', 'Chargement des détails...')}</p>
       </div>
     );
   }
@@ -233,8 +235,8 @@ const EditProperty = () => {
             <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
           </button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">Modifier le bien</h1>
-            <p className="text-sm text-text-muted mt-1 font-medium">Mettez à jour les informations de l'annonce #{id}</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">{t('admin.edit.title', 'Modifier le bien')}</h1>
+            <p className="text-sm text-text-muted mt-1 font-medium">{t('admin.edit.subtitle', 'Mettez à jour les informations de l\'annonce')} #{id}</p>
           </div>
         </div>
 
@@ -246,13 +248,13 @@ const EditProperty = () => {
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                  <DocumentTextIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Informations générales</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gen_info', 'Informations générales')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  Titre de l'annonce <span className="text-rose-500">*</span>
+                  {t('admin.add.ad_title', 'Titre de l\'annonce')} <span className="text-rose-500">*</span>
                 </label>
                 <input 
                   type="text" name="title" value={formData.title} onChange={handleChange} 
@@ -263,7 +265,7 @@ const EditProperty = () => {
 
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  Description <span className="text-rose-500">*</span>
+                  {t('common.description', 'Description')} <span className="text-rose-500">*</span>
                 </label>
                 <textarea 
                   name="description" rows="5" value={formData.description} onChange={handleChange} 
@@ -273,7 +275,7 @@ const EditProperty = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Type <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.prop_type', 'Type de bien')} <span className="text-rose-500">*</span></label>
                   <select 
                     name="type" value={formData.type} onChange={handleChange} 
                     className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
@@ -283,7 +285,7 @@ const EditProperty = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Catégorie <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span></label>
                   <select 
                     name="category_id" value={formData.category_id} onChange={handleChange} 
                     className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
@@ -293,7 +295,7 @@ const EditProperty = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Statut <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.edit.status', 'Statut')} <span className="text-rose-500">*</span></label>
                   <select 
                     name="status" value={formData.status} onChange={handleChange} 
                     className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
@@ -305,7 +307,7 @@ const EditProperty = () => {
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Type de transaction <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.trans_type', 'Type de transaction')} <span className="text-rose-500">*</span></label>
                   <div className="flex gap-4">
                     {transactionTypes.map(type => (
                       <button
@@ -321,7 +323,7 @@ const EditProperty = () => {
 
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> Prix <span className="text-rose-500">*</span>
+                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> {t('admin.add.price', 'Prix')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <input 
@@ -329,7 +331,7 @@ const EditProperty = () => {
                       className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       DH {formData.transaction_type === 'rent' ? '/ ms' : ''}
+                       DH {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
                     </div>
                   </div>
                 </div>
@@ -343,12 +345,12 @@ const EditProperty = () => {
               <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                  <MapPinIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Localisation</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.loc', 'Localisation')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Adresse complète <span className="text-rose-500">*</span></label>
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.full_address', 'Adresse complète')} <span className="text-rose-500">*</span></label>
                 <input 
                   type="text" name="address" value={formData.address} onChange={handleChange} 
                   className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary'}`}
@@ -357,11 +359,11 @@ const EditProperty = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Ville <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.city', 'Ville')} <span className="text-rose-500">*</span></label>
                   <input type="text" name="city" value={formData.city} onChange={handleChange} className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-border-main focus:border-primary'}`} />
                 </div>
                 <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">Code postal <span className="text-rose-500">*</span></label>
+                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.postal', 'Code postal')} <span className="text-rose-500">*</span></label>
                   <input type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-border-main focus:border-primary'}`} />
                 </div>
               </div>
@@ -374,13 +376,13 @@ const EditProperty = () => {
               <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
                  <HomeIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Caractéristiques du bien</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.features_title', 'Caractéristiques du bien')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">Surface <span className="text-rose-500">*</span></label>
+                  <label className="text-sm font-bold text-text-main">{t('admin.add.surface', 'Surface')} <span className="text-rose-500">*</span></label>
                   <div className="relative">
                     <input type="number" name="surface" value={formData.surface} onChange={handleChange} className="w-full ps-4 pe-10 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">m²</div>
@@ -388,17 +390,17 @@ const EditProperty = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">Pièces <span className="text-rose-500">*</span></label>
+                  <label className="text-sm font-bold text-text-main">{t('admin.add.rooms', 'Pièces')} <span className="text-rose-500">*</span></label>
                   <input type="number" name="rooms" value={formData.rooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">Chambres</label>
+                  <label className="text-sm font-bold text-text-main">{t('admin.add.bedrooms', 'Chambres')}</label>
                   <input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">Salles de bain</label>
+                  <label className="text-sm font-bold text-text-main">{t('admin.add.bathrooms', 'Salles de bain')}</label>
                   <input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
                 </div>
               </div>
@@ -411,21 +413,21 @@ const EditProperty = () => {
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                  <StarIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Équipements & Prestations</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.equipments', 'Équipements & Prestations')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
                <div className="flex flex-col sm:flex-row gap-3">
                  <input 
                    type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => {if(e.key === 'Enter') { e.preventDefault(); addFeature(); }}} 
-                   placeholder="Ajouter un équipement (ex: Ascenseur)..." 
+                   placeholder={t('admin.edit.add_feat_ph', "Ajouter un équipement (ex: Ascenseur)...")}
                    className="flex-1 px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium focus:border-primary"
                  />
                  <button 
                    type="button" onClick={addFeature} 
                    className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                  >
-                   <PlusIcon className="w-5 h-5"/> Ajouter
+                   <PlusIcon className="w-5 h-5"/> {t('admin.add.add_btn', 'Ajouter')}
                  </button>
                </div>
                
@@ -450,7 +452,7 @@ const EditProperty = () => {
               <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
                  <PhotoIcon className="w-6 h-6" />
               </div>
-              <h2 className="text-lg font-bold text-text-main">Galerie Photos</h2>
+              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gallery', 'Galerie Photos')}</h2>
             </div>
             
             <div className="p-6 md:p-8 space-y-6">
@@ -458,7 +460,7 @@ const EditProperty = () => {
                {/* Photos existantes */}
                {existingImages.length > 0 && (
                  <div>
-                   <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">Photos actuelles</h3>
+                   <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">{t('admin.edit.current_photos', 'Photos actuelles')}</h3>
                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      {existingImages.map((img, i) => (
                        <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main shadow-sm group">
@@ -477,7 +479,7 @@ const EditProperty = () => {
                )}
 
                <div className="w-full mt-6">
-                 <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">Ajouter de nouvelles photos</h3>
+                 <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">{t('admin.edit.add_new_photos', 'Ajouter de nouvelles photos')}</h3>
                  <input 
                    type="file" multiple accept="image/*" id="images-upload" 
                    onChange={handleImageChange} className="hidden" 
@@ -486,7 +488,7 @@ const EditProperty = () => {
                    <div className="w-12 h-12 bg-bg-card shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                      <PlusIcon className="w-6 h-6 text-primary" />
                    </div>
-                   <span className="text-text-main font-bold mb-1">Cliquer pour importer</span>
+                   <span className="text-text-main font-bold mb-1">{t('admin.add.click_upload', 'Cliquer pour importer')}</span>
                    <span className="text-text-sub text-xs font-medium text-center">PNG, JPG...</span>
                  </label>
                </div>
@@ -514,11 +516,11 @@ const EditProperty = () => {
           {/* Floating Actions Line */}
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
             <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card text-text-main hover:bg-bg-soft border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
-              Annuler les modifications
+              {t('admin.edit.cancel_changes', 'Annuler les modifications')}
             </button>
             <button type="submit" disabled={submitting} className="px-10 py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/30 transition-all flex items-center justify-center gap-3">
               {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-              {submitting ? 'Validation...' : 'Enregistrer les modifications'}
+              {submitting ? t('admin.edit.saving', 'Validation...') : t('admin.edit.save', 'Enregistrer les modifications')}
             </button>
           </div>
           

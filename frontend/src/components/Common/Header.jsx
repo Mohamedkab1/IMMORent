@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enGB, arMA } from 'date-fns/locale';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -43,6 +43,12 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
+  const getLocale = () => {
+    if (language === 'ar') return arMA;
+    if (language === 'en') return enGB;
+    return fr;
+  };
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -80,9 +86,9 @@ const Header = () => {
 
         // Show toast notification
         toast.info(
-          <div>
-            <div className="font-bold">{normalized.data.title || 'Nouvelle notification'}</div>
-            <div className="text-xs opacity-90">{normalized.data.message}</div>
+          <div className={language === 'ar' ? 'text-right' : 'text-left'}>
+            <div className="font-bold">{t(normalized.data.title, normalized.data.title) || t('nav.new_notification', 'Nouvelle notification')}</div>
+            <div className="text-xs opacity-90">{t(normalized.data.message, normalized.data.message)}</div>
           </div>,
           {
             icon: getNotifIcon(normalized.data.type),
@@ -149,7 +155,7 @@ const Header = () => {
         message: notif.message || notif.data?.message || '',
         link: notif.link || notif.data?.link || null,
         type: notif.type_notif || notif.type || notif.data?.type_notif || notif.data?.type || 'info',
-        title: notif.title || notif.data?.title || 'Notification'
+        title: notif.title || notif.data?.title || t('nav.notification', 'Notification')
       },
       created_at: notif.created_at || new Date().toISOString(),
       read_at: notif.read_at || null
@@ -334,7 +340,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-80 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={handleMarkAllRead} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -350,12 +356,12 @@ const Header = () => {
                             {getNotifIcon(notif.data?.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm leading-tight line-clamp-2 ${notif.read_at ? 'text-text-sub font-medium' : 'text-text-main font-bold'}`}>
-                              {notif.data?.message}
+                            <p className={`text-sm leading-tight ${notif.read_at ? 'text-text-sub font-medium' : 'text-text-main font-bold'}`}>
+                              {t(notif.data?.message, notif.data?.message)}
                             </p>
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-[10px] font-bold text-text-muted">
-                                {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: fr })}
+                                {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: getLocale() })}
                               </span>
                               {!notif.read_at && <span className="w-1.5 h-1.5 bg-primary dark:bg-secondary rounded-full"></span>}
                             </div>

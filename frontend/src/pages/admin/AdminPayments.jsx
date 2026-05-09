@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { 
   MagnifyingGlassIcon, 
@@ -21,6 +22,7 @@ const AdminPayments = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchPayments();
@@ -47,17 +49,17 @@ const AdminPayments = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      paid: { bg: '#dcfce7', color: '#059669', text: 'Payé' },
-      pending: { bg: '#fef3c7', color: '#d97706', text: 'En attente' },
-      late: { bg: '#fee2e2', color: '#dc2626', text: 'En retard' },
-      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: 'Annulé' }
+      paid: { bg: '#dcfce7', color: '#059669', text: t('payment.status.paid', 'Payé') },
+      pending: { bg: '#fef3c7', color: '#d97706', text: t('payment.status.pending', 'En attente') },
+      late: { bg: '#fee2e2', color: '#dc2626', text: t('payment.status.late', 'En retard') },
+      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: t('payment.status.cancelled', 'Annulé') }
     };
     const c = config[status] || config.pending;
     return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
   };
 
   const getPaymentMethodLabel = (method) => {
-    const methods = { cash: 'Espèces', bank_transfer: 'Virement', card: 'Carte bancaire', check: 'Chèque' };
+    const methods = { cash: t('payment.method.cash', 'Espèces'), bank_transfer: t('payment.method.bank_transfer', 'Virement'), card: t('payment.method.card', 'Carte bancaire'), check: t('payment.method.check', 'Chèque') };
     return methods[method] || '-';
   };
 
@@ -65,13 +67,13 @@ const AdminPayments = () => {
     setPayments(payments.map(p => 
       p.id === id ? { ...p, status: 'paid', payment_date: new Date().toISOString().split('T')[0] } : p
     ));
-    toast.success('Paiement marqué comme payé');
+    toast.success(t('admin.payments.marked_paid', 'Paiement marqué comme payé'));
   };
 
   const handleCancelPayment = (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir annuler ce paiement ?')) {
+    if (window.confirm(t('admin.payments.cancel_confirm', 'Êtes-vous sûr de vouloir annuler ce paiement ?'))) {
       setPayments(payments.map(p => p.id === id ? { ...p, status: 'cancelled' } : p));
-      toast.success('Paiement annulé');
+      toast.success(t('admin.payments.cancelled_success', 'Paiement annulé'));
     }
   };
 
@@ -84,45 +86,45 @@ const AdminPayments = () => {
   };
 
   if (loading) {
-    return <div className="loading"><div className="spinner"></div><p>Chargement des paiements...</p></div>;
+    return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement des paiements...')}</p></div>;
   }
 
   return (
     <>
       <div className="admin-payments">
         <div className="header">
-          <h1>Gestion des paiements</h1>
+          <h1>{t('admin.payments.title', 'Gestion des paiements')}</h1>
         </div>
 
         <div className="stats-cards">
           <div className="stat-card">
             <div className="stat-icon"><CurrencyEuroIcon /></div>
-            <div><span>Total encaissé</span><strong>{stats.paidAmount.toLocaleString()}DH</strong></div>
+            <div><span>{t('admin.payments.total_collected', 'Total encaissé')}</span><strong>{stats.paidAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ClockIcon /></div>
-            <div><span>En attente</span><strong>{stats.pendingAmount.toLocaleString()}DH</strong></div>
+            <div><span>{t('payment.status.pending', 'En attente')}</span><strong>{stats.pendingAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><ExclamationTriangleIcon /></div>
-            <div><span>En retard</span><strong>{stats.lateAmount.toLocaleString()}DH</strong></div>
+            <div><span>{t('payment.status.late', 'En retard')}</span><strong>{stats.lateAmount.toLocaleString()}DH</strong></div>
           </div>
           <div className="stat-card">
             <div className="stat-icon"><DocumentTextIcon /></div>
-            <div><span>Total paiements</span><strong>{stats.total}</strong></div>
+            <div><span>{t('admin.payments.total_payments', 'Total paiements')}</span><strong>{stats.total}</strong></div>
           </div>
         </div>
 
         <div className="filters-section">
           <div className="search-wrapper">
             <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder="Rechercher par n° paiement, locataire ou contrat..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input type="text" className="search-input" placeholder={t('admin.payments.search_ph', 'Rechercher par n° paiement, locataire ou contrat...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">Tous les statuts</option>
-            <option value="paid">Payés</option>
-            <option value="pending">En attente</option>
-            <option value="late">En retard</option>
+            <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
+            <option value="paid">{t('payment.status.paid', 'Payés')}</option>
+            <option value="pending">{t('payment.status.pending', 'En attente')}</option>
+            <option value="late">{t('payment.status.late', 'En retard')}</option>
           </select>
         </div>
 
@@ -130,16 +132,16 @@ const AdminPayments = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>N° Paiement</th>
-                <th>Contrat</th>
-                <th>Bien</th>
-                <th>Locataire</th>
-                <th>Montant</th>
-                <th>Date paiement</th>
-                <th>Échéance</th>
-                <th>Statut</th>
-                <th>Moyen</th>
-                <th>Actions</th>
+                <th>{t('admin.payments.pay_num', 'N° Paiement')}</th>
+                <th>{t('admin.payments.contract', 'Contrat')}</th>
+                <th>{t('admin.req.property', 'Bien')}</th>
+                <th>{t('admin.contracts.tenant', 'Locataire')}</th>
+                <th>{t('admin.payments.amount', 'Montant')}</th>
+                <th>{t('admin.payments.pay_date', 'Date paiement')}</th>
+                <th>{t('admin.payments.due_date', 'Échéance')}</th>
+                <th>{t('admin.edit.status', 'Statut')}</th>
+                <th>{t('admin.payments.method', 'Moyen')}</th>
+                <th>{t('admin.prop.actions', 'Actions')}</th>
                </tr>
             </thead>
             <tbody>
@@ -156,10 +158,10 @@ const AdminPayments = () => {
                   <td>{getPaymentMethodLabel(p.payment_method)}</td>
                   <td className="actions">
                     {p.status === 'pending' && (
-                      <button className="btn-icon success" onClick={() => handleMarkAsPaid(p.id)} title="Marquer payé"><CheckCircleIcon /></button>
+                      <button className="btn-icon success" onClick={() => handleMarkAsPaid(p.id)} title={t('admin.payments.mark_paid', 'Marquer payé')}><CheckCircleIcon /></button>
                     )}
                     {p.status !== 'paid' && p.status !== 'cancelled' && (
-                      <button className="btn-icon warning" onClick={() => handleCancelPayment(p.id)} title="Annuler"><XCircleIcon /></button>
+                      <button className="btn-icon warning" onClick={() => handleCancelPayment(p.id)} title={t('common.cancel', 'Annuler')}><XCircleIcon /></button>
                     )}
                   </td>
                 </tr>
