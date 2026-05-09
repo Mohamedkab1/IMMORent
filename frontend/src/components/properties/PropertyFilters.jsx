@@ -43,6 +43,17 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
     { value: '5', label: `5+ ${t('prop.rooms', 'pièces')}` },
   ];
 
+  const propertyTypeOptions = [
+    { value: '', label: t('common.all', 'Toutes') },
+    { value: 'apartment', label: t('prop.types.apartment', 'Appartement') },
+    { value: 'house', label: t('prop.types.house', 'Maison') },
+    { value: 'villa', label: t('prop.types.villa', 'Villa') },
+    { value: 'studio', label: t('prop.types.studio', 'Studio') },
+    { value: 'office', label: t('prop.types.office', 'Bureau') },
+    { value: 'commercial', label: t('prop.types.commercial', 'Local commercial') },
+    { value: 'land', label: t('prop.types.land', 'Terrain') },
+  ];
+
 
   return (
     <>
@@ -75,6 +86,7 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
                 onSubmit={handleSubmit}
                 onReset={handleReset}
                 roomOptions={roomOptions}
+                propertyTypeOptions={propertyTypeOptions}
                 t={t}
               />
             </div>
@@ -91,6 +103,7 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
           onSubmit={handleSubmit}
           onReset={handleReset}
           roomOptions={roomOptions}
+          propertyTypeOptions={propertyTypeOptions}
           t={t}
         />
       </div>
@@ -98,7 +111,7 @@ const PropertyFilters = ({ filters, onFilterChange }) => {
   );
 };
 
-const FilterForm = ({ filters, onChange, onSubmit, onReset, roomOptions, t }) => (
+const FilterForm = ({ filters, onChange, onSubmit, onReset, roomOptions, propertyTypeOptions, t }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
@@ -113,6 +126,23 @@ const FilterForm = ({ filters, onChange, onSubmit, onReset, roomOptions, t }) =>
         placeholder={t('prop.city_placeholder', 'Ex: Paris, Lyon...')}
         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
       />
+    </div>
+    
+    <div>
+      <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+        {t('prop.type', 'Type de bien')}
+      </label>
+      <select
+        name="type"
+        id="type"
+        value={filters.type || ''}
+        onChange={onChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
+      >
+        {propertyTypeOptions.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
     </div>
 
     <div>

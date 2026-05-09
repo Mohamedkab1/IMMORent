@@ -205,7 +205,7 @@ const AddProperty = () => {
     if (!formData.surface || formData.surface <= 0) errors.surface = t('admin.add.val.surface', 'La surface est requise');
     if (formData.type !== 'land' && (!formData.rooms || formData.rooms <= 0)) errors.rooms = t('admin.add.val.rooms', 'Le nombre de pièces est requis');
     if (!formData.type) errors.type = t('admin.add.val.type', 'Le type de bien est requis');
-    if (!formData.category_id) errors.category_id = t('admin.add.val.category', 'La catégorie est requise');
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -328,32 +328,17 @@ const AddProperty = () => {
                 {validationErrors.description && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.description}</p>}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    {t('admin.add.prop_type', 'Type de bien')} <span className="text-rose-500">*</span>
-                  </label>
-                  <select 
-                    name="type" value={formData.type} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
-                  >
-                    {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                  {validationErrors.type && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.type}</p>}
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    {t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span>
-                  </label>
-                  <select 
-                    name="category_id" value={formData.category_id} onChange={handleChange} 
-                    className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.category_id ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
-                  >
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                  {validationErrors.category_id && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.category_id}</p>}
-                </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
+                  {t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span>
+                </label>
+                <select 
+                  name="type" value={formData.type} onChange={handleChange} 
+                  className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
+                >
+                  {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+                {validationErrors.type && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.type}</p>}
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
