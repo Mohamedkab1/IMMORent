@@ -77,7 +77,7 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const getActiveTab = () => {
     const path = location.pathname;
