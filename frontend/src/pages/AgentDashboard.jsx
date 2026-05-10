@@ -385,6 +385,13 @@ const AgentDashboard = () => {
             <ChatBubbleLeftRightIcon className="w-5 h-5" /> {t('agent.reviews.title')}
             {stats.pendingReviews > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold">{stats.pendingReviews}</span>}
           </button>
+
+          <button 
+            onClick={() => navigate('/payments/history')}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 text-text-sub hover:bg-bg-soft hover:text-text-main`}
+          >
+            <CurrencyDollarIcon className="w-5 h-5" /> Paiements
+          </button>
         </nav>
         
         <div className="p-4 border-t border-border-main">

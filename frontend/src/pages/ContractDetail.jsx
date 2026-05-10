@@ -319,6 +319,16 @@ const ContractDetail = () => {
                 <ArrowDownTrayIcon className="w-5 h-5" />
                 {downloading ? t('ctr.downloading', 'Téléchargement...') : t('common.download_pdf', 'Télécharger (PDF)')}
               </button>
+
+              {contract.status === 'active' && !isAgent && !isAdmin && (
+                <button 
+                  onClick={() => navigate(`/properties/${contract.property_id}/payment`, { state: { property: contract.property, contractId: contract.id } })}
+                  className="px-6 py-3 bg-green-600 text-white hover:bg-green-700 active:scale-95 rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
+                >
+                  <CurrencyEuroIcon className="w-5 h-5" />
+                  Procéder au paiement
+                </button>
+              )}
               
               {canManage && contract.status === 'active' && (
                 <>

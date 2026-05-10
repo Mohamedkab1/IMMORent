@@ -494,6 +494,12 @@ const AdminDashboard = () => {
           >
             <CurrencyDollarIcon className="w-5 h-5" /> {t('admin.tabs.payments')}
           </Link>
+          <button 
+            onClick={() => navigate('/payments/history')}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm text-text-sub hover:bg-bg-soft hover:text-text-main`}
+          >
+            <CurrencyDollarIcon className="w-5 h-5" /> Historique complet
+          </button>
           <div className="h-px bg-border-main my-4 mx-4"></div>
           <Link 
             to="/dashboard/admin/agent-requests" 

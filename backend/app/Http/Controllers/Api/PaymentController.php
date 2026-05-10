@@ -25,7 +25,7 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $query = Payment::with(['contract.property', 'tenant']);
+        $query = Payment::with(['contract.property', 'property', 'tenant', 'invoice']);
 
         if ($user->isAdmin()) {
             // All payments
@@ -54,6 +54,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'propertyId' => 'required|exists:properties,id',
+            'contractId' => 'nullable|exists:contracts,id',
             'amount' => 'required|numeric|min:1',
             'currency' => 'nullable|string',
             'method' => 'required|string|in:card,transfer,agency'
@@ -80,6 +81,7 @@ class PaymentController extends Controller
                 'payment_number' => 'PAY-' . strtoupper(uniqid()),
                 'tenant_id' => auth()->id(),
                 'property_id' => $request->propertyId,
+                'contract_id' => $request->contractId,
                 'amount' => $request->amount,
                 'currency' => $currency,
                 'payment_date' => now(),
@@ -100,6 +102,7 @@ class PaymentController extends Controller
             'payment_number' => 'PAY-' . strtoupper(uniqid()),
             'tenant_id' => auth()->id(),
             'property_id' => $request->propertyId,
+            'contract_id' => $request->contractId,
             'amount' => $request->amount,
             'currency' => $currency,
             'payment_date' => now(),
@@ -352,4 +355,4 @@ class PaymentController extends Controller
             'message' => 'Paiement supprimé avec succès'
         ]);
     }
-};
+}

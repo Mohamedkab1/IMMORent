@@ -164,8 +164,12 @@ class RentalRequestController extends Controller
                     Log::warning('Erreur RealTimeNotification (store) dans RentalRequestController: ' . $e->getMessage());
                 }
                 
-                // Envoi de l'email
-                Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
+                // Envoi de l'email (entouré de try-catch pour éviter un crash si le serveur mail est indisponible)
+                try {
+                    Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
+                } catch (\Exception $mailEx) {
+                    Log::warning('Impossible d\'envoyer l\'email de nouvelle demande: ' . $mailEx->getMessage());
+                }
             }
 
             return response()->json([
@@ -261,11 +265,51 @@ class RentalRequestController extends Controller
                 'request_input' => $request->status
             ]);
             
-            // Si approuvé, mettre à jour le statut du bien
+            // Si approuvé, mettre à jour le statut du bien et générer le contrat
             if ($request->status === 'approved') {
                 $property = Property::find($rentalRequest->property_id);
                 if ($property) {
                     $property->update(['status' => 'reserved']);
+
+                    // Génération automatique du contrat
+                    $contractType = ($rentalRequest->type === 'rent' || $rentalRequest->type === 'for_rent') ? 'rent' : 'sale';
+                    
+                    $contractData = [
+                        'contract_type' => $contractType,
+                        'rental_request_id' => $rentalRequest->id,
+                        'property_id' => $property->id,
+                        'agent_id' => $property->user_id,
+                        'status' => 'active',
+                        'signed_at' => now(),
+                    ];
+
+                    if ($contractType === 'rent') {
+                        $contractData['tenant_id'] = $rentalRequest->user_id;
+                        $contractData['owner_id'] = $property->owner_id ?? $property->user_id;
+                        $contractData['start_date'] = $rentalRequest->start_date;
+                        $contractData['end_date'] = $rentalRequest->end_date;
+                        $contractData['monthly_rent'] = $property->price;
+                        $contractData['security_deposit'] = $property->price; // Par défaut, un mois de caution
+                    } else {
+                        $contractData['buyer_id'] = $rentalRequest->user_id;
+                        $contractData['seller_id'] = $property->owner_id ?? $property->user_id;
+                        $contractData['sale_date'] = now();
+                        $contractData['sale_price'] = $property->price;
+                    }
+
+                    $contract = \App\Models\Contract::create($contractData);
+
+                    // Notifier le client du nouveau contrat
+                    $notifData = [
+                        'title' => 'Nouveau contrat disponible',
+                        'message' => "Un contrat a été généré pour votre demande sur : {$property->title}. Vous pouvez maintenant procéder au paiement.",
+                        'type' => 'contract',
+                        'link' => "/contracts/{$contract->id}",
+                        'icon' => 'document-check'
+                    ];
+                    
+                    $rentalRequest->user->notify(new \App\Notifications\GeneralNotification($notifData));
+                    event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
                 }
             }
 
@@ -294,8 +338,12 @@ class RentalRequestController extends Controller
                     'property' => $rentalRequest->property->title
                 ]);
 
-                // Envoi de l'email au client
-                Mail::to($client->email)->send(new RentalRequestStatusMail($rentalRequest->load(['property', 'user'])));
+                // Envoi de l'email au client (entouré de try-catch)
+                try {
+                    Mail::to($client->email)->send(new RentalRequestStatusMail($rentalRequest->load(['property', 'user'])));
+                } catch (\Exception $mailEx) {
+                    Log::warning('Impossible d\'envoyer l\'email de statut de demande au client: ' . $mailEx->getMessage());
+                }
             }
             
             Log::info('Demande traitée', [

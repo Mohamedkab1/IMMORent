@@ -198,6 +198,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========== PAIEMENTS ==========
     // Routes pour les clients
     Route::get('/my/payments', [PaymentController::class, 'myPayments']);
+    Route::get('/payments', [PaymentController::class, 'index']);
     Route::post('/payments/create-intent', [PaymentController::class, 'createIntent']);
     Route::post('/payments/confirm', [PaymentController::class, 'confirm']);
     
@@ -206,7 +207,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Routes pour les agents et admin
     Route::middleware(['agent'])->group(function () {
-        Route::get('/payments', [PaymentController::class, 'index']);
         Route::post('/payments', [PaymentController::class, 'store']);
         Route::get('/payments/{id}', [PaymentController::class, 'show']);
         Route::put('/payments/{id}/status', [PaymentController::class, 'updateStatus']);

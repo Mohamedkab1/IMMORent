@@ -39,5 +39,25 @@ export const paymentService = {
             console.error('Erreur paymentService.delete:', error);
             throw error;
         }
+    },
+
+    async createIntent(data) {
+        try {
+            const response = await api.post('/payments/create-intent', data);
+            return response.data;
+        } catch (error) {
+            console.error('Erreur paymentService.createIntent:', error);
+            throw error;
+        }
+    },
+
+    async confirm(data) {
+        try {
+            const response = await api.post('/payments/confirm', data);
+            return response.data;
+        } catch (error) {
+            console.error('Erreur paymentService.confirm:', error);
+            throw error;
+        }
     }
 };

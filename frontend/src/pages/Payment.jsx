@@ -1,53 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { toast } from 'react-toastify';
+import { paymentService } from '../services/payments';
 import { 
   CreditCardIcon, 
   BanknotesIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const { t, language } = useLanguage();
   const [property, setProperty] = useState(null);
+  const [invoiceUrl, setInvoiceUrl] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('card');
+  
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    entryDate: '',
+    firstName: user?.name?.split(' ')[0] || '',
+    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    entryDate: formatDateForInput(location.state?.request?.start_date || location.state?.contract?.start_date),
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardName: ''
+    cardName: user?.name || ''
   });
 
   useEffect(() => {
     // Si la propriété a été passée dans l'état de la navigation, on l'utilise
     if (location.state?.property) {
       setProperty(location.state.property);
+      const start_date = location.state.request?.start_date || location.state.contract?.start_date;
+      if (start_date) {
+        const formattedDate = formatDateForInput(start_date);
+        console.log('Setting entryDate to:', formattedDate, 'from raw:', start_date);
+        setFormData(prev => ({ ...prev, entryDate: formattedDate }));
+      }
     } else {
       // Sinon, on pourrait faire un appel API pour récupérer la propriété par son ID
       // Pour l'instant, on redirige si on n'a pas les données
       toast.error(t('pay.data_missing', "Données de la propriété introuvables. Redirection..."));
       navigate(`/properties/${id}`);
     }
-  }, [location, navigate, id]);
+  }, [location, navigate, id, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Empêcher la modification de la date si elle vient de la demande
+    if (name === 'entryDate' && (location.state?.request?.start_date || location.state?.contract?.start_date)) return;
 
     // Formatage simple pour la carte bancaire
     if (name === 'cardNumber') {
@@ -73,22 +95,42 @@ const Payment = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulation d'un appel d'API de paiement (ex: Stripe)
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
+    try {
+      // 1. Créer l'intention de paiement
+      const intentRes = await paymentService.createIntent({
+        propertyId: property.id,
+        contractId: location.state?.contract?.id || location.state?.request?.contract_id || location.state?.contractId,
+        amount: property.price,
+        currency: 'MAD',
+        method: paymentMethod
+      });
 
-      toast.success(t('pay.success_msg', "Réservation confirmée avec succès !"));
-      
-      // Redirection après un petit délai
-      setTimeout(() => {
-        navigate('/dashboard'); // ou une autre page appropriée
-      }, 3000);
-    }, 2000);
+      if (intentRes.paymentId) {
+        // 2. Confirmer le paiement
+        const confirmRes = await paymentService.confirm({
+          paymentId: intentRes.paymentId,
+          status: 'paid'
+        });
+
+        if (confirmRes.success) {
+          setSuccess(true);
+          setInvoiceUrl(confirmRes.invoiceUrl);
+          toast.success(t('pay.success_msg', "Paiement effectué avec succès !"));
+        } else {
+          toast.error(confirmRes.message || "Erreur lors de la confirmation");
+        }
+      }
+    } catch (error) {
+      console.error('Erreur paiement:', error);
+      const serverMessage = error.response?.data?.message || t('pay.error_msg', "Une erreur est survenue lors du paiement.");
+      toast.error(serverMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!property) return null;
@@ -107,17 +149,30 @@ const Payment = () => {
           <p className="text-text-sub mb-8">
             {t('pay.success_desc', 'Votre réservation pour')} <strong>{t(property.title, property.title)}</strong> {t('pay.success_desc2', 'a été confirmée. Un email récapitulatif vous a été envoyé.')}
           </p>
-          <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm">
-
+          <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm border border-border-main">
              <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
              <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
           </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-colors"
-          >
-            {t('pay.goto_dashboard', 'Aller au tableau de bord')}
-          </button>
+          
+          <div className="flex flex-col gap-3">
+            {invoiceUrl && (
+              <a 
+                href={invoiceUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                {t('pay.view_invoice', 'Voir votre facture')}
+              </a>
+            )}
+            <button 
+              onClick={() => navigate('/payments/history')}
+              className="w-full py-3 bg-bg-soft text-text-main border border-border-main rounded-xl font-bold hover:bg-bg-card transition-all"
+            >
+              {t('pay.view_history', 'Voir mon historique')}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -168,7 +223,15 @@ const Payment = () => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.entry_date', 'Date d\'entrée souhaitée')}</label>
-                    <input required type="date" name="entryDate" value={formData.entryDate} onChange={handleChange} className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <input 
+                      required 
+                      type="date" 
+                      name="entryDate" 
+                      value={formData.entryDate} 
+                      onChange={handleChange} 
+                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)} 
+                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`} 
+                    />
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Payment extends Model
 {
@@ -11,6 +12,8 @@ class Payment extends Model
         'payment_date', 'status', 'payment_method', 'transaction_id', 'stripe_payment_intent_id',
         'due_date', 'notes'
     ];
+
+    protected $appends = ['pdf_url'];
 
     protected $casts = [
         'payment_date' => 'date',
@@ -36,6 +39,12 @@ class Payment extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tenant_id');
+    }
+
+
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
     }
 
     public function property(): BelongsTo
@@ -85,5 +94,10 @@ class Payment extends Model
     public function getIsLateAttribute(): bool
     {
         return $this->status === 'late' || ($this->status === 'pending' && $this->due_date < now());
+    }
+
+    public function getPdfUrlAttribute(): ?string
+    {
+        return $this->invoice?->pdf_url;
     }
 }

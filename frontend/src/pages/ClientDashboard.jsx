@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { useLanguage } from '../context/LanguageContext';
@@ -60,6 +60,7 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 
 const ClientDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { favoritesCount } = useFavorites();
   const location = useLocation();
   const { t, language } = useLanguage();
@@ -240,10 +241,17 @@ const ClientDashboard = () => {
             { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
             { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
             { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
+            { id: 'payments', label: 'Paiements', icon: CurrencyDollarIcon },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.id === 'payments') {
+                  navigate('/payments/history');
+                } else {
+                  setActiveTab(tab.id);
+                }
+              }}
               className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
                 activeTab === tab.id 
                   ? 'bg-primary text-white shadow-lg dark:bg-secondary dark:text-primary shadow-primary/20' 
