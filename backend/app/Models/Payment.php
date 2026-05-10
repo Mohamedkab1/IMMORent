@@ -38,6 +38,11 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class);
+    }
+
     // Scopes
     public function scopePending($query)
     {

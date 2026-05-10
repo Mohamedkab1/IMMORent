@@ -231,13 +231,16 @@ class PaymentController extends Controller
             'due_date' => $request->due_date ?? now(),
         ]);
         
-        // Notify the tenant about the payment record
-        $contract->tenant->notify(new GeneralNotification([
-            'title' => 'Nouveau paiement enregistré',
-            'message' => "Un paiement de {$payment->amount} DH a été enregistré pour votre contrat.",
-            'type' => 'payment',
-            'link' => "/dashboard/client",
-        ]));
+        // Notify the tenant/buyer about the payment record
+        $targetUser = $payment->tenant;
+        if ($targetUser) {
+            $targetUser->notify(new GeneralNotification([
+                'title' => 'Nouveau paiement enregistré',
+                'message' => "Un paiement de {$payment->amount} DH a été enregistré pour votre contrat.",
+                'type' => 'payment',
+                'link' => "/dashboard/client",
+            ]));
+        }
 
         return response()->json([
             'success' => true,
@@ -294,13 +297,15 @@ class PaymentController extends Controller
         $payment->update(['status' => $request->status]);
 
         // Notify the tenant about status update
-        $statusLabel = $request->status === 'paid' ? 'reçu' : ($request->status === 'late' ? 'en retard' : 'en attente');
-        $payment->tenant->notify(new GeneralNotification([
-            'title' => 'Mise à jour paiement',
-            'message' => "Le statut de votre paiement de {$payment->amount} DH est désormais : {$statusLabel}.",
-            'type' => 'payment',
-            'link' => "/dashboard/client",
-        ]));
+        if ($payment->tenant) {
+            $statusLabel = $request->status === 'paid' ? 'reçu' : ($request->status === 'late' ? 'en retard' : 'en attente');
+            $payment->tenant->notify(new GeneralNotification([
+                'title' => 'Mise à jour paiement',
+                'message' => "Le statut de votre paiement de {$payment->amount} DH est désormais : {$statusLabel}.",
+                'type' => 'payment',
+                'link' => "/dashboard/client",
+            ]));
+        }
 
         return response()->json([
             'success' => true,
@@ -347,13 +352,4 @@ class PaymentController extends Controller
             'message' => 'Paiement supprimé avec succès'
         ]);
     }
-}
-
-        $payment->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Paiement supprimé avec succès'
-        ]);
-    }
-}
+};
