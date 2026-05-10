@@ -56,7 +56,7 @@ class PropertySeeder extends Seeder
                 'type' => 'villa',
                 'category_id' => $houseCat->id,
                 'features' => json_encode(['Piscine', 'Jardin', 'Garage', 'Système Alarme', 'Vue sur mer']),
-                'images' => json_encode(['https://images.unsplash.com/photo-1613490491584-38f2130eb5a1?auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80']),
+                'images' => json_encode(['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80']),
                 'listing_type' => 'for_rent',
             ],
             [
@@ -90,7 +90,7 @@ class PropertySeeder extends Seeder
                 'type' => 'studio',
                 'category_id' => $studioCat->id,
                 'features' => json_encode(['Meublé', 'Cuisine équipée', 'Parking sous-sol', 'Balcon']),
-                'images' => json_encode(['https://images.unsplash.com/photo-1536376074432-ad64903347bb?auto=format&fit=crop&q=80']),
+                'images' => json_encode(['https://images.unsplash.com/photo-1515263487990-61b07816b324?auto=format&fit=crop&q=80']),
                 'listing_type' => 'for_rent',
             ],
             [
@@ -107,7 +107,7 @@ class PropertySeeder extends Seeder
                 'type' => 'apartment',
                 'category_id' => $apartmentCat->id,
                 'features' => json_encode(['Vue sur mer', 'Terrasse', 'Piscine', 'Parking', 'Double vitrage']),
-                'images' => json_encode(['https://images.unsplash.com/photo-1512918766675-ed406e3e7f0d?auto=format&fit=crop&q=80']),
+                'images' => json_encode(['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80']),
                 'listing_type' => 'for_rent',
             ],
         ];
