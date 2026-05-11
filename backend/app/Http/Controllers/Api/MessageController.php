@@ -139,13 +139,17 @@ class MessageController extends Controller
                 ];
 
                 // Notifier le destinataire (sera mis en file d'attente car implement ShouldQueue)
-                $receiver->notify(new GeneralNotification($notifData));
+                try {
+                    $receiver->notify(new GeneralNotification($notifData));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning('Notification failed in MessageController: ' . $e->getMessage());
+                }
                 
                 // Dispatch real-time event (sera mis en file d'attente car implement ShouldBroadcast)
                 try {
                     event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('Real-time notification failed in MessageController: ' . $e->getMessage());
+                    \Illuminate\Support\Facades\Log::warning('Real-time event failed in MessageController: ' . $e->getMessage());
                 }
             }
 

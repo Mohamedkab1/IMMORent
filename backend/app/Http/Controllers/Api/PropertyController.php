@@ -240,7 +240,10 @@ class PropertyController extends Controller
         }
 
         $images = array_map(function($path) {
-            return str_starts_with($path, 'http') ? $path : asset('storage/' . $path);
+            if (str_starts_with($path, 'http')) {
+                return $path;
+            }
+            return Storage::disk('public')->url($path);
         }, $imagesRaw);
 
 
