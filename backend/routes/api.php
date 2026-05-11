@@ -63,6 +63,25 @@ Route::get('/health', function () {
     ]);
 });
 
+// Diagnostic Storage pour Railway
+Route::get('/debug-storage', function () {
+    $linkExists = file_exists(public_path('storage'));
+    $targetExists = file_exists(storage_path('app/public'));
+    $testFile = 'test_connection.txt';
+    Storage::disk('public')->put($testFile, 'Storage is working at ' . now());
+    $fileExists = Storage::disk('public')->exists($testFile);
+    
+    return response()->json([
+        'app_url' => config('app.url'),
+        'storage_link_exists' => $linkExists,
+        'storage_target_exists' => $targetExists,
+        'test_file_created' => $fileExists,
+        'public_path' => public_path(),
+        'storage_path' => storage_path('app/public'),
+        'example_image_url' => Storage::disk('public')->url('test.jpg'),
+    ]);
+});
+
 // Route de test PDF
 Route::get('/test-pdf', function() {
     try {

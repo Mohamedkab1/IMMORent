@@ -243,7 +243,12 @@ class PropertyController extends Controller
             if (str_starts_with($path, 'http')) {
                 return $path;
             }
-            return Storage::disk('public')->url($path);
+            // Nettoyer le chemin pour éviter les doubles "storage/"
+            $cleanPath = ltrim($path, '/');
+            if (str_starts_with($cleanPath, 'storage/')) {
+                $cleanPath = substr($cleanPath, 8);
+            }
+            return Storage::disk('public')->url($cleanPath);
         }, $imagesRaw);
 
 

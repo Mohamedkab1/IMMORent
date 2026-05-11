@@ -127,7 +127,7 @@ class MessageController extends Controller
                 ]);
             });
 
-            // Déclencher les notifications et événements APRÈS que la transaction ait été validée
+            // Déclencher les notifications et événements APRÈS que la réponse soit envoyée au client
             $receiver = User::find($receiverId);
             if ($receiver) {
                 $notifData = [
@@ -138,19 +138,20 @@ class MessageController extends Controller
                     'icon' => 'chat'
                 ];
 
-                // Notifier le destinataire (sera mis en file d'attente car implement ShouldQueue)
-                try {
-                    $receiver->notify(new GeneralNotification($notifData));
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('Notification failed in MessageController: ' . $e->getMessage());
-                }
-                
-                // Dispatch real-time event (sera mis en file d'attente car implement ShouldBroadcast)
-                try {
-                    event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('Real-time event failed in MessageController: ' . $e->getMessage());
-                }
+                // Utiliser afterResponse pour libérer le client immédiatement
+                dispatch(function () use ($receiver, $notifData) {
+                    try {
+                        $receiver->notify(new GeneralNotification($notifData));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::warning('After-response notification failed: ' . $e->getMessage());
+                    }
+                    
+                    try {
+                        event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::warning('After-response real-time event failed: ' . $e->getMessage());
+                    }
+                })->afterResponse();
             }
 
             return response()->json([
