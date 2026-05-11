@@ -99,7 +99,7 @@ class MessageController extends Controller
         }
 
         try {
-            return DB::transaction(function () use ($user, $receiverId, $request) {
+            $message = DB::transaction(function () use ($user, $receiverId, $request) {
                 // Trouver ou créer la conversation
                 $conversation = Conversation::where(function ($q) use ($user, $receiverId) {
                         $q->where('user_one_id', $user->id)->where('user_two_id', $receiverId);
@@ -120,38 +120,39 @@ class MessageController extends Controller
                     $conversation->update(['last_message_at' => now()]);
                 }
 
-                $message = Message::create([
+                return Message::create([
                     'conversation_id' => $conversation->id,
                     'sender_id' => $user->id,
                     'body' => $request->body
                 ]);
-
-                // Déclencher l'événement Real-time (Notification)
-                $receiver = User::find($receiverId);
-                if ($receiver) {
-                    $notifData = [
-                        'title' => 'Nouveau message',
-                        'message' => "Vous avez reçu un message de {$user->name}",
-                        'type' => 'message',
-                        'link' => '/messages',
-                        'icon' => 'chat'
-                    ];
-
-                    $receiver->notify(new GeneralNotification($notifData));
-                    
-                    // Dispatch explicit real-time event for immediate UI update
-                    try {
-                        event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
-                    } catch (\Exception $e) {
-                        \Illuminate\Support\Facades\Log::warning('Real-time notification failed in MessageController: ' . $e->getMessage());
-                    }
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'data' => $message->load('sender')
-                ], 201);
             });
+
+            // Déclencher les notifications et événements APRÈS que la transaction ait été validée
+            $receiver = User::find($receiverId);
+            if ($receiver) {
+                $notifData = [
+                    'title' => 'Nouveau message',
+                    'message' => "Vous avez reçu un message de {$user->name}",
+                    'type' => 'message',
+                    'link' => '/messages',
+                    'icon' => 'chat'
+                ];
+
+                // Notifier le destinataire (sera mis en file d'attente car implement ShouldQueue)
+                $receiver->notify(new GeneralNotification($notifData));
+                
+                // Dispatch real-time event (sera mis en file d'attente car implement ShouldBroadcast)
+                try {
+                    event(new \App\Events\RealTimeNotification($receiver->id, $notifData));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning('Real-time notification failed in MessageController: ' . $e->getMessage());
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $message->load('sender')
+            ], 201);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erreur MessageController.store: ' . $e->getMessage(), [
                 'exception' => $e,
