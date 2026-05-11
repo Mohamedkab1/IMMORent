@@ -1,0 +1,2 @@
+[start]
+cmd = "php artisan storage:link && php artisan migrate --force && php-fpm"
