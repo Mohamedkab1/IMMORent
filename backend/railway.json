@@ -5,8 +5,8 @@
     "buildCommand": "composer install --no-dev --optimize-autoloader"
   },
   "deploy": {
-    "startCommand": "php artisan storage:link && php artisan migrate --force && (php-fpm -D && nginx -g 'daemon off;') ",
-    "healthcheckPath": "/api/health",
+    "startCommand": "php artisan storage:link && php artisan migrate --force && php-fpm -D && nginx -g 'daemon off;'",
+    "healthcheckPath": "/up",
     "restartPolicyType": "ON_FAILURE"
   }
 }
