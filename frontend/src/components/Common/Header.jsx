@@ -59,7 +59,7 @@ const Header = () => {
       // Polling fallback to ensure notifications work even without WebSockets
       const pollInterval = setInterval(() => {
         loadNotifications();
-      }, 10000); // Every 10 seconds
+      }, 60000); // Every 60 seconds (optimized for production)
 
       const token = localStorage.getItem('token');
       if (token) updateEchoToken(token);

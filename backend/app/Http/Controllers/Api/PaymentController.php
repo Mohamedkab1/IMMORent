@@ -157,7 +157,11 @@ class PaymentController extends Controller
             $invoice->update(['pdf_url' => $pdfUrl]);
 
             $pdfPath = storage_path('app/public/invoices/' . $filename);
-            Mail::to(auth()->user()->email)->send(new InvoicePaidMail($invoice, $pdfPath));
+            try {
+                Mail::to(auth()->user()->email)->send(new InvoicePaidMail($invoice, $pdfPath));
+            } catch (\Exception $e) {
+                Log::error('Erreur lors de l\'envoi de l\'email de facture: ' . $e->getMessage());
+            }
 
             // Notifier l'agent que le paiement a été reçu
             $agent = $payment->contract ? $payment->contract->agent : ($payment->property ? $payment->property->user : null);
