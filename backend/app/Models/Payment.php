@@ -41,6 +41,7 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
+
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);

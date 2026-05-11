@@ -232,12 +232,17 @@ class PropertyController extends Controller
         }
 
         // --- Parser les images (JSON string ou array) ---
-        $images = [];
+        $imagesRaw = [];
         if (isset($property->images)) {
-            $images = is_string($property->images)
+            $imagesRaw = is_string($property->images)
                 ? (json_decode($property->images, true) ?? [])
                 : (array) $property->images;
         }
+
+        $images = array_map(function($path) {
+            return str_starts_with($path, 'http') ? $path : asset('storage/' . $path);
+        }, $imagesRaw);
+
 
         // --- Calculer transaction_type depuis listing_type ---
         $listingType = $property->listing_type ?? null;
