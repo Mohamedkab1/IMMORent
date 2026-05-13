@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { 
@@ -64,6 +65,7 @@ const ClientDashboard = () => {
   const { favoritesCount } = useFavorites();
   const location = useLocation();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [requests, setRequests] = useState([]);
   const [contracts, setContracts] = useState([]);

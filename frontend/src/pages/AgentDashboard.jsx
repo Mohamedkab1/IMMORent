@@ -6,6 +6,7 @@ import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { dashboardService } from '../services/dashboard';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { 
   BuildingOfficeIcon, 
@@ -68,10 +69,11 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 };
 
 const AgentDashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
