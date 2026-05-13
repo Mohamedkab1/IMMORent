@@ -341,25 +341,21 @@ const Payment = () => {
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="!text-[#000000] dark:!text-white opacity-70">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
-                    <span className="font-semibold !text-[#000000] dark:!text-white">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
+                    <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-text-sub">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
+                    <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
                   </div>
                   {property.transaction_type === 'rent' && (
                     <div className="flex justify-between text-sm">
-                      <span className="!text-[#000000] dark:!text-white opacity-70">{t('pay.fee', 'Frais de dossier')}</span>
-                      <span className="font-semibold !text-[#000000] dark:!text-white">500 DH</span>
+                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-text-sub">{t('pay.fee', 'Frais de dossier')}</span>
+                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">500 DH</span>
                     </div>
                   )}
                 </div>
 
-                <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center relative overflow-hidden">
-                  <style>{`
-                    :root:not(.dark) .force-black-text {
-                      color: #000000 !important;
-                    }
-                  `}</style>
-                  <span className="font-bold force-black-text dark:!text-white">{t('pay.total', 'Total à payer')}</span>
-                  <span className="text-xl font-black force-black-text dark:!text-white">
+                <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-bold dark:!text-white">{t('pay.total', 'Total à payer')}</span>
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-xl font-black dark:!text-white">
+
                     {property.transaction_type === 'rent' 
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
                       : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
