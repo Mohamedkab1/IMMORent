@@ -1,121 +1,123 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
-import logo from '../../assets/IMMORent.jpeg';
-import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const Footer = () => {
   const { t } = useLanguage();
+  const location = useLocation();
   const currentYear = new Date().getFullYear();
+  
+  const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
+
+  if (isAuthPage) {
+    return (
+      <footer className="bg-gradient-to-r from-[#050a1f] via-[#0a1a1a] to-[#050a1f] text-white py-8 border-t border-white/5 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-8">
+            <div className="text-2xl font-bold tracking-tighter">
+              IMMO<span className="opacity-50">Rent</span>
+            </div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
+              &copy; {currentYear} IMMORent Maroc.
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link to="/mentions-legales" className="text-[10px] text-gray-400 hover:text-white uppercase tracking-[0.2em] font-bold transition-colors">{t('footer.legalMentions')}</Link>
+            <Link to="/confidentialite" className="text-[10px] text-gray-400 hover:text-white uppercase tracking-[0.2em] font-bold transition-colors">{t('footer.privacy')}</Link>
+            <Link to="/contact" className="text-[10px] text-gray-400 hover:text-white uppercase tracking-[0.2em] font-bold transition-colors">{t('nav.contact')}</Link>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
-    <footer className="bg-primary dark:bg-slate-900 border-t border-slate-800 text-slate-300 pt-16 pb-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-bg-main text-white py-12 border-t border-white/5 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
         
-        {/* Top Grid */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           
-          {/* Brand */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="IMMORent Logo" className="w-10 h-10 object-cover rounded-xl shadow-sm" />
-              <h3 className="text-xl font-bold text-white tracking-tight">IMMORent</h3>
+          {/* Brand & Description */}
+          <div className="space-y-8">
+            <div className="text-3xl font-bold tracking-tighter">
+              IMMO<span className="opacity-50">Rent</span>
             </div>
-            <p className="text-sm leading-relaxed text-slate-400">
+            <p className="text-sm text-gray-400 leading-relaxed font-light max-w-xs">
               {t('footer.description')}
             </p>
-            <div className="flex gap-4 rtl:gap-reverse">
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
-                <span className="sr-only">Facebook</span>
-                📘
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
-                <span className="sr-only">Twitter</span>
-                🐦
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
-                <span className="sr-only">LinkedIn</span>
-                <BuildingOfficeIcon className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-secondary hover:text-primary transition-all shadow-sm">
-                <span className="sr-only">Instagram</span>
-                📷
-              </a>
+            <div className="flex gap-4">
+              {[
+                { label: 'FB', icon: 'facebook' },
+                { label: 'TW', icon: 'twitter' },
+                { label: 'IG', icon: 'instagram' }
+              ].map((social) => (
+                <a key={social.label} href="#" className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-xs font-black hover:bg-white hover:text-[#0a1a1a] transition-all border border-white/10 uppercase tracking-widest">
+                  {social.label}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-bold mb-6 relative inline-block">
-              {t('footer.quickLinks')}
-              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
-            </h3>
-            <ul className="space-y-3">
-              <li><Link to="/" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.home')}</Link></li>
-              <li><Link to="/properties" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.properties')}</Link></li>
-              <li><Link to="/about" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.about')}</Link></li>
-              <li><Link to="/contact" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('nav.contact')}</Link></li>
+          {/* Navigation */}
+          <div className="space-y-8">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('nav.navigation', 'Navigation')}</h4>
+            <ul className="space-y-4">
+              {['home', 'properties', 'about', 'contact'].map((item) => (
+                <li key={item}>
+                  <Link to={`/${item === 'home' ? '' : item}`} className="text-sm font-medium text-gray-400 hover:text-white transition-colors uppercase tracking-widest text-[11px]">
+                    {t(`nav.${item}`)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Services */}
-          <div>
-             <h3 className="text-white font-bold mb-6 relative inline-block">
-              {t('footer.services')}
-              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
-            </h3>
-            <ul className="space-y-3">
-              <li><Link to="/properties?type=apartment" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.apartments')}</Link></li>
-              <li><Link to="/properties?type=house" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.houses')}</Link></li>
-              <li><Link to="/properties?type=commercial" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.commercial')}</Link></li>
-              <li><Link to="/properties?type=land" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('home.lands')}</Link></li>
+          {/* Services / Categories */}
+          <div className="space-y-8">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('footer.services')}</h4>
+            <ul className="space-y-4 text-sm text-gray-400">
+              <li><Link to="/properties?type=apartment" className="hover:text-white transition-colors uppercase tracking-widest text-[11px]">{t('home.apartments')}</Link></li>
+              <li><Link to="/properties?type=house" className="hover:text-white transition-colors uppercase tracking-widest text-[11px]">{t('home.houses')}</Link></li>
+              <li><Link to="/properties?type=commercial" className="hover:text-white transition-colors uppercase tracking-widest text-[11px]">{t('home.commercial')}</Link></li>
+              <li><Link to="/properties?type=land" className="hover:text-white transition-colors uppercase tracking-widest text-[11px]">{t('home.lands')}</Link></li>
             </ul>
           </div>
 
-          {/* Legal */}
-          <div>
-             <h3 className="text-white font-bold mb-6 relative inline-block">
-              {t('footer.legal')}
-              <span className="absolute -bottom-2 left-0 rtl:left-auto rtl:right-0 w-10 h-1 bg-secondary rounded-full"></span>
-            </h3>
-            <ul className="space-y-3">
-              <li><Link to="/mentions-legales" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.legalMentions')}</Link></li>
-              <li><Link to="/confidentialite" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.privacy')}</Link></li>
-              <li><Link to="/cgv" className="text-sm hover:text-secondary hover:ps-1 rtl:hover:ps-0 rtl:hover:pe-1 transition-all">{t('footer.terms')}</Link></li>
+          {/* Contact Info */}
+          <div className="space-y-8">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('nav.contact')}</h4>
+            <ul className="space-y-6">
+              <li className="flex items-start gap-4 group">
+                <MapPinIcon className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+                <span className="text-sm text-gray-400 leading-relaxed font-light">{t('footer.address')}</span>
+              </li>
+              <li className="flex items-center gap-4 group">
+                <PhoneIcon className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+                <span className="text-sm text-gray-400 font-light">{t('footer.phone')}</span>
+              </li>
+              <li className="flex items-center gap-4 group">
+                <EnvelopeIcon className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+                <span className="text-sm text-gray-400 font-light">{t('footer.email')}</span>
+              </li>
             </ul>
           </div>
           
-        </div>
-
-        {/* Contact Info Bar */}
-        <div className="py-8 border-y border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="flex items-center gap-3 text-sm group">
-            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><MapPinIcon className="w-5 h-5" /></div>
-            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.address')}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm group">
-            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><PhoneIcon className="w-5 h-5" /></div>
-            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.phone')}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm group">
-            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><EnvelopeIcon className="w-5 h-5" /></div>
-            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.email')}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm group">
-            <div className="p-2 rounded-lg bg-slate-800/50 text-secondary group-hover:bg-secondary group-hover:text-primary transition-colors"><ClockIcon className="w-5 h-5" /></div>
-            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">{t('footer.hours')}</span>
-          </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <p>&copy; {currentYear} IMMORent Maroc. {t('footer.rights')}</p>
-          <div className="flex flex-wrap items-center gap-4 rtl:gap-reverse">
-            <Link to="/plan-du-site" className="hover:text-white transition-colors">{t('footer.siteMap')}</Link>
-            <span className="w-1 h-1 rounded-full bg-slate-700 block"></span>
-            <Link to="/mentions-legales" className="hover:text-white transition-colors">{t('footer.legalMentions')}</Link>
-            <span className="w-1 h-1 rounded-full bg-slate-700 block"></span>
-            <Link to="/contact" className="hover:text-white transition-colors">{t('footer.contactUs')}</Link>
+        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
+            &copy; {currentYear} IMMORent Maroc. {t('footer.rights')}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            <Link to="/mentions-legales" className="text-[10px] text-gray-500 hover:text-white uppercase tracking-[0.2em] font-bold transition-colors">{t('footer.legalMentions')}</Link>
+            <Link to="/confidentialite" className="text-[10px] text-gray-500 hover:text-white uppercase tracking-[0.2em] font-bold transition-colors">{t('footer.privacy')}</Link>
+            <div className="w-px h-6 bg-white/10 hidden md:block"></div>
+            <div className="text-white text-3xl font-bold tracking-tighter">
+              IMMO<span className="opacity-50">Rent</span>
+            </div>
           </div>
         </div>
 

@@ -57,7 +57,8 @@ class PaymentController extends Controller
             'contractId' => 'nullable|exists:contracts,id',
             'amount' => 'required|numeric|min:1',
             'currency' => 'nullable|string',
-            'method' => 'required|string|in:card,transfer,agency'
+            'method' => 'required|string|in:card,transfer,agency',
+            'transferCode' => 'nullable|string|max:100'
         ]);
 
         $currency = $request->currency ?? 'MAD';
@@ -108,6 +109,7 @@ class PaymentController extends Controller
             'payment_date' => now(),
             'status' => 'pending',
             'payment_method' => $request->method,
+            'transaction_id' => $request->transferCode,
             'due_date' => now(),
         ]);
 
@@ -127,7 +129,8 @@ class PaymentController extends Controller
             'status' => 'required|string|in:paid,failed'
         ]);
 
-        $payment = Payment::where('id', $request->paymentId)
+        $payment = Payment::with(['contract', 'property'])
+                          ->where('id', $request->paymentId)
                           ->where('tenant_id', auth()->id())
                           ->firstOrFail();
 
@@ -137,6 +140,18 @@ class PaymentController extends Controller
         ]);
 
         if ($request->status === 'paid') {
+            // Pas de facture générée automatiquement pour les paiements en agence
+            if ($payment->payment_method === 'agency') {
+                // On met quand même à jour les statuts
+                $this->updateRelatedStatuses($payment);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Réservation enregistrée. Veuillez passer à l\'agence pour le paiement.',
+                    'payment' => $payment
+                ]);
+            }
+
             $invoiceNumber = 'INV-' . date('Y') . '-' . strtoupper(Str::random(5));
             
             $invoice = Invoice::create([
@@ -162,6 +177,17 @@ class PaymentController extends Controller
             } catch (\Exception $e) {
                 Log::error('Erreur lors de l\'envoi de l\'email de facture: ' . $e->getMessage());
             }
+
+            // Mettre à jour le statut du bien (Loué ou Vendu)
+            if ($payment->property) {
+                $newStatus = $payment->property->transaction_type === 'sale' ? 'sold' : 'rented';
+                $payment->property->update(['status' => $newStatus]);
+                Log::info("Bien ID {$payment->property_id} mis à jour vers le statut: {$newStatus}");
+            }
+
+            }
+
+            $this->updateRelatedStatuses($payment);
 
             // Notifier l'agent que le paiement a été reçu
             $agent = $payment->contract ? $payment->contract->agent : ($payment->property ? $payment->property->user : null);
@@ -358,5 +384,27 @@ class PaymentController extends Controller
             'success' => true,
             'message' => 'Paiement supprimé avec succès'
         ]);
+    }
+
+    /**
+     * Helper pour mettre à jour les statuts liés
+     */
+    private function updateRelatedStatuses($payment)
+    {
+        // Mettre à jour le statut du bien (Loué ou Vendu)
+        if ($payment->property) {
+            $newStatus = $payment->property->transaction_type === 'sale' ? 'sold' : 'rented';
+            $payment->property->update(['status' => $newStatus]);
+            Log::info("Bien ID {$payment->property_id} mis à jour vers le statut: {$newStatus}");
+        }
+
+        // Mettre à jour le statut de la demande de location liée au contrat
+        if ($payment->contract && $payment->contract->rental_request_id) {
+            $rentalRequest = \App\Models\RentalRequest::find($payment->contract->rental_request_id);
+            if ($rentalRequest) {
+                $rentalRequest->update(['status' => 'finalized']);
+                Log::info("Demande ID {$rentalRequest->id} mise à jour vers le statut: finalized");
+            }
+        }
     }
 }

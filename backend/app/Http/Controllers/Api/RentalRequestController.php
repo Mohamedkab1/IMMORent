@@ -25,7 +25,7 @@ class RentalRequestController extends Controller
             $user = $request->user();
             
             if ($user->isAgent()) {
-                $requests = RentalRequest::with(['user', 'property'])
+                $requests = RentalRequest::with(['user', 'property', 'contract'])
                     ->whereHas('property', function($q) use ($user) {
                         $q->where('user_id', $user->id);
                     })
@@ -33,12 +33,12 @@ class RentalRequestController extends Controller
                     ->get();
             } 
             elseif ($user->isAdmin()) {
-                $requests = RentalRequest::with(['user', 'property'])
+                $requests = RentalRequest::with(['user', 'property', 'contract'])
                     ->orderBy('created_at', 'desc')
                     ->get();
             } 
             else {
-                $requests = RentalRequest::with(['property'])
+                $requests = RentalRequest::with(['property', 'contract'])
                     ->where('user_id', $user->id)
                     ->orderBy('created_at', 'desc')
                     ->get();
@@ -194,7 +194,7 @@ class RentalRequestController extends Controller
     public function show($id)
     {
         try {
-            $request = RentalRequest::with(['user', 'property'])->find($id);
+            $request = RentalRequest::with(['user', 'property', 'contract'])->find($id);
             
             if (!$request) {
                 return response()->json([
@@ -439,7 +439,7 @@ class RentalRequestController extends Controller
     public function myRequests(Request $request)
     {
         try {
-            $requests = RentalRequest::with(['property'])
+            $requests = RentalRequest::with(['property', 'contract'])
                 ->where('user_id', $request->user()->id)
                 ->orderBy('created_at', 'desc')
                 ->get();

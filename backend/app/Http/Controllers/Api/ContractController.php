@@ -107,8 +107,8 @@ public function store(StoreContractRequest $request)
         $contract = Contract::create($contractData);
 
         // Mettre à jour le statut du bien et de la demande
-        $property->update(['status' => $request->contract_type === 'rent' ? 'rented' : 'sold']);
-        $rentalRequest->update(['status' => 'finalized']);
+        $property->update(['status' => 'reserved']);
+        $rentalRequest->update(['status' => 'approved']);
         
         // Notify the tenant/buyer
         $notifData = [
