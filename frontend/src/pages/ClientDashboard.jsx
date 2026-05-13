@@ -228,7 +228,7 @@ const ClientDashboard = () => {
           <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up">
             {t('dash.client.welcome')}, <span className="text-secondary">{user?.name}</span>
           </h1>
-          <p className="text-white/70 font-medium animate-slide-up animation-delay-100">
+          <p className="!text-white/70 font-medium animate-slide-up animation-delay-100">
             {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
           </p>
         </div>
@@ -254,8 +254,8 @@ const ClientDashboard = () => {
               }}
               className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
                 activeTab === tab.id 
-                  ? 'bg-primary text-white shadow-lg dark:bg-secondary dark:text-primary shadow-primary/20' 
-                  : 'text-text-sub hover:bg-bg-soft hover:text-text-main'
+                  ? 'bg-primary !text-white shadow-lg dark:bg-secondary dark:!text-primary shadow-primary/20' 
+                  : `hover:bg-bg-soft hover:text-text-main ${theme === 'light' ? '!text-black' : 'text-text-sub'}`
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -378,7 +378,7 @@ const ClientDashboard = () => {
                                 {request.status === 'approved' && (
                                   <Link 
                                     to={`/properties/${request.property_id}/payment`} 
-                                    className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
+                                    className="px-4 py-1.5 bg-green-500 !text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
                                   >
                                     {t('client.requests.pay_now')}
                                   </Link>
@@ -417,7 +417,7 @@ const ClientDashboard = () => {
                           <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
                        </div>
                       </div>
-                      <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
+                      <Link to={`/contracts/${contract.id}`} className="btn-primary !text-white w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
                    </div>
                  </RevealOnScroll>
                ))}

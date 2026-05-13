@@ -184,9 +184,9 @@ const ChatWidget = () => {
         className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-huge hover:scale-105 hover:bg-primary-hover transition-all duration-300 border-4 border-white dark:border-bg-card"
       >
         {isOpen ? (
-          <XMarkIcon className="w-6 h-6 animate-fade-in" />
+          <XMarkIcon className="w-6 h-6 animate-fade-in !text-white" />
         ) : (
-          <ChatBubbleLeftRightIcon className="w-6 h-6 animate-fade-in" />
+          <ChatBubbleLeftRightIcon className="w-6 h-6 animate-fade-in !text-white" />
         )}
       </button>
     </div>

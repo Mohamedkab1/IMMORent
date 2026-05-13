@@ -58,9 +58,9 @@ const Favorites = () => {
                   
                   <div className="absolute top-4 start-4 flex flex-col gap-2">
                     {property.transaction_type === 'sale' ? (
-                      <span className="px-3 py-1 bg-rose-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.sale')}</span>
+                      <span className="px-3 py-1 bg-rose-500 !text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.sale')}</span>
                     ) : (
-                       <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.rent')}</span>
+                       <span className="px-3 py-1 bg-green-500 !text-white text-xs font-bold rounded-full shadow-lg">{t('prop.card.rent')}</span>
                     )}
                   </div>
                   
@@ -75,8 +75,8 @@ const Favorites = () => {
                   </div>
                   
                   <div className="absolute bottom-4 inset-x-4">
-                     <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{t(property.title)}</h3>
-                     <div className="text-slate-200 text-xs mt-1 flex items-center gap-1 opacity-90">
+                     <h3 className="!text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">{t(property.title)}</h3>
+                     <div className="!text-white text-xs mt-1 flex items-center gap-1 opacity-90">
                        <MapPinIcon className="w-3.5 h-3.5" />
                        {property.city}
                      </div>

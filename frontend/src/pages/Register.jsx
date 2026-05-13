@@ -154,9 +154,9 @@ const Register = () => {
         {/* Unified Progress Indicator */}
         <div className="max-w-xs mx-auto mb-12">
             <div className="flex items-center justify-between relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep >= 1 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>1</div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep >= 1 ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>1</div>
                 <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-500 ${currentStep === 2 ? 'bg-primary' : 'bg-bg-soft'}`}></div>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep === 2 ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>2</div>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-500 z-10 ${currentStep === 2 ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'bg-bg-soft text-text-muted'}`}>2</div>
                 
                 <div className="absolute top-12 left-0 right-0 flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted px-2">
                     <span className={currentStep >= 1 ? 'text-primary transition-colors duration-500' : 'transition-colors duration-500'}>{t('auth.register.step1_badge')}</span>
@@ -181,7 +181,7 @@ const Register = () => {
                       onClick={() => handleRoleSelect('client')}
                       className={`relative group h-full cursor-pointer p-8 rounded-2xl border-2 transition-all duration-500 hover:-translate-y-1 ${selectedRole === 'client' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/10' : 'border-border-main hover:border-primary/30 bg-bg-soft/50'}`}
                     >
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'client' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'client' ? 'bg-primary !text-white' : 'bg-bg-soft text-primary'}`}>
                       <HomeIcon className="w-8 h-8" />
                     </div>
                     <h4 className="text-xl font-bold text-text-main mb-2">{t('auth.register.role_client_title')}</h4>
@@ -203,7 +203,7 @@ const Register = () => {
                       onClick={() => handleRoleSelect('agent')}
                       className={`relative group h-full cursor-pointer p-8 rounded-2xl border-2 transition-all duration-500 hover:-translate-y-1 ${selectedRole === 'agent' ? 'border-primary bg-primary/5 shadow-xl shadow-primary/10' : 'border-border-main hover:border-primary/30 bg-bg-soft/50'}`}
                     >
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'agent' ? 'bg-primary text-white' : 'bg-bg-soft text-primary'}`}>
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${selectedRole === 'agent' ? 'bg-primary !text-white' : 'bg-bg-soft text-primary'}`}>
                       <BuildingOfficeIcon className="w-8 h-8" />
                     </div>
                     <h4 className="text-xl font-bold text-text-main mb-2">{t('auth.register.role_agent_title')}</h4>
@@ -225,7 +225,7 @@ const Register = () => {
                   <button 
                     type="button" 
                     onClick={handleNext}
-                    className="px-10 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center gap-3"
+                    className="px-10 py-4 bg-primary !text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center gap-3"
                   >
                     {t('auth.register.next_btn')}
                     <ArrowRightIcon className="w-5 h-5" />
@@ -349,7 +349,7 @@ const Register = () => {
                   <button 
                     type="submit" 
                     disabled={loading}
-                    className="flex-[2] py-4 px-6 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+                    className="flex-[2] py-4 px-6 bg-primary !text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-70"
                   >
                     {loading ? (
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

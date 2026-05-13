@@ -64,10 +64,10 @@ const About = () => {
             <span className="inline-block py-1 px-4 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold mb-4 tracking-widest uppercase">
               {t('nav.about')}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl font-extrabold !text-white mb-4 tracking-tight drop-shadow-lg">
               {t('about.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('about.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
+            <p className="text-lg md:text-xl !text-white font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
               {t('about.hero.subtitle')}
             </p>
           </RevealOnScroll>
@@ -188,8 +188,8 @@ const About = () => {
               <svg className="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
             </div>
             <div className="relative z-10 max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg">{t('about.cta.title')}</h2>
-              <p className="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto opacity-90 leading-relaxed font-medium">
+              <h2 className="text-3xl md:text-5xl font-extrabold !text-white mb-6 drop-shadow-lg">{t('about.cta.title')}</h2>
+              <p className="text-lg md:text-xl !text-white mb-10 max-w-2xl mx-auto opacity-90 leading-relaxed font-medium">
                 {t('about.cta.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4">

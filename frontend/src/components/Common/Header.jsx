@@ -524,26 +524,29 @@ const Header = () => {
                       )}
                     </div>
                     <div className="hidden lg:block text-start">
-                      <div className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[100px] leading-none mb-0.5">{user?.name}</div>
-                      <div className="text-[10px] font-black uppercase tracking-tighter text-slate-400 leading-none">{user?.role?.name || 'User'}</div>
+                      <div className={`text-xs font-bold truncate max-w-[150px] leading-none mb-0.5 transition-colors ${scrolled ? '!text-[#000000] dark:!text-white' : 'text-white'}`}>{user?.name}</div>
+                      <div className={`text-[10px] font-black uppercase tracking-tighter leading-none transition-colors ${scrolled ? '!text-slate-600 dark:!text-slate-400' : 'text-slate-200'}`}>{user?.role?.name || 'User'}</div>
                     </div>
                   </button>
 
 
                   <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
-                    <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
-                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
-                       <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
+                    <div className="p-5 border-b border-border-main bg-bg-soft dark:bg-slate-800">
+                       <p className="text-xs font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
+                       <p className="text-sm font-bold !text-slate-900 dark:!text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
-                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-text-sub hover:bg-bg-secondary hover:text-primary dark:hover:text-white transition-all">
-                        <ChartBarIcon className="w-5 h-5 opacity-70" /> {t('nav.dashboard')}
+                      <Link to={dashboardLink} className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
+                        <ChartBarIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} /> 
+                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.dashboard')}</span>
                       </Link>
-                      <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
-                        <ChatBubbleLeftRightIcon className="w-5 h-5 opacity-70" /> {t('nav.messages')}
+                      <Link to="/messages" className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
+                        <ChatBubbleLeftRightIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} />
+                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.messages')}</span>
                       </Link>
-                      <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
-                        <UserCircleIcon className="w-5 h-5 opacity-70" /> {t('nav.profile')}
+                      <Link to="/profile" className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
+                        <UserCircleIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} />
+                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.profile')}</span>
                       </Link>
                     </div>
                     <div className="p-2 border-t border-slate-50 dark:border-slate-800">
@@ -557,7 +560,7 @@ const Header = () => {
             ) : (
               <div className="flex items-center gap-2 rtl:gap-reverse">
                 <Link to="/login" className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-all underline-offset-4 hover:underline">{t('nav.login')}</Link>
-                <Link to="/register" className="px-6 py-2.5 text-sm font-black bg-primary dark:bg-secondary text-white dark:text-primary rounded-xl shadow-lg shadow-primary/20 dark:shadow-secondary/20 hover:scale-105 active:scale-95 transition-all">{t('nav.register')}</Link>
+                <Link to="/register" className="px-6 py-2.5 text-sm font-black bg-primary dark:bg-secondary !text-white dark:!text-primary rounded-xl shadow-lg shadow-primary/20 dark:shadow-secondary/20 hover:scale-105 active:scale-95 transition-all">{t('nav.register')}</Link>
               </div>
             )}
           </div>
@@ -622,16 +625,18 @@ const Header = () => {
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 dark:text-white text-lg">{user?.name}</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-lg">{user?.name}</p>
                   <p className="text-xs font-black uppercase text-slate-400 tracking-wider font-mono">{user?.role?.name}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Link to={dashboardLink} className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold text-slate-800 dark:text-white">
-                  <ChartBarIcon className="w-5 h-5 opacity-60" /> {t('nav.dashboard')}
+                <Link to={dashboardLink} className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold !text-black dark:!text-white">
+                  <ChartBarIcon className="w-5 h-5 opacity-60" /> 
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="dark:!text-white !opacity-100">{t('nav.dashboard')}</span>
                 </Link>
-                <Link to="/profile" className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold text-slate-800 dark:text-white">
-                  <UserCircleIcon className="w-5 h-5 opacity-60" /> {t('nav.profile')}
+                <Link to="/profile" className="flex items-center justify-center gap-2 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-sm font-bold !text-black dark:!text-white">
+                  <UserCircleIcon className="w-5 h-5 opacity-60" /> 
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="dark:!text-white !opacity-100">{t('nav.profile')}</span>
                 </Link>
               </div>
               <button onClick={handleLogout} className="w-full py-4 text-rose-500 font-black text-sm uppercase tracking-widest hover:bg-rose-50 rounded-2xl transition-all">

@@ -61,7 +61,7 @@ const Home = () => {
               IMMORent
             </span>
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-xl text-slate-200 mb-10 animate-fade-in-up animation-delay-200">
+          <p className="mt-4 max-w-2xl mx-auto text-xl text-white mb-10 animate-fade-in-up animation-delay-200">
             {t('home.hero.subtitle')}
           </p>
 
@@ -70,28 +70,26 @@ const Home = () => {
 
       {/* Statistiques */}
       <section className="relative z-30 -mt-16 sm:-mt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <RevealOnScroll delay={400}>
-          <div className="bg-bg-card rounded-3xl shadow-huge p-8 sm:p-10 border border-border-main backdrop-blur-xl relative overflow-hidden group">
-            {/* Soft animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-            
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-              {[ 
-                { num: '500+', label: t('home.stats.properties') }, 
-                { num: '1000+', label: t('home.stats.clients') }, 
-                { num: '50+', label: t('home.stats.agencies') }, 
-                { num: '98%', label: t('home.stats.satisfaction') }
-              ].map((stat, i) => (
-                <div key={i} className="text-center group/stat">
-                  <div className="text-3xl sm:text-5xl font-extrabold text-primary dark:text-white mb-2 group-hover/stat:scale-110 group-hover/stat:-translate-y-1 transition-all duration-300">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light dark:from-white dark:to-slate-300">{stat.num}</span>
-                  </div>
-                  <div className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">{stat.label}</div>
+        <div className="bg-white dark:bg-bg-card rounded-3xl shadow-huge p-8 sm:p-10 border border-slate-200 dark:border-border-main relative overflow-hidden group">
+          {/* Soft animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+          
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[ 
+              { num: '500+', label: t('home.stats.properties') }, 
+              { num: '1000+', label: t('home.stats.clients') }, 
+              { num: '50+', label: t('home.stats.agencies') }, 
+              { num: '98%', label: t('home.stats.satisfaction') }
+            ].map((stat, i) => (
+              <div key={i} className="text-center group/stat">
+                <div className="text-3xl sm:text-5xl font-extrabold mb-2 transition-all duration-300" style={{ color: 'var(--color-text-primary)' }}>
+                  {stat.num}
                 </div>
-              ))}
-            </div>
+                <div className="text-sm sm:text-base font-medium tracking-wide uppercase" style={{ color: 'var(--color-text-secondary)' }}>{stat.label}</div>
+              </div>
+            ))}
           </div>
-        </RevealOnScroll>
+        </div>
       </section>
 
       {/* Services */}
@@ -119,7 +117,7 @@ const Home = () => {
                 <div className="group h-full bg-bg-card p-8 rounded-3xl shadow-main hover:shadow-2xl border border-border-main hover:border-primary/20 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full -translate-y-full translate-x-full group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-500 ease-out"></div>
                   <div className="relative z-10">
-                    <div className="w-16 h-16 bg-primary/5 dark:bg-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white dark:group-hover:bg-secondary text-primary dark:text-secondary transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
+                    <div className="w-16 h-16 bg-secondary dark:bg-secondary rounded-2xl flex items-center justify-center mb-6 text-primary dark:text-primary transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
                       <Service.icon className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-bold text-text-main mb-3 group-hover:text-primary dark:group-hover:text-secondary transition-colors">{Service.title}</h3>
@@ -161,8 +159,8 @@ const Home = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500"></div>
                   
                   <div className="absolute bottom-0 left-0 p-8 w-full transform transition-all duration-500">
-                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-secondary group-hover:-translate-y-1 transition-all duration-300">{cat.title}</h3>
-                    <div className="flex items-center text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">
+                    <h3 className="text-2xl font-bold !text-white mb-2 group-hover:text-secondary group-hover:-translate-y-1 transition-all duration-300">{cat.title}</h3>
+                    <div className="flex items-center text-sm font-semibold !text-white/90 group-hover:!text-white transition-colors">
                       {t('home.categories.discover')} 
                       <div className="w-0 overflow-hidden group-hover:w-6 transition-all duration-300 ease-out flex items-center">
                         <ArrowRightIcon className="w-5 h-5 ms-2 rtl:rotate-180" />
@@ -188,7 +186,7 @@ const Home = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center text-white">
           <RevealOnScroll>
             <h2 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">{t('home.cta.title')}</h2>
-            <p className="text-xl text-slate-200 mb-10 max-w-2xl mx-auto leading-relaxed">{t('home.cta.desc')}</p>
+            <p className="text-xl !text-white mb-10 max-w-2xl mx-auto leading-relaxed">{t('home.cta.desc')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                <Link to="/register" className="w-full sm:w-auto px-10 py-5 bg-secondary hover:bg-yellow-400 text-primary font-extrabold rounded-2xl shadow-xl shadow-secondary/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-secondary/40 flex items-center justify-center">
                  {t('home.register_free')} <ArrowRightIcon className="w-5 h-5 ms-2 rtl:rotate-180" />

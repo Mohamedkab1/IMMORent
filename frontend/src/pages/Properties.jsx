@@ -178,10 +178,10 @@ const Properties = () => {
             <span className="inline-block py-1 px-4 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold mb-4 tracking-widest uppercase">
               {t('nav.properties')}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight text-white drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight !text-white drop-shadow-lg">
               {t('prop.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('prop.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 mb-8 max-w-2xl mx-auto drop-shadow-md font-medium leading-relaxed">
+            <p className="text-lg md:text-xl !text-white mb-8 max-w-2xl mx-auto drop-shadow-md font-medium leading-relaxed">
               {t('prop.hero.subtitle')}
             </p>
             <button 
@@ -366,31 +366,31 @@ const Properties = () => {
                         
                         <div className="absolute top-4 start-4 flex flex-col gap-2">
                           {property.transaction_type === 'sale' ? (
-                            <span className="px-4 py-1.5 bg-rose-500 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.sale')}</span>
+                            <span className="px-4 py-1.5 bg-rose-500 !text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.sale')}</span>
                           ) : (
-                             <span className="px-4 py-1.5 bg-green-500 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.rent')}</span>
+                             <span className="px-4 py-1.5 bg-green-500 !text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg backdrop-blur-md">{t('prop.card.rent')}</span>
                           )}
                           {/* ✅ Badge statut sur la photo */}
                           {property.status === 'reserved' && (
-                            <span className="px-4 py-1.5 bg-rose-700 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.reserved')}</span>
+                            <span className="px-4 py-1.5 bg-rose-700 !text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.reserved')}</span>
                           )}
                           {property.status === 'rented' && (
-                            <span className="px-4 py-1.5 bg-orange-600 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.rented')}</span>
+                            <span className="px-4 py-1.5 bg-orange-600 !text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.rented')}</span>
                           )}
                           {property.status === 'sold' && (
-                            <span className="px-4 py-1.5 bg-gray-700 text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.sold')}</span>
+                            <span className="px-4 py-1.5 bg-gray-700 !text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">{t('prop.card.sold')}</span>
                           )}
                         </div>
                         
                         <div className="absolute top-4 end-4">
-                          <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold rounded-full shadow-lg hidden md:block">
+                          <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 !text-white text-xs font-bold rounded-full shadow-lg hidden md:block">
                             {t(`property.type.${property.type}`, property.type_label)}
                           </span>
                         </div>
                         
                         <div className="absolute bottom-4 inset-x-5 transform transition-transform duration-300 group-hover:-translate-y-1">
-                           <h3 className="text-white font-extrabold text-xl leading-tight line-clamp-1 drop-shadow-md mb-1">{t(property.title)}</h3>
-                           <div className="text-slate-300 text-sm flex items-center gap-1.5 font-medium">
+                           <h3 className="!text-white font-extrabold text-xl leading-tight line-clamp-1 drop-shadow-md mb-1">{t(property.title)}</h3>
+                           <div className="!text-white text-sm flex items-center gap-1.5 font-medium">
                              <MapPinIcon className="w-4 h-4 text-secondary" />
                              {property.city}
                            </div>

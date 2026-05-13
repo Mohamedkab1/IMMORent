@@ -107,13 +107,13 @@ const Login = () => {
           </RevealOnScroll>
 
           <RevealOnScroll delay={200}>
-            <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
+            <h2 className="text-5xl font-black !text-white mb-6 leading-tight tracking-tight">
               {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
             </h2>
           </RevealOnScroll>
 
           <RevealOnScroll delay={300}>
-            <p className="text-xl text-white/80 max-w-md leading-relaxed mb-12">
+            <p className="text-xl !text-white/80 max-w-md leading-relaxed mb-12">
               {t('auth.hero.subtitle')}
             </p>
           </RevealOnScroll>
@@ -126,7 +126,7 @@ const Login = () => {
                 t('auth.hero.feature_3'),
                 t('auth.hero.feature_4')
               ].map((item, i) => (
-                <li key={i} className="flex items-center text-white/90 font-medium">
+                <li key={i} className="flex items-center !text-white/90 font-medium">
                   <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   </span>
@@ -222,7 +222,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:shadow-primary/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+              className="w-full py-4 bg-primary !text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-light hover:shadow-primary/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
             >
               {loading ? (
                 <>

@@ -466,31 +466,31 @@ const AdminDashboard = () => {
         <nav className="flex flex-col gap-1.5">
           <Link 
             to="/dashboard/admin" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-large scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary !text-white shadow-large scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <ChartBarIcon className="w-5 h-5" /> {t('admin.tabs.overview')}
           </Link>
           <Link 
             to="/dashboard/admin/users" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserGroupIcon className="w-5 h-5" /> {t('admin.tabs.users')}
           </Link>
           <Link 
             to="/dashboard/admin/properties" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <HomeIcon className="w-5 h-5" /> {t('admin.tabs.properties')}
           </Link>
           <Link 
             to="/dashboard/admin/contracts" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentTextIcon className="w-5 h-5" /> {t('admin.tabs.contracts')}
           </Link>
           <Link 
             to="/dashboard/admin/payments" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <CurrencyDollarIcon className="w-5 h-5" /> {t('admin.tabs.payments')}
           </Link>
@@ -503,7 +503,7 @@ const AdminDashboard = () => {
           <div className="h-px bg-border-main my-4 mx-4"></div>
           <Link 
             to="/dashboard/admin/agent-requests" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserIcon className="w-5 h-5" /> {t('admin.tabs.agent_requests')}
             {stats?.requests?.pending > 0 && (
@@ -520,7 +520,7 @@ const AdminDashboard = () => {
           </Link>
           <Link 
             to="/dashboard/admin/settings" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <Cog6ToothIcon className="w-5 h-5" /> {t('admin.tabs.settings')}
           </Link>
@@ -709,7 +709,7 @@ const AdminDashboard = () => {
                      <option value="agent">{t('auth.role.agent')}</option>
                      <option value="client">{t('auth.role.client')}</option>
                    </select>
-                   <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-xs font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                   <button className="flex items-center gap-2 px-6 py-3 bg-primary !text-white text-xs font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
                      <PlusIcon className="w-4 h-4" /> {t('admin.actions.new')}
                    </button>
                  </div>

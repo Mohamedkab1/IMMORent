@@ -371,7 +371,7 @@ const Profile = () => {
                                 <button 
                                     type="submit" 
                                     disabled={loading}
-                                    className="w-full md:w-auto px-12 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                                    className="w-full md:w-auto px-12 py-4 bg-primary !text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                                 >
                                     {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <CheckIcon className="w-6 h-6" />}
                                     {t('profile.save')}
@@ -449,7 +449,7 @@ const Profile = () => {
                                              <button 
                                                  type="submit"
                                                  disabled={loading}
-                                                 className="flex-1 py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                                                 className="flex-1 py-3 px-4 bg-primary !text-white font-bold rounded-xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                                              >
                                                  {loading ? t('common.loading') : t('common.save')}
                                              </button>

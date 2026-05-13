@@ -93,10 +93,10 @@ const Contact = () => {
             <span className="inline-block py-1 px-4 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold mb-4 tracking-widest uppercase">
               {t('nav.contact')}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl font-extrabold !text-white mb-4 tracking-tight drop-shadow-lg">
               {t('contact.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('contact.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
+            <p className="text-lg md:text-xl !text-white font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
               {t('contact.hero.subtitle')}
             </p>
           </RevealOnScroll>
@@ -193,7 +193,7 @@ const Contact = () => {
                      </label>
                    </div>
 
-                   <button type="submit" disabled={submitting} className="w-full py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl font-black uppercase tracking-wider shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 mt-4">
+                   <button type="submit" disabled={submitting} className="w-full py-4 bg-primary !text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl font-black uppercase tracking-wider shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 mt-4">
                      {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                      {submitting ? t('contact.form.submitting') : <><PaperAirplaneIcon className="w-5 h-5" /> {t('contact.form.submit')}</>}
                    </button>

@@ -237,7 +237,7 @@ const Messages = () => {
                     <div className={`max-w-[80%] md:max-w-[70%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                       <div className={`px-4 py-3 rounded-2xl shadow-sm ${
                         isMine 
-                        ? 'bg-primary text-white rounded-br-none' 
+                        ? 'bg-primary !text-white rounded-br-none' 
                         : 'bg-bg-card text-text-main rounded-bl-none border border-border-main'
                       }`}>
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.body}</p>
@@ -272,7 +272,7 @@ const Messages = () => {
                 <button 
                   type="submit"
                   disabled={!newMessage.trim() || sending}
-                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-primary text-white rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:shadow-none"
+                  className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-primary !text-white rounded-2xl hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:shadow-none"
                 >
                   <PaperAirplaneIcon className="w-6 h-6 -rotate-45 -translate-y-0.5 translate-x-0.5" />
                 </button>

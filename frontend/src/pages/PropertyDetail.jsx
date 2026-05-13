@@ -480,7 +480,7 @@ const PropertyDetail = () => {
                       <button
                         type="submit"
                         disabled={submittingReview}
-                        className="px-8 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-all shadow-md disabled:opacity-50"
+                        className="px-8 py-3 bg-primary !text-white rounded-xl font-bold hover:bg-primary-hover transition-all shadow-md disabled:opacity-50"
                       >
                         {submittingReview ? t('common.loading') : t('prop.detail.review.submit')}
                       </button>
@@ -598,7 +598,7 @@ const PropertyDetail = () => {
 
                         {/* Le bouton PAYER ne s'affiche que si la demande est approuvée */}
                         {property.user_request_status === 'approved' && (
-                          <button onClick={handlePayment} className="w-full py-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
+                          <button onClick={handlePayment} className="w-full py-4 bg-primary !text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md shadow-primary/30">
                             {t('prop.detail.rental.pay_btn')}
                           </button>
                         )}
@@ -652,7 +652,7 @@ const PropertyDetail = () => {
                         <button 
                           onClick={sendContactMessage} 
                           disabled={sendingMessage}
-                          className="w-full py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md disabled:opacity-50"
+                          className="w-full py-3 bg-primary !text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md disabled:opacity-50"
                         >
                           {sendingMessage ? t('common.sending') : t('prop.detail.contact.send')}
                         </button>
