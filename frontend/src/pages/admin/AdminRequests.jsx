@@ -50,7 +50,8 @@ const AdminRequests = () => {
       pending: { bg: '#fef3c7', color: '#d97706', text: t('req.status.pending', 'En attente'), icon: ClockIcon },
       approved: { bg: '#dcfce7', color: '#059669', text: t('req.status.approved', 'Approuvée'), icon: CheckCircleIcon },
       rejected: { bg: '#fee2e2', color: '#dc2626', text: t('req.status.rejected', 'Refusée'), icon: XCircleIcon },
-      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: t('req.status.cancelled', 'Annulée'), icon: XCircleIcon }
+      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: t('req.status.cancelled', 'Annulée'), icon: XCircleIcon },
+      finalized: { bg: '#dbeafe', color: '#2563eb', text: t('common.status.finalized', 'Finalisée'), icon: CheckCircleIcon }
     };
     const c = config[status] || config.pending;
     const Icon = c.icon;

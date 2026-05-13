@@ -115,7 +115,9 @@ class PropertyController extends Controller
     public function show($id)
     {
         try {
-            $property = Property::with(['user', 'category', 'owner'])->find($id);
+            $property = Property::with(['user', 'category', 'owner', 'contracts' => function($q) {
+                $q->where('status', 'active')->latest();
+            }])->find($id);
 
             if (!$property) {
                 return response()->json([
@@ -338,6 +340,17 @@ class PropertyController extends Controller
                 'name' => $property->category->name,
                 'slug' => $property->category->slug,
             ] : null;
+
+            // Ajouter les infos du contrat actif si loué
+            if ($property->status === 'rented' || $property->status === 'reserved') {
+                $activeContract = $property->contracts->where('status', 'active')->first();
+                if ($activeContract) {
+                    $formatted['active_contract'] = [
+                        'start_date' => $activeContract->start_date ? $activeContract->start_date->format('Y-m-d') : null,
+                        'end_date' => $activeContract->end_date ? $activeContract->end_date->format('Y-m-d') : null,
+                    ];
+                }
+            }
         }
 
         return $formatted;

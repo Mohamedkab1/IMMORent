@@ -44,9 +44,9 @@ class RentalRequest extends Model
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    public function contract(): BelongsTo
+    public function contract(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->belongsTo(Contract::class);
+        return $this->hasOne(Contract::class, 'rental_request_id');
     }
 
     public function getTypeLabelAttribute(): string
@@ -61,6 +61,7 @@ class RentalRequest extends Model
             'approved' => 'Approuvée',
             'rejected' => 'Refusée',
             'cancelled' => 'Annulée',
+            'finalized' => 'Finalisée',
             default => $this->status,
         };
     }

@@ -120,7 +120,7 @@ const ClientDashboard = () => {
         setRequests(data);
         setStats(prev => ({ 
           ...prev, 
-          activeRequests: data.filter(r => r.status === 'pending' || r.status === 'approved').length 
+          activeRequests: data.filter(r => r.status === 'pending').length 
         }));
       } else if (response?.success) {
         // Fallback: service already unwrapped response.data
@@ -128,7 +128,7 @@ const ClientDashboard = () => {
         setRequests(data);
         setStats(prev => ({ 
           ...prev, 
-          activeRequests: data.filter(r => r.status === 'pending' || r.status === 'approved').length 
+          activeRequests: data.filter(r => r.status === 'pending').length 
         }));
       } else {
         setRequestsError((body || response)?.message || 'Erreur lors du chargement des demandes');
@@ -181,6 +181,7 @@ const ClientDashboard = () => {
       approved: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.approved'), icon: CheckCircleIcon },
       rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.rejected'), icon: XCircleIcon },
       cancelled: { bg: 'bg-bg-card border border-border-main', text: 'text-text-muted', label: t('common.status.cancelled'), icon: XCircleIcon },
+      finalized: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('common.status.finalized', 'Finalisée'), icon: CheckCircleIcon },
       active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.active'), icon: CheckCircleIcon },
       terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.terminated'), icon: XCircleIcon },
     };
@@ -376,13 +377,14 @@ const ClientDashboard = () => {
                                   )}
                                 </div>
                                 {request.status === 'approved' && (
-                                  <Link 
-                                    to={`/properties/${request.property_id}/payment`} 
-                                    className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
-                                  >
-                                    {t('client.requests.pay_now')}
-                                  </Link>
-                                )}
+                                   <Link 
+                                     to={`/properties/${request.property_id}/payment`} 
+                                     state={{ property: request.property, request: request }}
+                                     className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
+                                   >
+                                     {t('client.requests.pay_now')}
+                                   </Link>
+                                 )}
                              </div>
                           </td>
                         </tr>

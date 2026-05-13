@@ -152,7 +152,9 @@ const AgentDashboard = () => {
     try {
       const response = await propertyService.getMyProperties();
       if (response.success) {
-        const items = response.data.data || [];
+        // Le service renvoie déjà response.data, qui contient l'objet {success, data: [...]}
+        // Donc response.data ici est le tableau
+        const items = response.data || [];
         setProperties(items);
       }
     } catch (error) {
@@ -177,7 +179,7 @@ const AgentDashboard = () => {
     try {
       const response = await contractService.getAgentContracts();
       if (response.success) {
-        let items = response.data.data || [];
+        let items = response.data || [];
         
         items = items.map(contract => ({
           ...contract,
@@ -228,27 +230,20 @@ const AgentDashboard = () => {
         setShowRejectModal(false);
         setRejectionReason('');
 
-        // ✅ FIX: Update local state immediately so the badge reflects the new status
-        setRequests(prev =>
-          prev.map(r =>
-            r.id === requestId
-              ? { ...r, status, processed_at: new Date().toISOString(), rejection_reason: reason }
-              : r
-          )
-        );
-        // Also update pending count in stats
-        setStats(prev => ({
-          ...prev,
-          pendingRequests: Math.max(0, prev.pendingRequests - 1)
-        }));
+        // Rafraîchir toutes les données pour garantir la cohérence (stats, listes, etc.)
+        await loadAllData();
         
         if (status === 'approved') {
-          navigate(`/contracts/new?request=${requestId}`);
+          // Attendre un court instant pour que l'utilisateur voie le changement avant de naviguer
+          setTimeout(() => {
+            navigate(`/contracts/new?request=${requestId}`);
+          }, 1000);
         }
       } else {
         toast.error(response.message || t('agent.toast.req_err'));
       }
     } catch (error) {
+      console.error('Erreur traitement demande:', error);
       toast.error(t('agent.toast.req_err_2'));
     }
   };
@@ -283,7 +278,8 @@ const AgentDashboard = () => {
       rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.rejected'), icon: XCircleIcon },
       active: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', label: t('common.status.active'), icon: CheckCircleIcon },
       terminated: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', label: t('common.status.terminated'), icon: XCircleIcon },
-      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('common.status.completed'), icon: CheckCircleIcon }
+      completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('common.status.completed'), icon: CheckCircleIcon },
+      finalized: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-500', label: t('common.status.finalized', 'Finalisée'), icon: CheckCircleIcon }
     };
     
     const config = statusConfig[status] || statusConfig.pending;

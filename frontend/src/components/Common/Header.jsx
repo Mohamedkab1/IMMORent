@@ -346,36 +346,36 @@ const Header = () => {
   ];
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-bg-glass backdrop-blur-xl shadow-large border-b border-border-main py-2' : 'bg-bg-main py-4'}`}>
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+      scrolled 
+        ? 'bg-bg-main/95 backdrop-blur-md shadow-lg border-b border-border-main py-2' 
+        : (location.pathname === '/' || location.pathname.startsWith('/properties/') || ['/login', '/register', '/register/role'].includes(location.pathname)) 
+          ? 'bg-transparent py-6' 
+          : 'bg-bg-main py-4'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
+        <div className="flex justify-between items-center h-12 md:h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative overflow-hidden rounded-xl shadow-md group-hover:shadow-primary/20 transition-all duration-300">
-              <img src={logo} alt="IMMORent Logo" className="w-10 h-10 object-cover group-hover:scale-110 transition-transform duration-500" />
-              <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-xl"></div>
-            </div>
-            <span className="text-2xl font-black text-text-main tracking-tighter">IMMO<span className="text-primary dark:text-secondary">Rent</span></span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <span className={`text-3xl font-bold tracking-tighter transition-colors ${!scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white' : 'text-text-main'}`}>
+              IMMO<span className="opacity-50">Rent</span>
+            </span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-2 rtl:gap-reverse">
+          <nav className="hidden md:flex items-center gap-8 rtl:gap-reverse uppercase tracking-widest text-[11px] font-black">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-4 py-2 text-sm font-bold transition-colors duration-300 group ${
-                    isActive ? 'text-primary dark:text-secondary' : 'text-text-sub hover:text-text-main'
+                  className={`transition-colors duration-300 ${
+                    isActive ? 'text-primary dark:text-secondary' : scrolled ? 'text-text-sub hover:text-text-main' : (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white/80 hover:text-white' : 'text-text-sub hover:text-text-main'
                   }`}
                 >
                   {link.name}
-                  {/* Animated underline */}
-                  <span className={`absolute bottom-0 left-0 w-full h-0.5 rounded-full transition-all duration-300 ease-out ${
-                    isActive ? 'bg-primary dark:bg-secondary scale-x-100 opacity-100' : 'bg-text-main scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-20'
-                  }`}></span>
                 </Link>
               );
             })}
@@ -555,19 +555,18 @@ const Header = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 rtl:gap-reverse">
-                <Link to="/login" className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-all underline-offset-4 hover:underline">{t('nav.login')}</Link>
-                <Link to="/register" className="px-6 py-2.5 text-sm font-black bg-primary dark:bg-secondary text-white dark:text-primary rounded-xl shadow-lg shadow-primary/20 dark:shadow-secondary/20 hover:scale-105 active:scale-95 transition-all">{t('nav.register')}</Link>
+              <div className="flex items-center gap-4 rtl:gap-reverse uppercase tracking-widest text-[10px] font-black">
+                <Link to="/login" className={`transition-colors ${!scrolled && location.pathname === '/' ? 'text-white/80 hover:text-white' : 'text-text-sub hover:text-text-main'}`}>{t('nav.login')}</Link>
+                <Link to="/register" className={`px-5 py-2 border-2 transition-all ${!scrolled && location.pathname === '/' ? 'border-white text-white hover:bg-white hover:text-black' : 'border-primary text-primary hover:bg-primary hover:text-white'}`}>{t('nav.register')}</Link>
               </div>
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 text-text-sub">
-              {theme === 'dark' ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6 text-primary" />}
+            <button onClick={toggleTheme} className={`p-2 transition-colors ${!scrolled && location.pathname === '/' ? 'text-white/80' : 'text-text-sub'}`}>
+              {theme === 'dark' ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6" />}
             </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-text-sub transition-colors">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${!scrolled && location.pathname === '/' ? 'text-white' : 'text-text-sub'}`}>
               {mobileMenuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
             </button>
           </div>
