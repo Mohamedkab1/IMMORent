@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../context/LanguageContext';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
-  const [isVisible, React_useState] = React.useState(false);
-  const ref = React.useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          React_useState(true);
+          setIsVisible(true);
           observer.unobserve(entry.target);
         }
       },
@@ -100,41 +100,33 @@ const Login = () => {
         />
         
         <div className="relative z-20 flex flex-col justify-center px-20">
-          <RevealOnScroll delay={100}>
-            <Link to="/" className="text-3xl font-black text-white mb-12 tracking-tight block">
-              IMMO<span className="text-secondary">Rent</span>
-            </Link>
-          </RevealOnScroll>
+          <Link to="/" className="text-3xl font-black text-white mb-12 tracking-tight block">
+            IMMO<span className="text-secondary">Rent</span>
+          </Link>
 
-          <RevealOnScroll delay={200}>
-            <h2 className="text-5xl font-black !text-white mb-6 leading-tight tracking-tight">
-              {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
-            </h2>
-          </RevealOnScroll>
+          <h2 className="text-5xl font-black !text-white mb-6 leading-tight tracking-tight">
+            {t('auth.hero.title_1')} <br />{t('auth.hero.title_2')} <br />{t('auth.hero.title_3')}
+          </h2>
 
-          <RevealOnScroll delay={300}>
-            <p className="text-xl !text-white/80 max-w-md leading-relaxed mb-12">
-              {t('auth.hero.subtitle')}
-            </p>
-          </RevealOnScroll>
+          <p className="text-xl !text-white/80 max-w-md leading-relaxed mb-12">
+            {t('auth.hero.subtitle')}
+          </p>
           
-          <RevealOnScroll delay={400}>
-            <ul className="space-y-4">
-              {[
-                t('auth.hero.feature_1'),
-                t('auth.hero.feature_2'),
-                t('auth.hero.feature_3'),
-                t('auth.hero.feature_4')
-              ].map((item, i) => (
-                <li key={i} className="flex items-center !text-white/90 font-medium">
-                  <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </RevealOnScroll>
+          <ul className="space-y-4">
+            {[
+              t('auth.hero.feature_1'),
+              t('auth.hero.feature_2'),
+              t('auth.hero.feature_3'),
+              t('auth.hero.feature_4')
+            ].map((item, i) => (
+              <li key={i} className="flex items-center !text-white/90 font-medium">
+                <span className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center mr-4 text-secondary">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         
         {/* Decorative elements */}
@@ -152,7 +144,7 @@ const Login = () => {
         {/* Animated background blob */}
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[500px] h-[500px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl -z-10 animate-float"></div>
         
-        <RevealOnScroll delay={100} className="w-full max-w-md mx-auto">
+        <div className="w-full max-w-md mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-text-main mb-3 tracking-tight">{t('auth.login.title')}</h1>
             <p className="text-text-sub font-medium">{t('auth.login.subtitle')}</p>
@@ -258,7 +250,7 @@ const Login = () => {
               <Link to="/register" className="text-primary font-bold hover:underline transition-colors">{t('auth.login.register_link')}</Link>
             </p>
           </div>
-        </RevealOnScroll>
+        </div>
       </div>
     </div>
   );

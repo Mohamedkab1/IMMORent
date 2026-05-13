@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -6,14 +6,14 @@ import { HomeIcon, BuildingOfficeIcon, UserIcon, EnvelopeIcon, PhoneIcon, MapPin
 import { useLanguage } from '../context/LanguageContext';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
-  const [isVisible, React_useState] = React.useState(false);
-  const ref = React.useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          React_useState(true);
+          setIsVisible(true);
           observer.unobserve(entry.target);
         }
       },
