@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
-import { 
-  CreditCardIcon, 
+import {
+  CreditCardIcon,
   BanknotesIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
@@ -27,7 +27,7 @@ const Payment = () => {
   const [success, setSuccess] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('card');
-  
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -67,7 +67,7 @@ const Payment = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Empêcher la modification de la date si elle vient de la demande
     if (name === 'entryDate' && (location.state?.request?.start_date || location.state?.contract?.start_date)) return;
 
@@ -150,15 +150,15 @@ const Payment = () => {
             {t('pay.success_desc', 'Votre réservation pour')} <strong>{t(property.title, property.title)}</strong> {t('pay.success_desc2', 'a été confirmée. Un email récapitulatif vous a été envoyé.')}
           </p>
           <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm border border-border-main">
-             <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
-             <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
+            <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
+            <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
           </div>
-          
+
           <div className="flex flex-col gap-3">
             {invoiceUrl && (
-              <a 
-                href={invoiceUrl} 
-                target="_blank" 
+              <a
+                href={invoiceUrl}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
               >
@@ -166,7 +166,7 @@ const Payment = () => {
                 {t('pay.view_invoice', 'Voir votre facture')}
               </a>
             )}
-            <button 
+            <button
               onClick={() => navigate('/payments/history')}
               className="w-full py-3 bg-bg-soft text-text-main border border-border-main rounded-xl font-bold hover:bg-bg-card transition-all"
             >
@@ -223,14 +223,14 @@ const Payment = () => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.entry_date', 'Date d\'entrée souhaitée')}</label>
-                    <input 
-                      required 
-                      type="date" 
-                      name="entryDate" 
-                      value={formData.entryDate} 
-                      onChange={handleChange} 
-                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)} 
-                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`} 
+                    <input
+                      required
+                      type="date"
+                      name="entryDate"
+                      value={formData.entryDate}
+                      onChange={handleChange}
+                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)}
+                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`}
                     />
                   </div>
                 </div>
@@ -334,7 +334,7 @@ const Payment = () => {
 
                 <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{t(property.title, property.title)}</h4>
                 <p className="text-sm text-text-muted mb-4">{t(property.city, property.city)}</p>
-                
+
                 <div className="h-px bg-border-main mb-4"></div>
 
                 <div className="space-y-3 mb-6">
@@ -354,7 +354,7 @@ const Payment = () => {
                   <span className="font-bold text-primary dark:text-white">{t('pay.total', 'Total à payer')}</span>
                   <span className="text-xl font-black text-primary dark:text-white">
 
-                    {property.transaction_type === 'rent' 
+                    {property.transaction_type === 'rent'
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
                       : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
                   </span>
