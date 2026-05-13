@@ -498,7 +498,7 @@ const AdminDashboard = () => {
             onClick={() => navigate('/payments/history')}
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm text-text-sub hover:bg-bg-soft hover:text-text-main`}
           >
-            <CurrencyDollarIcon className="w-5 h-5" /> Historique complet
+            <CurrencyDollarIcon className="w-5 h-5" /> {t('pay.history.title', 'Historique complet')}
           </button>
           <div className="h-px bg-border-main my-4 mx-4"></div>
           <Link 
@@ -1122,10 +1122,10 @@ const AdminDashboard = () => {
                   <button 
                     onClick={handleSaveSettings}
                     disabled={savingSettings}
-                    className="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-primary/90 disabled:opacity-50 shadow-xl shadow-primary/30 transition-all flex items-center gap-2"
+                    className="px-8 py-3 bg-primary !text-white !opacity-100 text-sm font-bold rounded-2xl hover:bg-primary/90 disabled:opacity-50 shadow-xl shadow-primary/30 transition-all flex items-center gap-2"
                   >
-                    {savingSettings ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
-                    {savingSettings ? t('admin.settings.saving') : t('admin.settings.save')}
+                    {savingSettings ? <ArrowPathIcon className="w-4 h-4 animate-spin !text-white" /> : <CheckCircleIcon className="w-5 h-5 !text-white" />}
+                    <span className="!text-white !opacity-100">{savingSettings ? t('admin.settings.saving') : t('admin.settings.save')}</span>
                   </button>
                </div>
 

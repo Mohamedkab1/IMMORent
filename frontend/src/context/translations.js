@@ -492,6 +492,7 @@ const translations = {
     'admin.settings.commission': 'Commission (%)',
     'admin.settings.retraction_delay': 'Délai de rétractation (jours)',
     'admin.settings.saving': 'Enregistrement...',
+    'admin.settings.save': 'Sauvegarder les modifications',
     'admin.settings.saved_success': 'Paramètres enregistrés avec succès',
 
     // Property Status
@@ -1814,6 +1815,7 @@ const translations = {
     'admin.settings.primary_color': 'Primary color',
     'admin.settings.secondary_color': 'Secondary color',
     'admin.settings.saving': 'Saving...',
+    'admin.settings.save': 'Save changes',
     'admin.settings.saved_success': 'Settings saved successfully',
 
     // Property Status
@@ -3125,6 +3127,7 @@ const translations = {
     'admin.settings.primary_color': 'اللون الأساسي',
     'admin.settings.secondary_color': 'اللون الثانوي',
     'admin.settings.saving': 'جاري الحفظ...',
+    'admin.settings.save': 'حفظ التغييرات',
     'admin.settings.saved_success': 'تم حفظ الإعدادات بنجاح',
 
     // Property Status
