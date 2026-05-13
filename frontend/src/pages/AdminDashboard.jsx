@@ -296,7 +296,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    if (window.confirm('Supprimer définitivement cet utilisateur ?')) {
+    if (window.confirm(t('admin.users.del_confirm'))) {
       try {
         const res = await userService.delete(id);
         if (res.success) {
@@ -322,7 +322,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteProperty = async (id) => {
-    if (window.confirm('Supprimer définitivement ce bien ?')) {
+    if (window.confirm(t('admin.prop.del_confirm_title'))) {
       try {
         const res = await propertyService.delete(id);
         if (res.success) {
@@ -360,7 +360,7 @@ const AdminDashboard = () => {
   };
 
   const handleProcessAgentRequest = async (userId, status) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir ${status === 'approved' ? 'approuver' : 'refuser'} cette demande ?`)) {
+    if (window.confirm(t('admin.req.process_confirm'))) {
       try {
         const res = await userService.processAgentRequest(userId, status);
         if (res.success) {
@@ -408,7 +408,7 @@ const AdminDashboard = () => {
   const handleDownloadContract = async (id) => {
     try {
       await contractService.download(id);
-      toast.success('Téléchargement lancé');
+      toast.success(t('admin.contracts.downloading'));
     } catch (error) {
       toast.error('Erreur téléchargement');
     }
@@ -445,7 +445,7 @@ const AdminDashboard = () => {
 
   // --- Render Helpers ---
   if (!user || !user.role || user.role.slug !== 'admin') {
-    return <div className="p-8 text-center">Accès restreint.</div>;
+    return <div className="p-8 text-center">{t('common.restricted')}</div>;
   }
 
 
@@ -560,7 +560,7 @@ const AdminDashboard = () => {
               {activeTab === 'settings' && t('admin.tabs.settings')}
             </h2>
             <p className="text-text-sub font-medium mt-1">
-              {t('dash.client.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
+              {t('dash.admin.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -569,7 +569,7 @@ const AdminDashboard = () => {
                 if (activeTab === 'users') loadUsers();
                 else if (activeTab === 'properties') loadProperties();
                 else if (activeTab === 'dashboard') loadDashboardStats();
-                toast.info('Actualisation...');
+                toast.info(t('common.refreshing'));
               }}
               className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:shadow-md hover:scale-105 active:scale-95 hover:text-primary transition-all"
             >

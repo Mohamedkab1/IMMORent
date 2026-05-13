@@ -392,7 +392,7 @@ const AgentDashboard = () => {
             onClick={() => navigate('/payments/history')}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 text-text-sub hover:bg-bg-soft hover:text-text-main`}
           >
-            <CurrencyDollarIcon className="w-5 h-5" /> Paiements
+            <CurrencyDollarIcon className="w-5 h-5" /> {t('common.payments')}
           </button>
         </nav>
         
@@ -570,7 +570,7 @@ const AgentDashboard = () => {
                           </div>
                        </td>
                        <td className="p-4 text-sm font-bold text-text-main text-right">
-                         {(property.price || 0).toLocaleString()} DH
+                         {(property.price || 0).toLocaleString()} {t('prop.currency')}
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(property.status)}</td>
                        <td className="p-4 text-right">
@@ -728,7 +728,7 @@ const AgentDashboard = () => {
                          <div className="text-sm text-text-main">{contract.tenant?.name}</div>
                        </td>
                        <td className="p-4 text-sm font-bold text-text-main text-right">
-                         {(contract.monthly_rent || 0).toLocaleString()} DH
+                         {(contract.monthly_rent || 0).toLocaleString()} {t('prop.currency')}
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(contract.status)}</td>
                        <td className="p-4 text-right">

@@ -316,7 +316,7 @@ const Register = () => {
                             required
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main">
-                            {showPassword ? 'Hide' : 'Show'}
+                            {showPassword ? t('auth.password.hide') : t('auth.password.show')}
                         </button>
                     </div>
                   </div>

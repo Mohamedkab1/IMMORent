@@ -668,7 +668,7 @@ const PropertyDetail = () => {
               <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-huge overflow-hidden group">
                 <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
                   <MapPinIcon className="w-5 h-5 text-primary" />
-                  Localisation
+                  {t('prop.details.location')}
                 </h3>
                 {property.latitude && property.longitude ? (
                   <div className="rounded-2xl overflow-hidden h-64 w-full relative z-0 border border-border-main">
@@ -688,7 +688,7 @@ const PropertyDetail = () => {
                   </div>
                 ) : (
                   <div className="bg-bg-soft rounded-2xl p-8 text-center border border-dashed border-border-main">
-                    <p className="text-text-muted text-xs font-medium italic">Localisation non renseignée</p>
+                    <p className="text-text-muted text-xs font-medium italic">{t('prop.details.no_location')}</p>
                   </div>
                 )}
                 <p className="mt-4 text-sm text-text-sub font-medium">{property.address}</p>
@@ -703,7 +703,7 @@ const PropertyDetail = () => {
         <div className="fixed inset-0 z-[999] flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-bg-card w-full max-w-md rounded-3xl shadow-huge border border-border-main p-8 animate-scale-up">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-text-main">Partager ce bien</h3>
+              <h3 className="text-xl font-bold text-text-main">{t('prop.details.share')}</h3>
               <button onClick={() => setShowShareModal(false)} className="p-2 hover:bg-bg-soft rounded-xl transition-colors">
                 <XMarkIcon className="w-6 h-6 text-text-muted" />
               </button>
@@ -711,7 +711,7 @@ const PropertyDetail = () => {
             
             <div className="space-y-4">
               <div className="p-4 bg-bg-soft rounded-2xl border border-border-main">
-                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-2">Lien public</p>
+                <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-2">{t('prop.details.public_link')}</p>
                 <div className="flex gap-2">
                   <input 
                     readOnly 
@@ -725,7 +725,7 @@ const PropertyDetail = () => {
                     }}
                     className="text-primary font-bold text-sm hover:underline"
                   >
-                    Copier
+                    {t('common.copy')}
                   </button>
                 </div>
               </div>
@@ -749,7 +749,7 @@ const PropertyDetail = () => {
                 onClick={() => setShowShareModal(false)}
                 className="w-full py-4 bg-bg-soft text-text-main rounded-2xl font-bold hover:bg-border-main transition-colors mt-2"
               >
-                Fermer
+                {t('common.close')}
               </button>
             </div>
           </div>

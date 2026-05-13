@@ -372,7 +372,7 @@ const AddProperty = () => {
                       className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       DH {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
+                       {t('prop.currency')} {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
                     </div>
                   </div>
                   {validationErrors.price && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.price}</p>}
@@ -641,7 +641,7 @@ const AddProperty = () => {
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(`${window.location.origin}/properties/${newPropertyId}`);
-                      toast.success("Lien copié !");
+                      toast.success(t('prop.detail.link_copied'));
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-text-muted hover:text-primary transition-colors"
                   >

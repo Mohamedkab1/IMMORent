@@ -228,7 +228,7 @@ const Profile = () => {
                     </div>
                     
                     <h2 className="text-2xl font-bold text-text-main">{user?.name}</h2>
-                    <p className="text-sm font-bold text-text-muted mt-1 uppercase tracking-widest">{user?.role?.name || 'Client'}</p>
+                    <p className="text-sm font-bold text-text-muted mt-1 uppercase tracking-widest">{t('auth.role.' + user?.role?.slug, user?.role?.name || 'Client')}</p>
                     
                     <div className="mt-8 pt-8 border-t border-border-main/50 space-y-4">
                         <div className="flex items-center justify-between text-sm">

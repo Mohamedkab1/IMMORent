@@ -227,10 +227,10 @@ const ClientDashboard = () => {
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-primary to-primary-light h-48 md:h-64 flex items-center justify-center text-white px-4">
         <div className="max-w-4xl w-full">
-          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up">
+          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up !text-white">
             {t('dash.client.welcome')}, <span className="text-secondary">{user?.name}</span>
           </h1>
-          <p className="!text-white/70 font-medium animate-slide-up animation-delay-100">
+          <p className="!text-white font-medium animate-slide-up animation-delay-100">
             {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
           </p>
         </div>

@@ -347,7 +347,7 @@ const Payment = () => {
                   {property.transaction_type === 'rent' && (
                     <div className="flex justify-between text-sm">
                       <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-text-sub">{t('pay.fee', 'Frais de dossier')}</span>
-                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">500 DH</span>
+                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">500 {t('prop.currency')}</span>
                     </div>
                   )}
                 </div>
@@ -358,7 +358,7 @@ const Payment = () => {
 
                     {property.transaction_type === 'rent' 
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
-                      : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
+                      : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} {t('prop.currency')}
                   </span>
                 </div>
               </div>

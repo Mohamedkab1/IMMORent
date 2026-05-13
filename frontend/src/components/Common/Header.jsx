@@ -525,7 +525,7 @@ const Header = () => {
                     </div>
                     <div className="hidden lg:block text-start">
                       <div className={`text-xs font-bold truncate max-w-[150px] leading-none mb-0.5 transition-colors ${scrolled ? '!text-[#000000] dark:!text-white' : 'text-white'}`}>{user?.name}</div>
-                      <div className={`text-[10px] font-black uppercase tracking-tighter leading-none transition-colors ${scrolled ? '!text-slate-600 dark:!text-slate-400' : 'text-slate-200'}`}>{user?.role?.name || 'User'}</div>
+                      <div className={`text-[10px] font-black uppercase tracking-tighter leading-none transition-colors ${scrolled ? '!text-slate-600 dark:!text-slate-400' : 'text-slate-200'}`}>{t('auth.role.' + user?.role?.slug, user?.role?.name || 'User')}</div>
                     </div>
                   </button>
 
@@ -626,7 +626,7 @@ const Header = () => {
                 </div>
                 <div>
                   <p className="font-bold text-slate-900 dark:text-white text-lg">{user?.name}</p>
-                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider font-mono">{user?.role?.name}</p>
+                  <p className="text-xs font-black uppercase text-slate-400 tracking-wider font-mono">{t('auth.role.' + user?.role?.slug, user?.role?.name)}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
