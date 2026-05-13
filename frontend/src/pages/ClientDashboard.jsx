@@ -243,7 +243,7 @@ const ClientDashboard = () => {
             { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
             { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
             { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
-            { id: 'payments', label: 'Paiements', icon: CurrencyDollarIcon },
+            { id: 'payments', label: t('common.payments', 'Paiements'), icon: CurrencyDollarIcon },
           ].map((tab) => (
             <button
               key={tab.id}

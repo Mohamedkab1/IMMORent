@@ -541,9 +541,9 @@ const AddProperty = () => {
                  />
                  <button 
                    type="button" onClick={addFeature} 
-                   className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
+                   className="px-6 py-3 bg-primary !text-white !opacity-100 hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
                  >
-                   <PlusIcon className="w-5 h-5"/> {t('admin.add.add_btn', 'Ajouter')}
+                   <PlusIcon className="w-5 h-5 !text-white"/> {t('admin.add.add_btn', 'Ajouter')}
                  </button>
                </div>
                
@@ -611,9 +611,9 @@ const AddProperty = () => {
             <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card hover:bg-bg-soft text-text-main border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
               {t('common.cancel', 'Annuler')}
             </button>
-            <button type="submit" disabled={loading} className="px-10 py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
+            <button type="submit" disabled={loading} className="px-10 py-4 bg-primary !text-white !opacity-100 hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
               {loading && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-              {loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}
+              <span className="!text-white !opacity-100">{loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}</span>
             </button>
           </div>
           
