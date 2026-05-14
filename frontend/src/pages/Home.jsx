@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 import { 
   MagnifyingGlassIcon, 
   DocumentTextIcon, 
@@ -92,35 +93,57 @@ const Home = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-main transition-colors duration-500">
+    <div className={`flex flex-col min-h-screen transition-colors duration-500 ${theme === 'light' ? 'bg-white' : 'bg-bg-main'}`}>
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-start pt-48 pb-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80" 
             alt="Skyscrapers" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-black/60 dark:bg-black/70 transition-colors"></div>
+          <div className={`absolute inset-0 transition-all duration-700 ${
+            theme === 'light' 
+              ? 'bg-gradient-to-r from-white/95 via-white/80 to-transparent' 
+              : 'bg-black/60 dark:bg-black/70'
+          }`}></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-4xl">
             <RevealOnScroll>
-              <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight leading-[1.1]">
+              <h1 className={`text-5xl md:text-7xl font-bold mb-8 tracking-tight leading-[1.1] transition-colors duration-500 ${
+                theme === 'light' ? 'text-slate-900' : 'text-white'
+              }`}>
                 {t('home.hero.title_part1')} <br />
-                <span className="text-yellow-400">{t('home.hero.title_part2')}</span> <br />
+                <span className="text-blue-600 dark:text-yellow-400">{t('home.hero.title_part2')}</span> <br />
                 {t('home.hero.title_part3')}
               </h1>
-              <p className="text-xl text-white/90 mb-10 leading-relaxed font-light">
+              <p className={`text-xl mb-10 leading-relaxed font-light transition-colors duration-500 ${
+                theme === 'light' ? 'text-slate-600' : 'text-white/90'
+              }`}>
                 {t('home.hero.description_part1')} <br className="hidden md:block" />
                 {t('home.hero.description_part2')}
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to={getStartedPath} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-lg transition-all transform hover:scale-105 uppercase tracking-widest text-xs">
+                <Link 
+                  to={getStartedPath} 
+                  className={`px-8 py-4 font-bold rounded shadow-lg transition-all transform hover:scale-105 uppercase tracking-widest text-xs ${
+                    theme === 'light' 
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+                  }`}
+                >
                   {t('home.hero.get_started')}
                 </Link>
-                <Link to="/about" className="px-8 py-4 border-2 border-white text-white font-bold rounded hover:bg-white hover:text-black transition-all uppercase tracking-widest text-xs">
+                <Link 
+                  to="/about" 
+                  className={`px-8 py-4 border-2 font-bold rounded transition-all uppercase tracking-widest text-xs ${
+                    theme === 'light' 
+                      ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' 
+                      : 'border-white text-white hover:bg-white hover:text-black'
+                  }`}
+                >
                   {t('home.hero.learn_more')}
                 </Link>
               </div>
@@ -130,7 +153,7 @@ const Home = () => {
       </section>
 
       {/* Main Content Area - Reactive to Theme */}
-      <div className="bg-white dark:bg-gradient-to-b dark:from-[#0a1a1a] dark:via-[#1a2b3d] dark:to-[#2a3b4d] text-gray-900 dark:text-white transition-all duration-500">
+      <div className="bg-gradient-to-b from-white via-slate-50/50 to-white dark:from-[#0a1a1a] dark:via-[#1a2b3d] dark:to-[#2a3b4d] text-gray-900 dark:text-white transition-all duration-500">
         
         {/* Categories Section */}
         <section className="py-32">
@@ -220,7 +243,7 @@ const Home = () => {
 
         {/* Transition to Footer - Only in dark mode */}
         <div className="hidden dark:block h-32 bg-gradient-to-b from-[#2a3b4d] to-bg-main transition-all duration-500"></div>
-        <div className="dark:hidden h-24 bg-gray-50 transition-all duration-500"></div>
+        <div className="dark:hidden h-24 bg-gradient-to-b from-white to-slate-50 transition-all duration-500"></div>
       </div>
 
     </div>

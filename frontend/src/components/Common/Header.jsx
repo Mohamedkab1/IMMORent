@@ -359,7 +359,11 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <img src={logo} alt="IMMORent" className="h-10 w-10 object-cover rounded-xl shadow-sm" />
-            <span className={`text-3xl font-black tracking-tighter transition-colors ${!scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white' : 'text-text-main'}`}>
+            <span className={`text-3xl font-black tracking-tighter transition-colors ${
+              !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                ? (theme === 'light' ? 'text-slate-900' : 'text-white') 
+                : 'text-text-main'
+            }`}>
               IMMO<span className="text-yellow-400">Rent</span>
             </span>
           </Link>
@@ -373,7 +377,13 @@ const Header = () => {
                   key={link.path}
                   to={link.path}
                   className={`transition-colors duration-300 ${
-                    isActive ? 'text-primary dark:text-secondary' : scrolled ? 'text-text-sub hover:text-text-main' : (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white/80 hover:text-white' : 'text-text-sub hover:text-text-main'
+                    isActive 
+                      ? (theme === 'light' ? 'text-blue-600' : 'text-secondary') 
+                      : scrolled 
+                        ? 'text-text-sub hover:text-text-main' 
+                        : (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                          ? (theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white') 
+                          : 'text-text-sub hover:text-text-main'
                   }`}
                 >
                   {link.name}
@@ -560,8 +570,26 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center gap-4 rtl:gap-reverse uppercase tracking-widest text-[10px] font-black">
-                <Link to="/login" className={`transition-colors ${!scrolled && location.pathname === '/' ? 'text-white/80 hover:text-white' : 'text-text-sub hover:text-text-main'}`}>{t('nav.login')}</Link>
-                <Link to="/register" className={`px-5 py-2 border-2 transition-all ${!scrolled && location.pathname === '/' ? 'border-white text-white hover:bg-white hover:text-black' : 'border-primary text-primary hover:bg-primary hover:text-white'}`}>{t('nav.register')}</Link>
+                <Link 
+                  to="/login" 
+                  className={`transition-colors ${
+                    !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                      ? (theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white') 
+                      : 'text-text-sub hover:text-text-main'
+                  }`}
+                >
+                  {t('nav.login')}
+                </Link>
+                <Link 
+                  to="/register" 
+                  className={`px-5 py-2 border-2 transition-all ${
+                    !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                      ? (theme === 'light' ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' : 'border-white text-white hover:bg-white hover:text-black') 
+                      : 'border-primary text-primary hover:bg-primary hover:text-white'
+                  }`}
+                >
+                  {t('nav.register')}
+                </Link>
               </div>
             )}
           </div>
