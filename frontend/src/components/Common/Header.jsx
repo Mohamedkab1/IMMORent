@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enGB, arMA } from 'date-fns/locale';
@@ -42,6 +43,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [hoveredLink, setHoveredLink] = useState(null);
 
   const getLocale = () => {
     if (language === 'ar') return arMA;
@@ -345,11 +347,15 @@ const Header = () => {
     { name: t('nav.contact'), path: '/contact' },
   ];
 
+  const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
+  const isTransparentNav = location.pathname === '/' || location.pathname.startsWith('/properties/') || location.pathname === '/about' || location.pathname === '/contact' || isAuthPage;
+  const isLightText = !scrolled && isTransparentNav;
+
   return (
     <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
       scrolled 
         ? 'bg-bg-main/95 backdrop-blur-md shadow-lg border-b border-border-main py-2' 
-        : (location.pathname === '/' || location.pathname.startsWith('/properties/') || ['/login', '/register', '/register/role'].includes(location.pathname)) 
+        : isTransparentNav 
           ? 'bg-transparent py-6' 
           : 'bg-bg-main py-4'
     }`}>
@@ -357,13 +363,9 @@ const Header = () => {
         <div className="flex justify-between items-center h-12 md:h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-3 group focus:outline-none">
             <img src={logo} alt="IMMORent" className="h-10 w-10 object-cover rounded-xl shadow-sm" />
-            <span className={`text-3xl font-black tracking-tighter transition-colors ${
-              !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
-                ? (theme === 'light' ? 'text-slate-900' : 'text-white') 
-                : 'text-text-main'
-            }`}>
+            <span className={`text-3xl font-black tracking-tighter transition-colors ${isLightText ? 'text-white' : 'text-text-main'}`}>
               IMMO<span className="text-yellow-400">Rent</span>
             </span>
           </Link>
@@ -376,17 +378,23 @@ const Header = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`transition-colors duration-300 ${
-                    isActive 
-                      ? (theme === 'light' ? 'text-blue-600' : 'text-secondary') 
-                      : scrolled 
-                        ? 'text-text-sub hover:text-text-main' 
-                        : (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
-                          ? (theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white') 
-                          : 'text-text-sub hover:text-text-main'
+                  onMouseEnter={() => setHoveredLink(link.path)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                  className={`relative py-2 focus:outline-none transition-colors duration-300 ${
+                    isActive ? 'text-primary dark:text-yellow-400' : scrolled ? 'text-text-sub hover:text-yellow-400' : isLightText ? 'text-white/80 hover:text-yellow-400' : 'text-text-sub hover:text-yellow-400'
                   }`}
                 >
                   {link.name}
+                  {hoveredLink === link.path && (
+                    <motion.div
+                      layoutId="navHoverIndicator"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-yellow-400 rounded-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -468,7 +476,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-xl shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={handleMarkAllRead} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -477,10 +485,10 @@ const Header = () => {
                       {notifications.length > 0 ? notifications.map(notif => (
                         <div
                           key={notif.id}
-                          className={`p-3 rounded-2xl transition-all cursor-pointer flex gap-3 group/item ${notif.read_at ? 'hover:bg-bg-soft' : 'bg-primary/5 dark:bg-secondary/5 hover:bg-primary/10 dark:hover:bg-secondary/10 border border-primary/10 dark:border-secondary/10'}`}
+                          className={`p-3 rounded-lg transition-all cursor-pointer flex gap-3 group/item ${notif.read_at ? 'hover:bg-bg-soft' : 'bg-primary/5 dark:bg-secondary/5 hover:bg-primary/10 dark:hover:bg-secondary/10 border border-primary/10 dark:border-secondary/10'}`}
                           onClick={() => markAsRead(notif.id, notif.data?.link)}
                         >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notif.read_at ? 'bg-bg-soft' : 'bg-white dark:bg-slate-800 shadow-sm'}`}>
+                          <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 ${notif.read_at ? 'bg-bg-soft' : 'bg-white dark:bg-slate-800 shadow-sm'}`}>
                             {getNotifIcon(notif.data?.type)}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -505,7 +513,7 @@ const Header = () => {
                       )}
                     </div>
                     {notifications.length > 0 && (
-                      <div className="p-3 border-t border-border-main bg-bg-soft/30 rounded-b-3xl">
+                      <div className="p-3 border-t border-border-main bg-bg-soft/30 rounded-b-xl">
                         <Link to="/notifications" className="block w-full py-2 text-center text-xs font-bold text-primary hover:text-primary-dark transition-colors">
                           {t('nav.view_all_notifications', 'Voir toutes les notifications')}
                         </Link>
@@ -521,9 +529,9 @@ const Header = () => {
                       setDropdownOpen(!dropdownOpen);
                       setNotifOpen(false);
                     }} 
-                    className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-2xl border border-transparent hover:border-border-main transition-all"
+                    className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-xl border border-transparent hover:border-border-main transition-all"
                   >
-                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-md border border-white/10">
+                    <div className="w-9 h-9 rounded-lg overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-sm border border-white/10">
                       {user?.profile_photo ? (
                         <img 
                           src={`http://localhost:8000/storage/${user.profile_photo}`} 
@@ -541,27 +549,24 @@ const Header = () => {
                   </button>
 
 
-                  <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-3xl shadow-2xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
-                    <div className="p-5 border-b border-border-main bg-bg-soft dark:bg-slate-800">
-                       <p className="text-xs font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
-                       <p className="text-sm font-bold !text-slate-900 dark:!text-white truncate">{user?.email}</p>
+                  <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-xl shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                    <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
+                       <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
-                      <Link to={dashboardLink} className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
-                        <ChartBarIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} /> 
-                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.dashboard')}</span>
+                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-text-sub hover:bg-bg-secondary hover:text-primary dark:hover:text-white transition-all">
+                        <ChartBarIcon className="w-5 h-5 opacity-70" /> {t('nav.dashboard')}
                       </Link>
-                      <Link to="/messages" className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
-                        <ChatBubbleLeftRightIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} />
-                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.messages')}</span>
+                      <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
+                        <ChatBubbleLeftRightIcon className="w-5 h-5 opacity-70" /> {t('nav.messages')}
                       </Link>
-                      <Link to="/profile" className={`group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${theme === 'light' ? '!text-black bg-white hover:bg-slate-50' : '!text-white hover:bg-slate-800'}`}>
-                        <UserCircleIcon className={`w-5 h-5 transition-colors ${theme === 'light' ? '!text-slate-500 group-hover:!text-primary' : '!text-slate-400 group-hover:!text-secondary'}`} />
-                        <span className={`!opacity-100 ${theme === 'light' ? '!text-black' : '!text-white'}`}>{t('nav.profile')}</span>
+                      <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
+                        <UserCircleIcon className="w-5 h-5 opacity-70" /> {t('nav.profile')}
                       </Link>
                     </div>
                     <div className="p-2 border-t border-slate-50 dark:border-slate-800">
-                      <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
+                      <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all">
                         <ArrowRightOnRectangleIcon className="w-5 h-5" /> {t('nav.logout')}
                       </button>
                     </div>
