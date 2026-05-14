@@ -163,12 +163,18 @@ const Messages = () => {
       theme === 'light' ? 'bg-slate-50' : 'bg-[#050a1f]'
     }`}>
       
-      <div className="max-w-7xl mx-auto h-[calc(100vh-120px)] flex overflow-hidden rounded-lg shadow-2xl border border-white/5 bg-bg-main/50 backdrop-blur-sm relative z-10 m-4">
+      <div className={`max-w-7xl mx-auto h-[calc(100vh-120px)] flex overflow-hidden rounded-lg shadow-2xl border backdrop-blur-sm relative z-10 m-4 transition-colors duration-500 ${
+        theme === 'light' ? 'bg-white border-slate-200' : 'bg-bg-main/50 border-white/5'
+      }`}>
         
         {/* Sidebar - Liste des conversations */}
-        <div className={`${showMobileList ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-96 border-e border-border-main bg-bg-main/80 backdrop-blur-md transition-all`}>
-          <div className="p-8 border-b border-border-main">
-            <span className="inline-block px-3 py-1 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-lg mb-4">
+        <div className={`${showMobileList ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-96 border-e transition-colors duration-500 ${
+          theme === 'light' ? 'bg-white border-slate-200' : 'border-border-main bg-bg-main/80 backdrop-blur-md'
+        }`}>
+          <div className={`p-8 border-b transition-colors duration-500 ${
+            theme === 'light' ? 'border-slate-200' : 'border-border-main'
+          }`}>
+            <span className="inline-block px-3 py-1 bg-primary !text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-lg mb-4">
               {t('msg.badge', 'Inbox')}
             </span>
             <h1 className={`text-4xl font-black tracking-tighter mb-6 ${
@@ -177,12 +183,16 @@ const Messages = () => {
               {t('msg.title', 'Messages')}
             </h1>
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <MagnifyingGlassIcon className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${
+                theme === 'light' ? 'text-slate-400' : 'text-text-muted'
+              }`} />
               <input 
                 type="text" 
                 placeholder={t('msg.search_placeholder')}
-                className={`w-full pl-12 pr-4 py-4 rounded-lg text-xs font-bold transition-all focus:ring-1 focus:ring-primary ${
-                  theme === 'light' ? 'bg-slate-100/50 border-slate-200' : 'bg-white/5 border-white/10 text-white'
+                className={`w-full pl-12 pr-4 py-4 rounded-lg text-xs font-bold transition-all focus:ring-1 focus:ring-primary border ${
+                  theme === 'light' 
+                    ? 'bg-slate-100 border-slate-200 text-slate-900 placeholder:text-slate-400' 
+                    : 'bg-white/5 border-white/10 text-white placeholder:text-white/30'
                 }`}
               />
             </div>
@@ -205,15 +215,19 @@ const Messages = () => {
                     }`}
                   >
                     <div className="relative flex-shrink-0">
-                      <div className="w-14 h-14 rounded-lg bg-bg-soft flex items-center justify-center overflow-hidden border border-border-main ring-2 ring-transparent group-hover:ring-primary/30 transition-all">
+                      <div className={`w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden border ring-2 ring-transparent group-hover:ring-primary/30 transition-all ${
+                        theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-bg-soft border-border-main'
+                      }`}>
                         {conv.other_user.profile_photo_url ? (
                             <img src={conv.other_user.profile_photo_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                            <UserCircleIcon className="w-10 h-10 text-text-muted" />
+                            <UserCircleIcon className={`w-10 h-10 ${theme === 'light' ? 'text-slate-400' : 'text-text-muted'}`} />
                         )}
                       </div>
                       {conv.unread_count > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-lg border-2 border-bg-main flex items-center justify-center">
+                        <span className={`absolute -top-1 -right-1 w-5 h-5 bg-rose-500 !text-white text-[10px] font-bold rounded-lg border-2 flex items-center justify-center ${
+                          theme === 'light' ? 'border-white' : 'border-bg-main'
+                        }`}>
                           {conv.unread_count}
                         </span>
                       )}
@@ -224,14 +238,16 @@ const Messages = () => {
                         <h4 className={`font-black text-xs uppercase tracking-wider truncate ${
                           theme === 'light' ? 'text-slate-900' : 'text-white'
                         }`}>{conv.other_user.name}</h4>
-                        <span className="text-[10px] font-bold text-text-muted whitespace-nowrap ml-2">
+                        <span className={`text-[10px] font-bold whitespace-nowrap ml-2 ${
+                          theme === 'light' ? 'text-slate-400' : 'text-text-muted'
+                        }`}>
                            {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: getLocale() }) : ''}
                         </span>
                       </div>
                       <p className={`text-xs truncate font-medium ${
                         conv.unread_count > 0 
                           ? (theme === 'light' ? 'text-slate-900 font-black' : 'text-white font-black') 
-                          : 'text-text-muted'
+                          : (theme === 'light' ? 'text-slate-400' : 'text-text-muted')
                       }`}>
                         {conv.property ? conv.property.title : t('msg.list.last_message')}
                       </p>
@@ -240,10 +256,16 @@ const Messages = () => {
                 ))
               ) : !loading && (
                 <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-bg-soft rounded-full flex items-center justify-center mx-auto mb-4 border border-border-main">
-                    <ChatBubbleLeftRightIcon className="w-8 h-8 text-text-muted opacity-20" />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border ${
+                    theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-bg-soft border-border-main'
+                  }`}>
+                    <ChatBubbleLeftRightIcon className={`w-8 h-8 opacity-30 ${
+                      theme === 'light' ? 'text-slate-400' : 'text-text-muted'
+                    }`} />
                   </div>
-                  <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">{t('msg.list.empty')}</p>
+                  <p className={`text-[10px] font-black uppercase tracking-widest ${
+                    theme === 'light' ? 'text-slate-400' : 'text-text-muted'
+                  }`}>{t('msg.list.empty')}</p>
                 </div>
               )}
             </AnimatePresence>
@@ -251,20 +273,28 @@ const Messages = () => {
         </div>
 
         {/* Main Chat Area */}
-        <div className={`${!showMobileList ? 'flex' : 'hidden'} md:flex flex-1 flex-col bg-bg-main/30 relative z-10`}>
+        <div className={`${!showMobileList ? 'flex' : 'hidden'} md:flex flex-1 flex-col relative z-10 transition-colors duration-500 ${
+          theme === 'light' ? 'bg-slate-50' : 'bg-bg-main/30'
+        }`}>
           {selectedConversation ? (
             <>
               {/* Header */}
-              <header className="px-8 py-6 border-b border-border-main flex items-center justify-between bg-bg-main/60 backdrop-blur-xl sticky top-0 z-20">
+              <header className={`px-8 py-6 border-b flex items-center justify-between sticky top-0 z-20 transition-colors duration-500 ${
+                theme === 'light' ? 'bg-white border-slate-200 backdrop-blur-xl' : 'border-border-main bg-bg-main/60 backdrop-blur-xl'
+              }`}>
                 <div className="flex items-center gap-5">
-                  <button onClick={() => setShowMobileList(true)} className="md:hidden p-2 hover:bg-bg-soft rounded-lg transition-colors">
-                    <ChevronLeftIcon className="w-5 h-5 text-text-sub" />
+                  <button onClick={() => setShowMobileList(true)} className={`md:hidden p-2 rounded-lg transition-colors ${
+                    theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-bg-soft'
+                  }`}>
+                    <ChevronLeftIcon className={`w-5 h-5 ${theme === 'light' ? 'text-slate-500' : 'text-text-sub'}`} />
                   </button>
-                  <div className="w-12 h-12 rounded-lg bg-bg-soft overflow-hidden flex-shrink-0 border border-border-main ring-2 ring-primary/10">
+                  <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ring-2 ring-primary/10 ${
+                    theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-bg-soft border-border-main'
+                  }`}>
                     {selectedConversation.other_user.profile_photo_url ? (
                       <img src={selectedConversation.other_user.profile_photo_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <UserCircleIcon className="w-full h-full text-text-muted" />
+                      <UserCircleIcon className={`w-full h-full ${theme === 'light' ? 'text-slate-400' : 'text-text-muted'}`} />
                     )}
                   </div>
                   <div>
@@ -288,8 +318,8 @@ const Messages = () => {
               </header>
 
               {selectedConversation.property && (
-                  <div className={`px-8 py-4 border-b border-border-main flex items-center justify-between text-[10px] uppercase font-black tracking-widest transition-all ${
-                    theme === 'light' ? 'bg-white/50' : 'bg-white/[0.02]'
+                  <div className={`px-8 py-4 border-b flex items-center justify-between text-[10px] uppercase font-black tracking-widest transition-all ${
+                    theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-border-main'
                   }`}>
                       <div className="flex items-center gap-3 overflow-hidden">
                           <BuildingOfficeIcon className="w-4 h-4 text-primary shrink-0" />
@@ -297,7 +327,9 @@ const Messages = () => {
                             {t('msg.property.concerning')} <span className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{selectedConversation.property.title}</span>
                           </span>
                       </div>
-                      <button className="text-primary hover:text-primary-dark transition-colors shrink-0 ml-4 border-b border-primary/30 hover:border-primary">
+                      <button className={`transition-colors shrink-0 ml-4 border-b border-primary/30 hover:border-primary ${
+                        theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-primary hover:text-primary-dark'
+                      }`}>
                         {t('common.view_details')}
                       </button>
                   </div>
@@ -318,21 +350,23 @@ const Messages = () => {
                         <div className={`max-w-[80%] md:max-w-[65%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                           <div className={`px-5 py-4 rounded-lg shadow-xl ${
                             isMine 
-                            ? 'bg-primary text-white rounded-br-none shadow-primary/20' 
+                            ? 'bg-primary !text-white rounded-br-none shadow-primary/20' 
                             : theme === 'light' 
                               ? 'bg-white text-slate-900 rounded-bl-none border border-slate-100' 
                               : 'bg-white/5 text-white rounded-bl-none border border-white/10 backdrop-blur-md'
                           }`}>
-                            <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap">{msg.body}</p>
+                            <p className={`text-sm leading-relaxed font-medium whitespace-pre-wrap ${isMine ? '!text-white' : ''}`}>{msg.body}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-2 px-1">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
+                            <span className={`text-[9px] font-black uppercase tracking-widest ${
+                              theme === 'light' ? 'text-slate-400' : 'text-text-muted'
+                            }`}>
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {isMine && (
                               msg.read_at 
                               ? <CheckCircleIcon className="w-3.5 h-3.5 text-primary" /> 
-                              : <CheckIcon className="w-3.5 h-3.5 text-text-muted" />
+                              : <CheckIcon className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-slate-400' : 'text-text-muted'}`} />
                             )}
                           </div>
                         </div>
@@ -344,7 +378,9 @@ const Messages = () => {
               </div>
 
               {/* Input Bar */}
-              <div className="p-8 bg-bg-main/60 backdrop-blur-xl border-t border-border-main">
+              <div className={`p-8 backdrop-blur-xl border-t transition-colors duration-500 ${
+                theme === 'light' ? 'bg-white border-slate-200' : 'bg-bg-main/60 border-border-main'
+              }`}>
                 <form onSubmit={handleSendMessage} className="flex gap-5">
                   <input 
                     type="text" 
@@ -358,7 +394,7 @@ const Messages = () => {
                   <button 
                     type="submit"
                     disabled={!newMessage.trim() || sending}
-                    className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-primary text-white rounded-lg hover:bg-primary-dark shadow-2xl shadow-primary/30 transition-all disabled:opacity-50 disabled:scale-95 group active:scale-95"
+                    className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-primary !text-white rounded-lg hover:bg-primary-dark shadow-2xl shadow-primary/30 transition-all disabled:opacity-50 disabled:scale-95 group active:scale-95"
                   >
                     <PaperAirplaneIcon className="w-7 h-7 -rotate-45 -translate-y-0.5 translate-x-0.5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </button>

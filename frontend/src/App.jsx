@@ -100,7 +100,7 @@ const AppContent = () => {
       <PageLoader />
       <ToastContainer 
         position="top-right"
-        autoClose={2000}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={true}
         closeOnClick
@@ -110,9 +110,15 @@ const AppContent = () => {
         pauseOnHover
         theme={theme}
         toastClassName={() => 
-          `relative flex p-1 min-h-10 rounded-lg justify-between overflow-hidden cursor-pointer shadow-huge border border-border-main glass-panel mb-4`
+          theme === 'light'
+            ? `Toastify__toast flex items-center w-full cursor-pointer overflow-hidden mb-3`
+            : `Toastify__toast relative flex p-1 min-h-10 rounded-lg justify-between overflow-hidden cursor-pointer shadow-huge border border-border-main glass-panel mb-4`
         }
-        bodyClassName={() => "flex text-xs font-black uppercase tracking-widest p-3"}
+        bodyClassName={() => 
+          theme === 'light'
+            ? "Toastify__toast-body flex items-center gap-3 w-full py-1"
+            : "Toastify__toast-body flex text-xs font-black uppercase tracking-widest p-3"
+        }
       />
     </div>
   );

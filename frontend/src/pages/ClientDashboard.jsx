@@ -231,28 +231,42 @@ const ClientDashboard = () => {
       {/* Top Banner with Luxury Gradient */}
       <div className="relative h-[300px] md:h-[400px] flex items-center pt-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className={`absolute top-0 left-0 w-full h-full ${
+          <div className={`absolute top-0 left-0 w-full h-full transition-colors duration-500 ${
             theme === 'light' 
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-700' 
+              ? 'bg-white border-b border-slate-100' 
               : 'bg-gradient-to-r from-blue-900 to-[#050a1f]'
           }`}></div>
           {/* Animated Background Elements */}
-          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
+          <div className={`absolute top-0 right-0 w-1/2 h-full ${
+            theme === 'light' ? 'opacity-5' : 'opacity-10'
+          }`}>
             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <path d="M0 0 L100 0 L100 100 Z" fill="currentColor" className="text-white" />
+              <path d="M0 0 L100 0 L100 100 Z" fill="currentColor" className={theme === 'light' ? 'text-blue-600' : 'text-white'} />
             </svg>
           </div>
+          {/* Light Mode: decorative glow */}
+          {theme === 'light' && (
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-blue-100/60 blur-3xl pointer-events-none" />
+          )}
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <RevealOnScroll>
-            <div className="inline-block px-3 py-1 mb-4 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
+            <div className={`inline-block px-3 py-1 mb-4 rounded-lg backdrop-blur-md border text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-500 ${
+              theme === 'light' 
+                ? 'bg-blue-50 border-blue-100 text-blue-600' 
+                : 'bg-white/10 border-white/20 text-white/80'
+            }`}>
               {t('dash.client.portal', 'Portail Client')}
             </div>
-            <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-white">
-              {t('dash.client.welcome')}, <span className="text-blue-400">{user?.name}</span>
+            <h1 className={`text-4xl md:text-6xl font-black mb-4 tracking-tighter transition-colors duration-500 ${
+              theme === 'light' ? 'text-slate-900' : 'text-white'
+            }`}>
+              {t('dash.client.welcome')}, <span className="text-blue-600">{user?.name}</span>
             </h1>
-            <p className="text-white/60 text-lg font-light max-w-2xl leading-relaxed">
+            <p className={`text-lg font-light max-w-2xl leading-relaxed transition-colors duration-500 ${
+              theme === 'light' ? 'text-slate-500' : 'text-white/60'
+            }`}>
               {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
             </p>
           </RevealOnScroll>
@@ -479,7 +493,7 @@ const ClientDashboard = () => {
                                    <Link 
                                      to={`/properties/${request.property_id}/payment`} 
                                      state={{ property: request.property, request: request }}
-                                     className="px-6 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                                     className="px-6 py-2 bg-blue-600 !text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                                    >
                                      {t('client.requests.pay_now')}
                                    </Link>
@@ -546,7 +560,7 @@ const ClientDashboard = () => {
                     </div>
                     <Link 
                       to={`/contracts/${contract.id}`} 
-                      className="block w-full py-4 bg-blue-600 text-white text-center text-[10px] font-black uppercase tracking-[0.3em] rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                      className="block w-full py-4 bg-blue-600 !text-white text-center text-[10px] font-black uppercase tracking-[0.3em] rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
                     >
                       {t('client.contracts.view')}
                     </Link>

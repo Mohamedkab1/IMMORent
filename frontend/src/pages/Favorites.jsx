@@ -101,7 +101,7 @@ const Favorites = () => {
               </p>
               <Link 
                 to="/properties" 
-                className="px-12 py-5 bg-blue-600 text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-2xl shadow-blue-600/20 active:scale-[0.98]"
+                className="px-12 py-5 bg-blue-600 !text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-2xl shadow-blue-600/20 active:scale-[0.98]"
               >
                 {t('fav.empty.btn', 'Découvrir les biens')}
               </Link>
@@ -144,7 +144,7 @@ const Favorites = () => {
                       <div className="absolute top-4 right-4">
                         <button 
                           onClick={(e) => { e.preventDefault(); removeFavorite(property.id); }}
-                          className="p-3 bg-white/10 backdrop-blur-md text-white hover:bg-rose-500 transition-all rounded-lg shadow-2xl active:scale-90"
+                          className="p-3 bg-white/10 backdrop-blur-md !text-white hover:bg-rose-500 transition-all rounded-lg shadow-2xl active:scale-90"
                           title={t('fav.remove')}
                         >
                           <TrashIcon className="w-5 h-5" />
@@ -153,15 +153,15 @@ const Favorites = () => {
                       
                       {/* Bottom Info on Image */}
                       <div className="absolute bottom-6 inset-x-6">
-                         <div className="flex items-center gap-2 text-white/60 mb-2 font-black text-[10px] uppercase tracking-widest">
+                         <div className="flex items-center gap-2 !text-white/60 mb-2 font-black text-[10px] uppercase tracking-widest">
                            <MapPinIcon className="w-4 h-4" />
                            {property.city}
                          </div>
-                         <h3 className="text-2xl font-black text-white tracking-tight leading-tight mb-2 group-hover:text-blue-400 transition-colors">
+                         <h3 className="text-2xl font-black !text-white tracking-tight leading-tight mb-2 group-hover:!text-blue-300 transition-colors">
                            {t(property.title)}
                          </h3>
-                         <div className="text-2xl font-black text-white">
-                           {property.price?.toLocaleString()} <span className="text-xs text-white/50">{t('prop.card.price_unit', 'DH')}{property.transaction_type === 'rent' ? '/'+t('prop.per_month', 'mois') : ''}</span>
+                         <div className="text-2xl font-black !text-white">
+                           {property.price?.toLocaleString()} <span className="text-xs !text-white/50">{t('prop.card.price_unit', 'DH')}{property.transaction_type === 'rent' ? '/'+t('prop.per_month', 'mois') : ''}</span>
                          </div>
                       </div>
                     </div>
@@ -185,7 +185,7 @@ const Favorites = () => {
                       
                       <Link 
                         to={`/properties/${property.id}`}
-                        className="mt-auto block w-full py-5 text-center bg-blue-600 text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98]"
+                        className="mt-auto block w-full py-5 text-center bg-blue-600 !text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98]"
                       >
                         {t('common.view_details', 'Voir Détails')}
                       </Link>

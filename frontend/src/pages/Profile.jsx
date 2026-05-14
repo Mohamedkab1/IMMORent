@@ -279,7 +279,9 @@ const Profile = () => {
                           <button 
                               onClick={handlePhotoClick}
                               disabled={loading}
-                              className="absolute -bottom-3 -right-3 p-4 bg-blue-600 text-white rounded-lg shadow-xl border-4 border-[#050a1f] hover:scale-110 transition-transform disabled:opacity-50 active:scale-95"
+                              className={`absolute -bottom-3 -right-3 p-4 bg-blue-600 !text-white rounded-lg shadow-xl border-4 hover:scale-110 transition-transform disabled:opacity-50 active:scale-95 ${
+                                theme === 'light' ? 'border-slate-50' : 'border-[#050a1f]'
+                              }`}
                           >
                               <CameraIcon className="w-6 h-6" />
                           </button>
@@ -370,7 +372,7 @@ const Profile = () => {
                               </div>
                           </div>
                           {!isEditing ? (
-                              <button onClick={() => setIsEditing(true)} className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                              <button onClick={() => setIsEditing(true)} className="flex items-center gap-3 px-8 py-4 bg-blue-600 !text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
                                   <PencilIcon className="w-4 h-4" /> {t('profile.edit')}
                               </button>
                           ) : (
@@ -486,7 +488,7 @@ const Profile = () => {
                                     <button 
                                         type="submit" 
                                         disabled={loading}
-                                        className="w-full md:w-auto px-16 py-5 bg-blue-600 text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-4 active:scale-[0.98]"
+                                        className="w-full md:w-auto px-16 py-5 bg-blue-600 !text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-4 active:scale-[0.98]"
                                     >
                                         {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <CheckIcon className="w-6 h-6" />}
                                         {t('profile.save')}

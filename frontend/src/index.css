@@ -284,6 +284,79 @@ html[dir="rtl"] .flip-rtl {
   background: var(--primary-light) !important;
 }
 
+/* Light Mode Toastify Override - Professional Style */
+:root:not(.dark) .Toastify__toast {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  color: #1f2937 !important;
+  padding: 14px 16px !important;
+  min-height: 60px !important;
+}
+
+:root:not(.dark) .Toastify__toast--success {
+  border-left: 4px solid #10b981 !important;
+}
+
+:root:not(.dark) .Toastify__toast--error {
+  border-left: 4px solid #ef4444 !important;
+}
+
+:root:not(.dark) .Toastify__toast--info {
+  border-left: 4px solid #3b82f6 !important;
+}
+
+:root:not(.dark) .Toastify__toast--warning {
+  border-left: 4px solid #f59e0b !important;
+}
+
+:root:not(.dark) .Toastify__toast-body,
+:root:not(.dark) .Toastify__toast-body *,
+:root:not(.dark) .Toastify__toast-body div {
+  color: #1f2937 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.5 !important;
+}
+
+:root:not(.dark) .Toastify__toast-icon {
+  width: 22px !important;
+  height: 22px !important;
+  flex-shrink: 0 !important;
+  margin-right: 10px !important;
+}
+
+:root:not(.dark) .Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #10b981 !important;
+}
+
+:root:not(.dark) .Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #ef4444 !important;
+}
+
+:root:not(.dark) .Toastify__toast--info .Toastify__toast-icon svg {
+  fill: #3b82f6 !important;
+}
+
+:root:not(.dark) .Toastify__toast--warning .Toastify__toast-icon svg {
+  fill: #f59e0b !important;
+}
+
+:root:not(.dark) .Toastify__close-button,
+:root:not(.dark) .Toastify__close-button svg {
+  color: #94a3b8 !important;
+  fill: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+:root:not(.dark) .Toastify__progress-bar {
+  background: var(--primary) !important;
+  height: 2px !important;
+}
+
 .Toastify__close-button {
   color: var(--color-text-muted) !important;
   opacity: 0.5;
