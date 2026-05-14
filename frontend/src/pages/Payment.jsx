@@ -5,8 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
-import { 
-  CreditCardIcon, 
+import {
+  CreditCardIcon,
   BanknotesIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
@@ -29,7 +29,7 @@ const Payment = () => {
   const [success, setSuccess] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('card');
-  
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -42,11 +42,12 @@ const Payment = () => {
     lastName: user?.name?.split(' ').slice(1).join(' ') || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    entryDate: formatDateForInput(location.state?.request?.start_date || location.state?.contract?.start_date),
+    entryDate: formatDateForInput(location.state?.request?.start_date || location.state?.contract?.start_date || location.state?.property?.start_date) || new Date().toISOString().split('T')[0],
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardName: user?.name || ''
+    cardName: user?.name || '',
+    transferCode: ''
   });
 
   useEffect(() => {
@@ -70,8 +71,8 @@ const Payment = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Empêcher la modification de la date si elle vient de la demande
-    if (name === 'entryDate' && (location.state?.request?.start_date || location.state?.contract?.start_date)) return;
+    // La date est toujours en lecture seule (provient du contrat/demande)
+    if (name === 'entryDate') return;
 
     // Formatage simple pour la carte bancaire
     if (name === 'cardNumber') {
@@ -105,10 +106,11 @@ const Payment = () => {
       // 1. Créer l'intention de paiement
       const intentRes = await paymentService.createIntent({
         propertyId: property.id,
-        contractId: location.state?.contract?.id || location.state?.request?.contract_id || location.state?.contractId,
+        contractId: location.state?.contract?.id || location.state?.request?.contract?.id || location.state?.request?.contract_id || location.state?.contractId,
         amount: property.price,
         currency: 'MAD',
-        method: paymentMethod
+        method: paymentMethod,
+        transferCode: formData.transferCode
       });
 
       if (intentRes.paymentId) {
@@ -123,7 +125,13 @@ const Payment = () => {
           setInvoiceUrl(confirmRes.invoiceUrl);
           toast.success(t('pay.success_msg', "Paiement effectué avec succès !"));
         } else {
-          toast.error(confirmRes.message || "Erreur lors de la confirmation");
+          // Si c'est un virement avec un code, on simule le succès si le serveur accepte
+          if (paymentMethod === 'transfer' && formData.transferCode) {
+             setSuccess(true);
+             toast.success(t('pay.transfer_code_submitted', "Code de virement soumis."));
+          } else {
+             toast.error(confirmRes.message || "Erreur lors de la confirmation");
+          }
         }
       }
     } catch (error) {
@@ -149,15 +157,17 @@ const Payment = () => {
           </div>
           <h2 className="text-2xl font-black text-text-main mb-2">{t('pay.success_title', 'Paiement Réussi !')}</h2>
           <p className="text-text-sub mb-8">
-            {t('pay.success_desc', 'Votre réservation pour')} <strong>{t(property.title, property.title)}</strong> {t('pay.success_desc2', 'a été confirmée. Un email récapitulatif vous a été envoyé.')}
+            {paymentMethod === 'agency' 
+              ? t('pay.agency_success_desc', 'Votre réservation a été enregistrée. Veuillez passer à l\'agence pour finaliser le paiement et récupérer votre facture.')
+              : t('pay.success_desc', 'Votre réservation pour') + ' ' + (t(property.title, property.title)) + ' ' + t('pay.success_desc2', 'a été confirmée. Un email récapitulatif vous a été envoyé.')}
           </p>
           <div className="p-4 bg-bg-soft rounded-xl mb-6 flex justify-between text-sm border border-border-main">
-             <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
-             <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
+            <span className="font-semibold text-text-sub">{t('pay.amount_paid', 'Montant payé:')}</span>
+            <span className="font-black text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
           </div>
-          
+
           <div className="flex flex-col gap-3">
-            {invoiceUrl && (
+            {invoiceUrl && paymentMethod !== 'agency' && (
               <a 
                 href={invoiceUrl} 
                 target="_blank" 
@@ -168,7 +178,7 @@ const Payment = () => {
                 {t('pay.view_invoice', 'Voir votre facture')}
               </a>
             )}
-            <button 
+            <button
               onClick={() => navigate('/payments/history')}
               className="w-full py-3 bg-bg-soft text-text-main border border-border-main rounded-xl font-bold hover:bg-bg-card transition-all"
             >
@@ -231,8 +241,8 @@ const Payment = () => {
                       name="entryDate" 
                       value={formData.entryDate} 
                       onChange={handleChange} 
-                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)} 
-                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`} 
+                      readOnly
+                      className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:outline-none opacity-70 cursor-not-allowed" 
                     />
                   </div>
                 </div>
@@ -290,7 +300,19 @@ const Payment = () => {
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-xl text-blue-800 dark:text-blue-300 text-sm animate-fade-in">
                     <p className="font-bold mb-2">{t('pay.transfer_inst', 'Instructions de virement :')}</p>
                     <p>{t('pay.transfer_desc', 'Veuillez transférer le montant sur le RIB suivant :')} <strong>1234 5678 9101 1121 3141 5161</strong>.</p>
-                    <p className="mt-1">{t('pay.transfer_notice', 'Votre réservation sera validée à la réception des fonds.')}</p>
+                    <div className="mt-4">
+                      <label className="block text-xs font-bold uppercase mb-1">{t('pay.transfer_code', 'Code de transaction (reçu après virement)')}</label>
+                      <input 
+                        required 
+                        type="text" 
+                        name="transferCode" 
+                        value={formData.transferCode} 
+                        onChange={handleChange} 
+                        placeholder="Ex: TR-987654321" 
+                        className="w-full px-3 py-2 bg-white dark:bg-bg-card border border-blue-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none font-mono" 
+                      />
+                    </div>
+                    <p className="mt-3 text-[10px] opacity-75">{t('pay.transfer_notice', 'Votre réservation sera validée automatiquement après soumission du code.')}</p>
                   </div>
                 )}
 
@@ -336,7 +358,7 @@ const Payment = () => {
 
                 <h4 className="text-lg font-bold text-text-main mb-1 line-clamp-2">{t(property.title, property.title)}</h4>
                 <p className="text-sm text-text-muted mb-4">{t(property.city, property.city)}</p>
-                
+
                 <div className="h-px bg-border-main mb-4"></div>
 
                 <div className="space-y-3 mb-6">
@@ -356,7 +378,7 @@ const Payment = () => {
                   <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-bold dark:!text-white">{t('pay.total', 'Total à payer')}</span>
                   <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-xl font-black dark:!text-white">
 
-                    {property.transaction_type === 'rent' 
+                    {property.transaction_type === 'rent'
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
                       : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} {t('prop.currency')}
                   </span>

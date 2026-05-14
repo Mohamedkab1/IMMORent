@@ -141,6 +141,7 @@ const ContractDetail = () => {
 
   const isRentContract = contract.contract_type === 'rent';
   const canManage = isAgent || isAdmin;
+  const hasPaid = contract.payments?.some(p => p.status === 'paid');
 
   return (
     <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
@@ -320,13 +321,13 @@ const ContractDetail = () => {
                 {downloading ? t('ctr.downloading', 'Téléchargement...') : t('common.download_pdf', 'Télécharger (PDF)')}
               </button>
 
-              {contract.status === 'active' && !isAgent && !isAdmin && (
+              {contract.status === 'active' && !hasPaid && !isAgent && !isAdmin && (
                 <button 
-                  onClick={() => navigate(`/properties/${contract.property_id}/payment`, { state: { property: contract.property, contractId: contract.id } })}
+                  onClick={() => navigate(`/properties/${contract.property_id}/payment`, { state: { property: contract.property, contract: contract, contractId: contract.id } })}
                   className="px-6 py-3 bg-green-600 text-white hover:bg-green-700 active:scale-95 rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
                 >
                   <CurrencyEuroIcon className="w-5 h-5" />
-                  Procéder au paiement
+                  {t('ctr.proceed_payment', 'Procéder au paiement')}
                 </button>
               )}
               
