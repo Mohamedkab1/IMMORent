@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -39,11 +40,12 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 
 const About = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   return (
     <div className="min-h-screen bg-bg-soft transition-colors duration-300">
       
       {/* Hero Section */}
-      <div className="relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f] overflow-hidden">
+      <div className={`relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'bg-gradient-to-b from-white via-slate-50/50 to-white' : 'bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f]'}`}>
         
         {/* Bottom Fade Transition */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-soft to-transparent z-20 pointer-events-none"></div>
@@ -51,8 +53,8 @@ const About = () => {
         {/* Decorative elements */}
         <div className="absolute inset-0 opacity-20 z-10 mix-blend-overlay pointer-events-none">
            <svg className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="0.5" fill="none" />
-              <circle cx="50" cy="50" r="30" stroke="white" strokeWidth="0.5" fill="none" strokeDasharray="2 2" />
+              <circle cx="50" cy="50" r="40" stroke={theme === 'light' ? 'black' : 'white'} strokeWidth="0.5" fill="none" />
+              <circle cx="50" cy="50" r="30" stroke={theme === 'light' ? 'black' : 'white'} strokeWidth="0.5" fill="none" strokeDasharray="2 2" />
            </svg>
         </div>
         
@@ -61,17 +63,10 @@ const About = () => {
             <span className="inline-block py-1 px-4 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-bold mb-6 tracking-widest uppercase shadow-sm">
               {t('nav.about')}
             </span>
-<<<<<<< HEAD
-            <h1 className="text-4xl md:text-6xl font-extrabold !text-white mb-4 tracking-tight drop-shadow-lg">
-              {t('about.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('about.hero.title_p2')}</span>
-            </h1>
-            <p className="text-lg md:text-xl !text-white font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
-=======
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
+            <h1 className={`text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-lg ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
               {t('about.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500">{t('about.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
->>>>>>> 66c6be3a4d4c40fc7b803324a531abf3bc8d2218
+            <p className={`text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
               {t('about.hero.subtitle')}
             </p>
           </RevealOnScroll>
@@ -187,13 +182,8 @@ const About = () => {
           <div className="bg-bg-card border border-border-main rounded-2xl p-8 md:p-16 text-center shadow-xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-primary/5 dark:bg-secondary/5 opacity-50 transition-opacity duration-500 group-hover:opacity-100"></div>
             <div className="relative z-10 max-w-3xl mx-auto">
-<<<<<<< HEAD
-              <h2 className="text-3xl md:text-5xl font-extrabold !text-white mb-6 drop-shadow-lg">{t('about.cta.title')}</h2>
-              <p className="text-lg md:text-xl !text-white mb-10 max-w-2xl mx-auto opacity-90 leading-relaxed font-medium">
-=======
               <h2 className="text-3xl md:text-4xl font-extrabold text-text-main mb-6 tracking-tight">{t('about.cta.title')}</h2>
               <p className="text-lg text-text-sub mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
->>>>>>> 66c6be3a4d4c40fc7b803324a531abf3bc8d2218
                 {t('about.cta.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4">

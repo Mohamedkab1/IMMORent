@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -15,6 +16,7 @@ import {
 const ChatWidget = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { 
@@ -49,14 +51,12 @@ const ChatWidget = () => {
     setIsTyping(true);
 
     try {
-      // Setup axios to hit Laravel backend
       const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/ai/chat`, {
         message: userMsg
       }, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          // Note: If axios is configured globally with tokens, this will send it automatically.
         }
       });
 
@@ -79,23 +79,28 @@ const ChatWidget = () => {
 
   const handleSuggestionClick = (text) => {
     setInputText(text);
-    // Optional: Auto send when suggestion is clicked
-    // handleSendMessage({ preventDefault: () => {} }, text);
   };
+
+  // Light mode conditional classes
+  const isLight = theme === 'light';
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
       {/* Chat Window */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-[350px] sm:w-[380px] h-[500px] bg-bg-card rounded-2xl shadow-huge border border-border-main flex flex-col overflow-hidden animate-scale-up origin-bottom-right">
+        <div className={`absolute bottom-16 right-0 w-[350px] sm:w-[380px] h-[500px] rounded-2xl shadow-huge flex flex-col overflow-hidden animate-scale-up origin-bottom-right transition-colors duration-300 ${
+          isLight 
+            ? 'bg-white border border-slate-200' 
+            : 'bg-bg-card border border-border-main'
+        }`}>
           {/* Header */}
-          <div className="bg-primary p-4 flex items-center justify-between text-white">
+          <div className="bg-blue-600 p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                <ChatBubbleLeftRightIcon className="w-5 h-5 !text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-sm">Assistant IMMORent</h3>
+                <h3 className="font-bold text-sm !text-white">Assistant IMMORent</h3>
                 <p className="text-[10px] text-white/80">Propulsé par l'IA</p>
               </div>
             </div>
@@ -103,12 +108,14 @@ const ChatWidget = () => {
               onClick={() => setIsOpen(false)}
               className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
             >
-              <XMarkIcon className="w-5 h-5" />
+              <XMarkIcon className="w-5 h-5 !text-white" />
             </button>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-bg-soft">
+          <div className={`flex-1 overflow-y-auto p-4 space-y-4 transition-colors duration-300 ${
+            isLight ? 'bg-slate-50' : 'bg-bg-soft'
+          }`}>
             {messages.map((msg) => (
               <div 
                 key={msg.id} 
@@ -117,8 +124,10 @@ const ChatWidget = () => {
                 <div 
                   className={`max-w-[85%] p-3 rounded-2xl text-sm ${
                     msg.sender === 'user' 
-                      ? 'bg-primary text-white rounded-br-none' 
-                      : 'bg-bg-card text-text-main border border-border-main shadow-sm rounded-bl-none'
+                      ? 'bg-blue-600 !text-white rounded-br-none' 
+                      : isLight
+                        ? 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-none'
+                        : 'bg-bg-card text-text-main border border-border-main shadow-sm rounded-bl-none'
                   }`}
                 >
                   <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
@@ -128,10 +137,12 @@ const ChatWidget = () => {
             
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-bg-card border border-border-main shadow-sm rounded-2xl rounded-bl-none p-4 flex gap-1.5 items-center">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className={`rounded-2xl rounded-bl-none p-4 flex gap-1.5 items-center shadow-sm ${
+                  isLight ? 'bg-white border border-slate-200' : 'bg-bg-card border border-border-main'
+                }`}>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                 </div>
               </div>
             )}
@@ -140,38 +151,58 @@ const ChatWidget = () => {
 
           {/* Suggestions */}
           {!isTyping && messages.length < 3 && (
-            <div className="p-3 bg-bg-soft border-t border-border-main flex gap-2 overflow-x-auto hide-scrollbar">
-              <Link to="/properties" onClick={() => setIsOpen(false)} className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-bg-card border border-border-main rounded-full text-xs font-medium text-text-sub hover:text-primary hover:border-primary transition-colors">
+            <div className={`p-3 border-t flex gap-2 overflow-x-auto hide-scrollbar transition-colors duration-300 ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-bg-soft border-border-main'
+            }`}>
+              <Link to="/properties" onClick={() => setIsOpen(false)} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
+                isLight 
+                  ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
+                  : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
+              }`}>
                 <HomeIcon className="w-3.5 h-3.5" /> Voir les biens
               </Link>
               {!user && (
-                <Link to="/login" onClick={() => setIsOpen(false)} className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-bg-card border border-border-main rounded-full text-xs font-medium text-text-sub hover:text-primary hover:border-primary transition-colors">
+                <Link to="/login" onClick={() => setIsOpen(false)} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
+                  isLight 
+                    ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
+                    : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
+                }`}>
                   <UserPlusIcon className="w-3.5 h-3.5" /> Se connecter
                 </Link>
               )}
-              <button onClick={() => handleSuggestionClick("Comment contacter un agent ?")} className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-bg-card border border-border-main rounded-full text-xs font-medium text-text-sub hover:text-primary hover:border-primary transition-colors">
+              <button onClick={() => handleSuggestionClick("Comment contacter un agent ?")} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
+                isLight 
+                  ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
+                  : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
+              }`}>
                 <UserIcon className="w-3.5 h-3.5" /> Agent
               </button>
             </div>
           )}
 
           {/* Input Area */}
-          <div className="p-3 bg-bg-card border-t border-border-main">
+          <div className={`p-3 border-t transition-colors duration-300 ${
+            isLight ? 'bg-white border-slate-200' : 'bg-bg-card border-border-main'
+          }`}>
             <form onSubmit={handleSendMessage} className="flex items-center gap-2 relative">
               <input 
                 type="text" 
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Posez votre question..."
-                className="flex-1 bg-bg-soft border border-border-main rounded-xl px-4 py-2.5 text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
+                  isLight 
+                    ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400' 
+                    : 'bg-bg-soft border-border-main text-text-main'
+                }`}
                 disabled={isTyping}
               />
               <button 
                 type="submit"
                 disabled={!inputText.trim() || isTyping}
-                className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 shadow-md"
+                className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 shadow-md"
               >
-                <PaperAirplaneIcon className="w-5 h-5 -ml-0.5" />
+                <PaperAirplaneIcon className="w-5 h-5 -ml-0.5 !text-white" />
               </button>
             </form>
           </div>
@@ -181,7 +212,9 @@ const ChatWidget = () => {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-huge hover:scale-105 hover:bg-primary-hover transition-all duration-300 border-4 border-white dark:border-bg-card"
+        className={`w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-huge hover:scale-105 transition-all duration-300 border-4 ${
+          isLight ? 'border-white' : 'border-bg-card'
+        }`}
       >
         {isOpen ? (
           <XMarkIcon className="w-6 h-6 animate-fade-in !text-white" />

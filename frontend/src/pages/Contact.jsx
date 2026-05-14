@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -50,6 +51,7 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 
 const Contact = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -73,14 +75,14 @@ const Contact = () => {
       
       {/* Hero Section */}
       {/* Hero Section */}
-      <div className="relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f] overflow-hidden">
+      <div className={`relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'bg-gradient-to-b from-white via-slate-50/50 to-white' : 'bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f]'}`}>
         
         {/* Bottom Fade Transition */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-soft to-transparent z-20 pointer-events-none"></div>
 
         {/* Abstract Background patterns */}
         <div className="absolute inset-0 opacity-20 z-10 mix-blend-overlay pointer-events-none">
-          <svg className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 text-white" width="600" height="600" fill="currentColor" viewBox="0 0 100 100">
+          <svg className={`absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 ${theme === 'light' ? 'text-slate-200' : 'text-white'}`} width="600" height="600" fill="currentColor" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="50" />
           </svg>
         </div>
@@ -90,10 +92,10 @@ const Contact = () => {
             <span className="inline-block py-1 px-4 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-bold mb-6 tracking-widest uppercase shadow-sm">
               {t('nav.contact')}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
+            <h1 className={`text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-lg ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
               {t('contact.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500">{t('contact.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+            <p className={`text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
               {t('contact.hero.subtitle')}
             </p>
           </RevealOnScroll>

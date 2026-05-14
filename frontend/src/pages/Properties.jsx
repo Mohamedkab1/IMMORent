@@ -272,7 +272,7 @@ const Properties = () => {
             {/* Search Action */}
             <button 
               onClick={fetchProperties}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-3.5 flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95"
+              className={`w-full bg-indigo-600 hover:bg-indigo-500 rounded-lg py-3.5 flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95 ${theme === 'light' ? '!text-white' : 'text-white'}`}
             >
               <MagnifyingGlassIcon className="w-4 h-4" />
               {t('prop.filter.submit')}

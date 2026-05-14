@@ -130,7 +130,7 @@ const Home = () => {
                   to={getStartedPath} 
                   className={`px-8 py-4 font-bold rounded shadow-lg transition-all transform hover:scale-105 uppercase tracking-widest text-xs ${
                     theme === 'light' 
-                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200' 
+                      ? 'bg-blue-600 !text-white hover:bg-blue-700 shadow-blue-200' 
                       : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
                   }`}
                 >
@@ -173,7 +173,7 @@ const Home = () => {
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
                     
                     <div className="absolute bottom-0 left-0 p-8 w-full">
-                      <h3 className="text-2xl font-bold text-white mb-4 leading-tight">{cat.title}</h3>
+                      <h3 className={`text-2xl font-bold mb-4 leading-tight ${theme === 'light' ? '!text-white' : 'text-white'}`}>{cat.title}</h3>
                       <div className="h-0.5 bg-white/50 dark:bg-blue-500 w-0 group-hover:w-full transition-all duration-500 mb-4"></div>
                       <p className="text-white/80 text-sm font-medium leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-y-4 group-hover:translate-y-0">
                         {cat.desc}
@@ -231,7 +231,7 @@ const Home = () => {
                     <p className="text-[10px] opacity-30 mb-8 font-light italic">
                       {t('home.contact.privacy_notice')}
                     </p>
-                    <button type="submit" className="px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-sm">
+                    <button type="submit" className={`px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 ${theme === 'light' ? '!text-white' : 'text-white'} font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-sm`}>
                       {t('home.contact.submit')}
                     </button>
                   </div>

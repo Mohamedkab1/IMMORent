@@ -365,7 +365,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group focus:outline-none">
             <img src={logo} alt="IMMORent" className="h-10 w-10 object-cover rounded-xl shadow-sm" />
-            <span className={`text-3xl font-black tracking-tighter transition-colors ${isLightText ? 'text-white' : 'text-text-main'}`}>
+            <span className={`text-3xl font-black tracking-tighter transition-colors ${isLightText ? (theme === 'light' ? 'text-slate-900' : 'text-white') : 'text-text-main'}`}>
               IMMO<span className="text-yellow-400">Rent</span>
             </span>
           </Link>
@@ -381,7 +381,7 @@ const Header = () => {
                   onMouseEnter={() => setHoveredLink(link.path)}
                   onMouseLeave={() => setHoveredLink(null)}
                   className={`relative py-2 focus:outline-none transition-colors duration-300 ${
-                    isActive ? 'text-primary dark:text-yellow-400' : scrolled ? 'text-text-sub hover:text-yellow-400' : isLightText ? 'text-white/80 hover:text-yellow-400' : 'text-text-sub hover:text-yellow-400'
+                    isActive ? 'text-primary dark:text-yellow-400' : scrolled ? 'text-text-sub hover:text-yellow-400' : isLightText ? (theme === 'light' ? 'text-slate-900 hover:text-primary' : 'text-white/80 hover:text-yellow-400') : 'text-text-sub hover:text-yellow-400'
                   }`}
                 >
                   {link.name}
@@ -577,8 +577,8 @@ const Header = () => {
               <div className="flex items-center gap-4 rtl:gap-reverse uppercase tracking-widest text-[10px] font-black">
                 <Link 
                   to="/login" 
-                  className={`transition-colors ${
-                    !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                  className={`transition-colors font-bold uppercase tracking-widest text-[10px] ${
+                    isLightText 
                       ? (theme === 'light' ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white') 
                       : 'text-text-sub hover:text-text-main'
                   }`}
@@ -587,10 +587,10 @@ const Header = () => {
                 </Link>
                 <Link 
                   to="/register" 
-                  className={`px-5 py-2 border-2 transition-all ${
-                    !scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) 
+                  className={`px-5 py-2 border-2 rounded-lg font-bold uppercase tracking-widest text-[10px] transition-all ${
+                    isLightText 
                       ? (theme === 'light' ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' : 'border-white text-white hover:bg-white hover:text-black') 
-                      : 'border-primary text-primary hover:bg-primary hover:text-white'
+                      : 'border-primary text-primary hover:bg-primary hover:text-white dark:border-yellow-400 dark:text-yellow-400 dark:hover:bg-yellow-400 dark:hover:text-black'
                   }`}
                 >
                   {t('nav.register')}
@@ -600,10 +600,10 @@ const Header = () => {
           </div>
 
           <div className="md:hidden flex items-center gap-2">
-            <button onClick={toggleTheme} className={`p-2 transition-colors ${!scrolled && location.pathname === '/' ? 'text-white/80' : 'text-text-sub'}`}>
+            <button onClick={toggleTheme} className={`p-2 transition-colors ${isLightText ? (theme === 'light' ? 'text-slate-600' : 'text-white/80') : 'text-text-sub'}`}>
               {theme === 'dark' ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6" />}
             </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${!scrolled && location.pathname === '/' ? 'text-white' : 'text-text-sub'}`}>
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 transition-colors ${isLightText ? (theme === 'light' ? 'text-slate-900' : 'text-white') : 'text-text-sub'}`}>
               {mobileMenuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
             </button>
           </div>

@@ -185,8 +185,6 @@ class PaymentController extends Controller
                 Log::info("Bien ID {$payment->property_id} mis à jour vers le statut: {$newStatus}");
             }
 
-            }
-
             $this->updateRelatedStatuses($payment);
 
             // Notifier l'agent que le paiement a été reçu
@@ -210,8 +208,8 @@ class PaymentController extends Controller
             return response()->json([
                 'success' => true,
                 'payment' => $payment,
-                'invoice' => $invoice,
-                'invoiceUrl' => $pdfUrl
+                'invoice' => $invoice ?? null,
+                'invoiceUrl' => $pdfUrl ?? null
             ]);
         }
 

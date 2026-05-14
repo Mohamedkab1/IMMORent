@@ -164,7 +164,7 @@ html, body {
 }
 
 /* Fix for hardcoded light/white text in Light Mode - More selective to preserve white text on dark backgrounds */
-:root:not(.dark) .text-white:not(.bg-primary .text-white):not(.bg-slate-900 .text-white):not(.bg-slate-800 .text-white):not(.bg-black .text-white):not(.bg-secondary .text-white):not(.bg-primary-dark .text-white) {
+:root:not(.dark) .text-white:not(.bg-primary .text-white):not(.bg-slate-900 .text-white):not(.bg-slate-800 .text-white):not(.bg-black .text-white):not(.bg-secondary .text-white):not(.bg-primary-dark .text-white):not(.bg-blue-600 .text-white):not(.bg-blue-500 .text-white) {
   color: var(--color-text-primary) !important;
 }
 

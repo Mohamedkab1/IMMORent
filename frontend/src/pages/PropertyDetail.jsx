@@ -4,6 +4,7 @@ import { propertyService } from '../services/properties';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { messageService } from '../services/messages';
 import { 
@@ -32,6 +33,7 @@ const PropertyDetail = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
