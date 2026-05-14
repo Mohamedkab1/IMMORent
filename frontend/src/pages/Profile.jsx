@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -13,14 +14,53 @@ import {
   BriefcaseIcon,
   ShieldCheckIcon,
   CameraIcon,
-  TrashIcon
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline';
 import { userService } from '../services/users';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
+
+const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => {
+      if (ref.current) observer.unobserve(ref.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-[0.98]'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
 
 const Profile = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, updateUser } = useAuth();
+  const { theme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -34,8 +74,11 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       setFormData({
         name: user.name || '',
@@ -167,299 +210,435 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-soft py-12 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent">
-      <div className="max-w-5xl mx-auto">
+    <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 transition-colors duration-500 ${
+      theme === 'light' ? 'bg-slate-50' : 'bg-[#050a1f]'
+    }`}>
+      <div className="max-w-6xl mx-auto">
         
         {/* Header Section */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-                <h1 className="text-4xl font-black text-text-main tracking-tight">{t('profile.title')}</h1>
-                <p className="text-text-sub font-medium mt-1">{t('profile.subtitle')}</p>
-            </div>
-            <div className="flex items-center gap-3">
-                <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
-                    <ShieldCheckIcon className="w-4 h-4" /> {t('profile.verified')}
-                </div>
-            </div>
-        </div>
+        <RevealOnScroll>
+          <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-12">
+              <div className="relative">
+                  <span className="inline-block px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-lg mb-4">
+                    {t('profile.title')}
+                  </span>
+                  <h1 className={`text-6xl font-black tracking-tighter ${
+                    theme === 'light' ? 'text-slate-900' : 'text-white'
+                  }`}>
+                    {t('profile.subtitle')}
+                  </h1>
+              </div>
+              <div className="flex items-center gap-4">
+                  <div className={`px-6 py-3 border rounded-lg text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 transition-colors ${
+                    theme === 'light' ? 'bg-white border-slate-100 text-emerald-600' : 'bg-white/5 border-white/10 text-emerald-400'
+                  }`}>
+                      <ShieldCheckIcon className="w-5 h-5" /> {t('profile.verified')}
+                  </div>
+              </div>
+          </div>
+        </RevealOnScroll>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
             {/* Sidebar: Profile Summary */}
-            <div className="lg:col-span-1 space-y-8">
-                <div className="bg-bg-card rounded-3xl shadow-huge border border-border-main p-8 text-center relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 right-0 h-2 bg-primary"></div>
-                    
-                    <div className="relative mx-auto w-32 h-32 mb-6">
-                        {user?.profile_photo ? (
-                            <div className="relative group/photo w-full h-full">
-                                <img 
-                                    src={`http://localhost:8000/storage/${user.profile_photo}?t=${new Date().getTime()}`} 
-                                    alt={user.name} 
-                                    className="w-full h-full rounded-3xl object-cover shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500 border-4 border-bg-card"
-                                />
-                                <button 
-                                    onClick={handleDeletePhoto}
-                                    className="absolute -top-2 -left-2 p-2 bg-rose-500 text-white rounded-xl shadow-lg opacity-0 group-hover/photo:opacity-100 transition-opacity hover:scale-110"
-                                    title={t('common.delete')}
-                                >
-                                    <TrashIcon className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="w-full h-full rounded-3xl bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center text-5xl font-black text-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                                {user?.name?.charAt(0) || 'U'}
-                            </div>
-                        )}
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handlePhotoChange} 
-                            className="hidden" 
-                            accept="image/*"
-                        />
-                        <button 
-                            onClick={handlePhotoClick}
-                            disabled={loading}
-                            className="absolute -bottom-2 -right-2 p-3 bg-secondary text-primary rounded-xl shadow-lg border-4 border-bg-card hover:scale-110 transition-transform disabled:opacity-50"
-                        >
-                            <CameraIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                    
-                    <h2 className="text-2xl font-bold text-text-main">{user?.name}</h2>
-                    <p className="text-sm font-bold text-text-muted mt-1 uppercase tracking-widest">{t('auth.role.' + user?.role?.slug, user?.role?.name || 'Client')}</p>
-                    
-                    <div className="mt-8 pt-8 border-t border-border-main/50 space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-text-sub font-medium">{t('profile.member_since')}</span>
-                            <span className="text-text-main font-bold">{new Date(user?.created_at).toLocaleDateString(t('common.locale', 'fr-FR'), { month: 'long', year: 'numeric' })}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-text-sub font-medium">{t('profile.properties_rented')}</span>
-                            <span className="text-text-main font-bold">
-                                {user?.role?.slug === 'client' 
-                                    ? (user?.contracts_as_tenant_count || 0) 
-                                    : (user?.role?.slug === 'agent' 
-                                        ? (user?.contracts_as_agent_count || 0) 
-                                        : (user?.properties_count || 0))
-                                }
-                            </span>
-                        </div>
-                    </div>
-                </div>
+            <div className="lg:col-span-4 space-y-10">
+                <RevealOnScroll delay={100}>
+                  <div className={`shadow-2xl border transition-all duration-500 rounded-lg p-10 text-center relative overflow-hidden group ${
+                    theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10'
+                  }`}>
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600"></div>
+                      
+                      <div className="relative mx-auto w-40 h-40 mb-8">
+                          {user?.profile_photo ? (
+                              <div className="relative group/photo w-full h-full">
+                                  <img 
+                                      src={`http://localhost:8000/storage/${user.profile_photo}?t=${new Date().getTime()}`} 
+                                      alt={user.name} 
+                                      className="w-full h-full rounded-lg object-cover shadow-2xl transition-transform duration-700 border-4 border-white/5 group-hover:scale-105"
+                                  />
+                                  <button 
+                                      onClick={handleDeletePhoto}
+                                      className="absolute -top-3 -left-3 p-3 bg-red-600 text-white rounded-lg shadow-xl opacity-0 group-hover/photo:opacity-100 transition-all hover:scale-110"
+                                      title={t('common.delete')}
+                                  >
+                                      <TrashIcon className="w-5 h-5" />
+                                  </button>
+                              </div>
+                          ) : (
+                              <div className="w-full h-full rounded-lg bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-6xl font-black text-white shadow-2xl transition-transform duration-700 group-hover:scale-105">
+                                  {user?.name?.charAt(0) || 'U'}
+                              </div>
+                          )}
+                          <input 
+                              type="file" 
+                              ref={fileInputRef} 
+                              onChange={handlePhotoChange} 
+                              className="hidden" 
+                              accept="image/*"
+                          />
+                          <button 
+                              onClick={handlePhotoClick}
+                              disabled={loading}
+                              className="absolute -bottom-3 -right-3 p-4 bg-blue-600 text-white rounded-lg shadow-xl border-4 border-[#050a1f] hover:scale-110 transition-transform disabled:opacity-50 active:scale-95"
+                          >
+                              <CameraIcon className="w-6 h-6" />
+                          </button>
+                      </div>
+                      
+                      <h2 className={`text-3xl font-black tracking-tight mb-2 ${
+                        theme === 'light' ? 'text-slate-900' : 'text-white'
+                      }`}>{user?.name}</h2>
+                      <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                        theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                      }`}>{t('auth.role.' + user?.role?.slug, user?.role?.name || 'Client')}</p>
+                      
+                      <div className="mt-12 pt-10 border-t border-white/5 space-y-6">
+                          <div className="flex items-center justify-between">
+                              <span className={`text-[10px] font-black uppercase tracking-[0.1em] ${
+                                theme === 'light' ? 'text-slate-400' : 'text-white/40'
+                              }`}>{t('profile.member_since')}</span>
+                              <span className={`font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                                {new Date(user?.created_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { month: 'long', year: 'numeric' })}
+                              </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                              <span className={`text-[10px] font-black uppercase tracking-[0.1em] ${
+                                theme === 'light' ? 'text-slate-400' : 'text-white/40'
+                              }`}>
+                                {user?.role?.slug === 'client' ? t('profile.properties_rented') : t('profile.properties_managed')}
+                              </span>
+                              <span className={`font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                                  {user?.role?.slug === 'client' 
+                                      ? (user?.contracts_as_tenant_count || 0) 
+                                      : (user?.role?.slug === 'agent' 
+                                          ? (user?.contracts_as_agent_count || 0) 
+                                          : (user?.properties_count || 0))
+                                  }
+                              </span>
+                          </div>
+                      </div>
+                  </div>
+                </RevealOnScroll>
 
                 {/* Account Status for Clients */}
                 {user?.role?.slug === 'client' && (
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-primary/20 dark:to-primary/10 rounded-3xl p-8 text-white shadow-xl border border-white/10 relative overflow-hidden">
-                        <BriefcaseIcon className="absolute -right-6 -bottom-6 w-32 h-32 text-white/5" />
-                        <h3 className="text-xl font-bold mb-2">{t('profile.become_agent')}</h3>
-                        <p className="text-sm text-white/70 mb-6">{t('profile.become_agent_desc')}</p>
+                  <RevealOnScroll delay={200}>
+                    <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-10 text-white shadow-2xl relative overflow-hidden group">
+                        <BriefcaseIcon className="absolute -right-8 -bottom-8 w-40 h-40 text-white/5 group-hover:scale-110 transition-transform duration-1000" />
+                        <h3 className="text-2xl font-black tracking-tight mb-4">{t('profile.become_agent')}</h3>
+                        <p className="text-sm text-white/70 mb-10 font-medium leading-relaxed">{t('profile.become_agent_desc')}</p>
                         
                         {!user.agent_status ? (
                              <button 
                                 onClick={handleBecomeAgent}
                                 disabled={loading}
-                                className="w-full py-3 bg-secondary text-primary rounded-xl font-black text-sm hover:bg-secondary-hover transition-all flex items-center justify-center gap-2"
+                                className="w-full py-5 bg-white text-blue-900 rounded-lg font-black text-[10px] uppercase tracking-[0.3em] hover:bg-slate-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
                              >
                                 {t('profile.apply_now')}
                              </button>
                         ) : (
-                            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                                <p className="text-[10px] font-black uppercase text-white/40 mb-1">{t('profile.status_req')}</p>
-                                <p className="font-bold text-secondary">
+                            <div className="p-6 bg-white/10 border border-white/20 rounded-lg backdrop-blur-md">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">{t('profile.status_req')}</p>
+                                <p className="text-xl font-black text-white">
                                     {user.agent_status === 'pending' ? t('profile.pending') : user.agent_status}
                                 </p>
                             </div>
                         )}
                     </div>
+                  </RevealOnScroll>
                 )}
             </div>
 
             {/* Main Content: Form */}
-            <div className="lg:col-span-2">
-                <div className="bg-bg-card rounded-3xl shadow-huge border border-border-main p-8 md:p-10">
-                    <div className="flex items-center justify-between mb-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                <UserIcon className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-xl font-bold text-text-main">{t('profile.general_info')}</h3>
-                        </div>
-                        {!isEditing ? (
-                            <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-5 py-2.5 bg-bg-soft hover:bg-primary hover:text-white rounded-xl text-sm font-bold text-primary transition-all duration-300">
-                                <PencilIcon className="w-4 h-4" /> {t('profile.edit')}
-                            </button>
-                        ) : (
-                            <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl text-sm font-bold transition-all duration-300">
-                                <XMarkIcon className="w-4 h-4" /> {t('profile.cancel')}
-                            </button>
-                        )}
-                    </div>
+            <div className="lg:col-span-8">
+                <RevealOnScroll delay={300}>
+                  <div className={`shadow-2xl border transition-all duration-500 rounded-lg p-10 md:p-14 ${
+                    theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10'
+                  }`}>
+                      <div className="flex items-center justify-between mb-16 pb-8 border-b border-white/5">
+                          <div className="flex items-center gap-6">
+                              <div className="w-14 h-14 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center border border-blue-600/20">
+                                  <UserIcon className="w-8 h-8" />
+                              </div>
+                              <div>
+                                <h3 className={`text-2xl font-black tracking-tight ${
+                                  theme === 'light' ? 'text-slate-900' : 'text-white'
+                                }`}>{t('profile.general_info')}</h3>
+                                <p className={`text-[10px] font-black uppercase tracking-[0.2em] mt-1 ${
+                                  theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                }`}>{t('profile.personal_details')}</p>
+                              </div>
+                          </div>
+                          {!isEditing ? (
+                              <button onClick={() => setIsEditing(true)} className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                                  <PencilIcon className="w-4 h-4" /> {t('profile.edit')}
+                              </button>
+                          ) : (
+                              <button onClick={() => setIsEditing(false)} className="flex items-center gap-3 px-8 py-4 bg-red-600/10 text-red-600 border border-red-600/20 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all active:scale-95">
+                                  <XMarkIcon className="w-4 h-4" /> {t('profile.cancel')}
+                              </button>
+                          )}
+                      </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <UserIcon className="w-4 h-4" /> {t('profile.name_label')}
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="name" 
-                                    value={formData.name} 
-                                    onChange={handleChange} 
-                                    disabled={!isEditing}
-                                    className={`w-full px-5 py-4 rounded-2xl border transition-all duration-300 font-medium ${isEditing ? 'bg-bg-main border-primary shadow-lg shadow-primary/5 text-text-main' : 'bg-bg-soft border-border-main text-text-muted cursor-not-allowed'}`}
-                                />
-                            </div>
+                      <form onSubmit={handleSubmit} className="space-y-12">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                              <div className="space-y-4">
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                  }`}>
+                                      <UserIcon className="w-4 h-4" /> {t('profile.name_label')}
+                                  </label>
+                                  <input 
+                                      type="text" 
+                                      name="name" 
+                                      value={formData.name} 
+                                      onChange={handleChange} 
+                                      disabled={!isEditing}
+                                      className={`w-full px-6 py-5 rounded-lg border transition-all duration-500 font-bold text-lg ${
+                                        isEditing 
+                                          ? 'bg-transparent border-blue-600/50 shadow-2xl shadow-blue-600/5 text-blue-600 focus:border-blue-600 outline-none' 
+                                          : theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900 cursor-not-allowed' : 'bg-white/5 border-white/5 text-white/50 cursor-not-allowed'
+                                      }`}
+                                  />
+                              </div>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <EnvelopeIcon className="w-4 h-4" /> {t('profile.email_label')}
-                                </label>
-                                <input 
-                                    type="email" 
-                                    value={user?.email} 
-                                    disabled 
-                                    className="w-full px-5 py-4 rounded-2xl border border-border-main bg-bg-soft text-text-muted cursor-not-allowed font-medium"
-                                />
-                                <p className="text-[10px] text-text-muted font-bold italic tracking-wide">{t('profile.email_desc')}</p>
-                            </div>
+                              <div className="space-y-4">
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                  }`}>
+                                      <EnvelopeIcon className="w-4 h-4" /> {t('profile.email_label')}
+                                  </label>
+                                  <input 
+                                      type="email" 
+                                      value={user?.email} 
+                                      disabled 
+                                      className={`w-full px-6 py-5 rounded-lg border font-bold text-lg cursor-not-allowed ${
+                                        theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-white/20'
+                                      }`}
+                                  />
+                                  <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest italic">{t('profile.email_desc')}</p>
+                              </div>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <PhoneIcon className="w-4 h-4" /> {t('profile.phone_label')}
-                                </label>
-                                <input 
-                                    type="tel" 
-                                    name="phone" 
-                                    value={formData.phone} 
-                                    onChange={handleChange} 
-                                    disabled={!isEditing}
-                                    placeholder={t('profile.phone_placeholder', '06 XX XX XX XX')}
-                                    className={`w-full px-5 py-4 rounded-2xl border transition-all duration-300 font-medium ${isEditing ? 'bg-bg-main border-primary shadow-lg shadow-primary/5 text-text-main' : 'bg-bg-soft border-border-main text-text-muted cursor-not-allowed'}`}
-                                />
-                            </div>
+                              <div className="space-y-4">
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                  }`}>
+                                      <PhoneIcon className="w-4 h-4" /> {t('profile.phone_label')}
+                                  </label>
+                                  <input 
+                                      type="tel" 
+                                      name="phone" 
+                                      value={formData.phone} 
+                                      onChange={handleChange} 
+                                      disabled={!isEditing}
+                                      placeholder="06 XX XX XX XX"
+                                      className={`w-full px-6 py-5 rounded-lg border transition-all duration-500 font-bold text-lg ${
+                                        isEditing 
+                                          ? 'bg-transparent border-blue-600/50 shadow-2xl shadow-blue-600/5 text-blue-600 focus:border-blue-600 outline-none' 
+                                          : theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900 cursor-not-allowed' : 'bg-white/5 border-white/5 text-white/50 cursor-not-allowed'
+                                      }`}
+                                  />
+                              </div>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" /> {t('profile.created_at')}
-                                </label>
-                                <div className="w-full px-5 py-4 rounded-2xl border border-border-main bg-bg-soft text-text-muted font-medium flex items-center">
-                                    {new Date(user?.created_at).toLocaleDateString(t('common.locale', 'fr-FR'))}
-                                </div>
-                            </div>
-                        </div>
+                              <div className="space-y-4">
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                  }`}>
+                                      <CalendarIcon className="w-4 h-4" /> {t('profile.created_at')}
+                                  </label>
+                                  <div className={`w-full px-6 py-5 rounded-lg border font-bold text-lg ${
+                                    theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-white/20'
+                                  }`}>
+                                      {new Date(user?.created_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
+                                  </div>
+                              </div>
+                          </div>
 
-                        <div className="space-y-3">
-                            <label className="text-sm font-bold text-text-sub flex items-center gap-2">
-                                <MapPinIcon className="w-4 h-4" /> {t('profile.address_label')}
-                            </label>
-                            <textarea 
-                                name="address" 
-                                value={formData.address} 
-                                onChange={handleChange} 
-                                disabled={!isEditing}
-                                rows="3"
-                                placeholder={t('profile.address_placeholder')}
-                                className={`w-full px-5 py-4 rounded-2xl border transition-all duration-300 font-medium ${isEditing ? 'bg-bg-main border-primary shadow-lg shadow-primary/5 text-text-main' : 'bg-bg-soft border-border-main text-text-muted cursor-not-allowed'}`}
-                            />
-                        </div>
+                          <div className="space-y-4">
+                              <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                              }`}>
+                                  <MapPinIcon className="w-4 h-4" /> {t('profile.address_label')}
+                              </label>
+                              <textarea 
+                                  name="address" 
+                                  value={formData.address} 
+                                  onChange={handleChange} 
+                                  disabled={!isEditing}
+                                  rows="3"
+                                  placeholder={t('profile.address_placeholder')}
+                                  className={`w-full px-6 py-5 rounded-lg border transition-all duration-500 font-bold text-lg resize-none ${
+                                    isEditing 
+                                      ? 'bg-transparent border-blue-600/50 shadow-2xl shadow-blue-600/5 text-blue-600 focus:border-blue-600 outline-none' 
+                                      : theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900 cursor-not-allowed' : 'bg-white/5 border-white/5 text-white/50 cursor-not-allowed'
+                                  }`}
+                              />
+                          </div>
 
-                        {isEditing && (
-                            <div className="pt-6 animate-fade-in">
-                                <button 
-                                    type="submit" 
-                                    disabled={loading}
-                                    className="w-full md:w-auto px-12 py-4 bg-primary !text-white rounded-2xl font-bold shadow-xl shadow-primary/20 hover:bg-primary-light hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                          <AnimatePresence>
+                            {isEditing && (
+                                <motion.div 
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 20 }}
+                                  className="pt-6"
                                 >
-                                    {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <CheckIcon className="w-6 h-6" />}
-                                    {t('profile.save')}
-                                </button>
-                            </div>
-                        )}
-                    </form>
+                                    <button 
+                                        type="submit" 
+                                        disabled={loading}
+                                        className="w-full md:w-auto px-16 py-5 bg-blue-600 text-white rounded-lg font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-4 active:scale-[0.98]"
+                                    >
+                                        {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <CheckIcon className="w-6 h-6" />}
+                                        {t('profile.save')}
+                                    </button>
+                                </motion.div>
+                            )}
+                          </AnimatePresence>
+                      </form>
 
-                    <div className="mt-12 pt-12 border-t border-border-main/50">
-                         <div className="flex items-center gap-3 text-rose-500 mb-6">
-                            <ShieldCheckIcon className="w-6 h-6" />
-                            <h4 className="text-lg font-bold">{t('profile.security')}</h4>
-                         </div>
-                         <div className="pt-6 border-t border-border-main flex flex-wrap gap-4">
-                             <button 
-                                onClick={() => setShowPasswordModal(true)}
-                                className="px-6 py-3 bg-bg-soft hover:bg-bg-main border border-border-main text-text-main rounded-xl text-sm font-bold transition-all"
-                             >
-                                 {t('profile.change_password')}
-                             </button>
-                         </div>
+                      <div className="mt-20 pt-16 border-t border-white/5">
+                           <div className="flex items-center gap-4 text-red-500 mb-10">
+                              <ShieldCheckIcon className="w-8 h-8" />
+                              <div>
+                                <h4 className="text-xl font-black tracking-tight">{t('profile.security')}</h4>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">{t('profile.security_desc', 'Gérez votre mot de passe et vos paramètres de sécurité')}</p>
+                              </div>
+                           </div>
+                           <div className="flex flex-wrap gap-6">
+                               <button 
+                                  onClick={() => setShowPasswordModal(true)}
+                                  className={`px-8 py-4 border rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 active:scale-[0.98] ${
+                                    theme === 'light' ? 'bg-white border-slate-200 text-slate-900 hover:border-blue-600 hover:text-blue-600' : 'bg-white/5 border-white/10 text-white hover:border-blue-600 hover:text-blue-600'
+                                  }`}
+                               >
+                                   <KeyIcon className="w-4 h-4" /> {t('profile.change_password')}
+                               </button>
+                           </div>
 
-                         {/* Modal Changement Mot de Passe */}
-                         {showPasswordModal && (
-                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                                 <div className="bg-bg-card w-full max-w-md rounded-3xl border border-border-main shadow-huge p-8 animate-scale-up">
-                                     <h3 className="text-xl font-black text-text-main mb-6">{t('profile.change_password')}</h3>
-                                     
-                                     <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                         <div>
-                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
-                                                 {t('auth.login.password_label')} ({t('profile.current')})
-                                             </label>
-                                             <input 
-                                                 type="password" 
-                                                 required
-                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                                                 value={passwordData.current_password}
-                                                 onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
-                                             />
-                                         </div>
-                                         <div>
-                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
-                                                 {t('auth.register.password_label')} ({t('profile.new')})
-                                             </label>
-                                             <input 
-                                                 type="password" 
-                                                 required
-                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                                                 value={passwordData.password}
-                                                 onChange={(e) => setPasswordData({...passwordData, password: e.target.value})}
-                                             />
-                                         </div>
-                                         <div>
-                                             <label className="block text-xs font-black uppercase tracking-widest text-text-sub mb-2">
-                                                 {t('auth.register.password_confirm_label')}
-                                             </label>
-                                             <input 
-                                                 type="password" 
-                                                 required
-                                                 className="w-full bg-bg-soft border border-border-main rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                                                 value={passwordData.password_confirmation}
-                                                 onChange={(e) => setPasswordData({...passwordData, password_confirmation: e.target.value})}
-                                             />
-                                         </div>
+                           {/* Modal Changement Mot de Passe */}
+                           <AnimatePresence>
+                            {showPasswordModal && (
+                                <motion.div 
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#050a1f]/80 backdrop-blur-xl"
+                                >
+                                    <motion.div 
+                                      initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                                      exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                                      className={`w-full max-w-lg rounded-lg border shadow-huge p-12 ${
+                                        theme === 'light' ? 'bg-white border-slate-200' : 'bg-slate-900 border-white/10'
+                                      }`}
+                                    >
+                                        <h3 className={`text-3xl font-black tracking-tighter mb-10 ${
+                                          theme === 'light' ? 'text-slate-900' : 'text-white'
+                                        }`}>{t('profile.change_password')}</h3>
+                                        
+                                        <form onSubmit={handlePasswordSubmit} className="space-y-8">
+                                            <div className="space-y-3">
+                                                <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${
+                                                  theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                                }`}>
+                                                    {t('auth.login.password_label')} ({t('profile.current')})
+                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type={showCurrentPassword ? "text" : "password"} 
+                                                        required
+                                                        className={`w-full rounded-lg pl-6 pr-14 py-5 text-lg font-bold border outline-none focus:border-blue-600 transition-all ${
+                                                          theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900' : 'bg-white/5 border-white/10 text-white'
+                                                        }`}
+                                                        value={passwordData.current_password}
+                                                        onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                        className="absolute inset-y-0 right-0 flex items-center pr-5 text-white/30 hover:text-blue-600 transition-colors"
+                                                    >
+                                                        {showCurrentPassword ? <EyeSlashIcon className="h-6 w-6" /> : <EyeIcon className="h-6 w-6" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${
+                                                  theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                                }`}>
+                                                    {t('auth.register.password_label')} ({t('profile.new')})
+                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type={showNewPassword ? "text" : "password"} 
+                                                        required
+                                                        className={`w-full rounded-lg pl-6 pr-14 py-5 text-lg font-bold border outline-none focus:border-blue-600 transition-all ${
+                                                          theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900' : 'bg-white/5 border-white/10 text-white'
+                                                        }`}
+                                                        value={passwordData.password}
+                                                        onChange={(e) => setPasswordData({...passwordData, password: e.target.value})}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                                        className="absolute inset-y-0 right-0 flex items-center pr-5 text-white/30 hover:text-blue-600 transition-colors"
+                                                    >
+                                                        {showNewPassword ? <EyeSlashIcon className="h-6 w-6" /> : <EyeIcon className="h-6 w-6" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${
+                                                  theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                                }`}>
+                                                    {t('auth.register.password_confirm_label')}
+                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type={showConfirmPassword ? "text" : "password"} 
+                                                        required
+                                                        className={`w-full rounded-lg pl-6 pr-14 py-5 text-lg font-bold border outline-none focus:border-blue-600 transition-all ${
+                                                          theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900' : 'bg-white/5 border-white/10 text-white'
+                                                        }`}
+                                                        value={passwordData.password_confirmation}
+                                                        onChange={(e) => setPasswordData({...passwordData, password_confirmation: e.target.value})}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute inset-y-0 right-0 flex items-center pr-5 text-white/30 hover:text-blue-600 transition-colors"
+                                                    >
+                                                        {showConfirmPassword ? <EyeSlashIcon className="h-6 w-6" /> : <EyeIcon className="h-6 w-6" />}
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                         <div className="flex gap-4 pt-4">
-                                             <button 
-                                                 type="button"
-                                                 onClick={() => setShowPasswordModal(false)}
-                                                 className="flex-1 py-3 px-4 bg-bg-soft text-text-main font-bold rounded-xl hover:bg-border-main transition-all"
-                                             >
-                                                 {t('common.cancel')}
-                                             </button>
-                                             <button 
-                                                 type="submit"
-                                                 disabled={loading}
-                                                 className="flex-1 py-3 px-4 bg-primary !text-white font-bold rounded-xl hover:bg-primary-hover transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-                                             >
-                                                 {loading ? t('common.loading') : t('common.save')}
-                                             </button>
-                                         </div>
-                                     </form>
-                                 </div>
-                             </div>
-                         )}
-                    </div>
-                </div>
+                                            <div className="flex gap-6 pt-6">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setShowPasswordModal(false)}
+                                                    className={`flex-1 py-5 px-6 rounded-lg text-[10px] font-black uppercase tracking-[0.3em] transition-all active:scale-[0.98] ${
+                                                      theme === 'light' ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' : 'bg-white/5 text-white hover:bg-white/10'
+                                                    }`}
+                                                >
+                                                    {t('common.cancel')}
+                                                </button>
+                                                <button 
+                                                    type="submit"
+                                                    disabled={loading}
+                                                    className="flex-1 py-5 px-6 bg-blue-600 !text-white rounded-lg text-[10px] font-black uppercase tracking-[0.3em] shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                                                >
+                                                    {loading ? t('common.loading') : t('common.save')}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                           </AnimatePresence>
+                      </div>
+                  </div>
+                </RevealOnScroll>
             </div>
         </div>
       </div>

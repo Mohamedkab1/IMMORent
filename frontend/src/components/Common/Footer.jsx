@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const Footer = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const location = useLocation();
   const currentYear = new Date().getFullYear();
   const [hoveredLink, setHoveredLink] = useState(null);
@@ -14,7 +16,9 @@ const Footer = () => {
 
   if (isAuthPage) {
     return (
-      <footer className="relative bg-gradient-to-r from-[#050a1f] via-[#0a1a1a] to-[#050a1f] text-white pt-16 pb-8 transition-colors duration-300">
+      <footer className={`relative border-t border-border-main ${
+        theme === 'light' ? 'bg-white text-text-main' : 'bg-gradient-to-r from-[#050a1f] via-[#0a1a1a] to-[#050a1f] text-white'
+      } pt-16 pb-8 transition-colors duration-300`}>
         {/* Top Fade Transition */}
         <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-bg-soft to-transparent pointer-events-none"></div>
         
@@ -39,7 +43,9 @@ const Footer = () => {
   }
 
   return (
-    <footer className="relative bg-bg-main text-white pt-24 pb-12 transition-colors duration-300">
+    <footer className={`relative border-t border-border-main bg-bg-main ${
+      theme === 'light' ? 'text-text-main' : 'text-white'
+    } pt-24 pb-12 transition-colors duration-300`}>
       {/* Top Fade Transition */}
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-bg-soft to-transparent pointer-events-none"></div>
 

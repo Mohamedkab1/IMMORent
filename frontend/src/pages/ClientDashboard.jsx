@@ -23,6 +23,7 @@ import {
   ClipboardDocumentListIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
 import StatsCard from '../components/Common/StatsCard';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
@@ -49,8 +50,8 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
+      className={`transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) ${
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-[0.98]'
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
@@ -224,55 +225,90 @@ const ClientDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-soft transition-colors duration-300 pb-12">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-primary to-primary-light h-48 md:h-64 flex items-center justify-center text-white px-4">
-        <div className="max-w-4xl w-full">
-          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up !text-white">
-            {t('dash.client.welcome')}, <span className="text-secondary">{user?.name}</span>
-          </h1>
-          <p className="!text-white font-medium animate-slide-up animation-delay-100">
-            {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
-          </p>
+    <div className={`min-h-screen transition-colors duration-500 pb-20 ${
+      theme === 'light' ? 'bg-slate-50' : 'bg-[#050a1f]'
+    }`}>
+      {/* Top Banner with Luxury Gradient */}
+      <div className="relative h-[300px] md:h-[400px] flex items-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className={`absolute top-0 left-0 w-full h-full ${
+            theme === 'light' 
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-700' 
+              : 'bg-gradient-to-r from-blue-900 to-[#050a1f]'
+          }`}></div>
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M0 0 L100 0 L100 100 Z" fill="currentColor" className="text-white" />
+            </svg>
+          </div>
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <RevealOnScroll>
+            <div className="inline-block px-3 py-1 mb-4 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
+              {t('dash.client.portal', 'Portail Client')}
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-white">
+              {t('dash.client.welcome')}, <span className="text-blue-400">{user?.name}</span>
+            </h1>
+            <p className="text-white/60 text-lg font-light max-w-2xl leading-relaxed">
+              {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
+            </p>
+          </RevealOnScroll>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-16">
-        {/* Navigation Tabs */}
-        <div className="glass-panel rounded-3xl p-2 flex flex-wrap gap-2 mb-8 animate-fade-in rtl:flex-row-reverse">
-          {[
-            { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
-            { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
-            { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
-            { id: 'payments', label: t('common.payments', 'Paiements'), icon: CurrencyDollarIcon },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (tab.id === 'payments') {
-                  navigate('/payments/history');
-                } else {
-                  setActiveTab(tab.id);
-                }
-              }}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
-                activeTab === tab.id 
-                  ? 'bg-primary !text-white shadow-lg dark:bg-secondary dark:!text-primary shadow-primary/20' 
-                  : `hover:bg-bg-soft hover:text-text-main ${theme === 'light' ? '!text-black' : 'text-text-sub'}`
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              {tab.label}
-            </button>
-          ))}
-          <div className="ms-auto flex items-center gap-2 pr-2">
-            <button 
-              onClick={refreshData}
-              disabled={refreshing}
-              className={`p-3 text-text-sub hover:text-primary hover:bg-bg-soft rounded-2xl transition-all ${refreshing ? 'animate-spin' : ''}`}
-            >
-              <ArrowPathIcon className="w-5 h-5" />
-            </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
+        {/* Navigation Tabs - Sleeker Underlined Style */}
+        <div className={`mb-12 border-b transition-colors duration-500 ${
+          theme === 'light' ? 'border-slate-200' : 'border-white/10'
+        }`}>
+          <div className="flex flex-wrap gap-8 rtl:flex-row-reverse">
+            {[
+              { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
+              { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
+              { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
+              { id: 'payments', label: t('common.payments', 'Paiements'), icon: CurrencyDollarIcon },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === 'payments') {
+                    navigate('/payments/history');
+                  } else {
+                    setActiveTab(tab.id);
+                  }
+                }}
+                className={`relative pb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all ${
+                  activeTab === tab.id 
+                    ? (theme === 'light' ? 'text-blue-600' : 'text-blue-400') 
+                    : (theme === 'light' ? 'text-slate-400 hover:text-slate-600' : 'text-white/40 hover:text-white')
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="activeTab"
+                    className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-current"
+                  />
+                )}
+              </button>
+            ))}
+            
+            <div className="ms-auto flex items-center gap-4 pb-4">
+              <button 
+                onClick={refreshData}
+                disabled={refreshing}
+                className={`p-2 transition-all ${
+                  refreshing ? 'animate-spin' : ''
+                } ${theme === 'light' ? 'text-slate-400 hover:text-blue-600' : 'text-white/40 hover:text-blue-400'}`}
+                title={t('common.refresh')}
+              >
+                <ArrowPathIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -291,47 +327,88 @@ const ClientDashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <RevealOnScroll delay={100} className="lg:col-span-2">
-                  <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl transition-all duration-500">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-text-main">{t('client.requests.recent')}</h2>
-                    <button onClick={() => setActiveTab('requests')} className="text-sm font-bold text-primary dark:text-secondary hover:underline">{t('client.requests.view_all')}</button>
-                  </div>
-                  <div className="space-y-4">
-                    {requests.slice(0, 3).map(request => (
-                      <div key={request.id} className="flex items-center justify-between p-4 bg-bg-soft rounded-2xl border border-border-main group hover:border-primary transition-all">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-bg-card rounded-xl flex items-center justify-center text-primary dark:text-secondary border border-border-main">
-                            <HomeIcon className="w-6 h-6" />
+                  <div className={`p-8 shadow-2xl border transition-all duration-500 rounded-lg ${
+                    theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10 backdrop-blur-xl'
+                  }`}>
+                    <div className="flex justify-between items-center mb-10">
+                      <h2 className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                        theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                      }`}>
+                        {t('client.requests.recent')}
+                      </h2>
+                      <button 
+                        onClick={() => setActiveTab('requests')} 
+                        className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:underline"
+                      >
+                        {t('client.requests.view_all')}
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {requests.slice(0, 3).map(request => (
+                        <div key={request.id} className={`flex items-center justify-between p-6 border transition-all group hover:border-blue-500/50 rounded-lg ${
+                          theme === 'light' ? 'bg-slate-50/50 border-slate-100' : 'bg-white/5 border-white/5'
+                        }`}>
+                          <div className="flex items-center gap-6">
+                            <div className={`w-14 h-14 flex items-center justify-center border transition-colors rounded-lg ${
+                              theme === 'light' ? 'bg-white border-slate-100 text-blue-600' : 'bg-white/5 border-white/10 text-blue-400'
+                            }`}>
+                              <HomeIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <p className={`font-bold tracking-tight mb-1 ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                                {request.property?.title ? t(request.property.title) : ''}
+                              </p>
+                              <p className={`text-[10px] font-black uppercase tracking-widest ${
+                                theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                              }`}>
+                                {request.property?.city} • {getRequestTypeBadge(request.type).props.children[1]}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-text-main line-clamp-1">{request.property?.title ? t(request.property.title) : ''}</p>
-                            <p className="text-xs text-text-muted mt-0.5">{request.property?.city} • {getRequestTypeBadge(request.type).props.children[1]}</p>
+                          <div className="text-end">
+                             {getStatusBadge(request.status)}
                           </div>
                         </div>
-                        <div className="text-end">
-                           {getStatusBadge(request.status)}
+                      ))}
+                      {requests.length === 0 && (
+                        <div className="py-12 text-center border-2 border-dashed border-slate-100 dark:border-white/5">
+                          <p className="text-sm text-slate-400 italic">{t('client.requests.no_data')}</p>
                         </div>
-                      </div>
-                    ))}
-                    {requests.length === 0 && <p className="text-center py-8 text-text-muted italic">{t('client.requests.no_data')}</p>}
-                  </div>
+                      )}
+                    </div>
                   </div>
                 </RevealOnScroll>
 
                 <RevealOnScroll delay={200}>
-                  <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl transition-all duration-500 h-fit">
-                   <h2 className="text-xl font-bold text-text-main mb-6">{t('client.support.title')}</h2>
-                   <div className="space-y-4">
-                      <Link to="/contact" className="flex items-center gap-4 p-4 bg-bg-soft rounded-2xl hover:bg-primary/5 transition-all group">
-                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary" />
+                  <div className={`p-8 shadow-2xl border transition-all duration-500 h-full rounded-lg ${
+                    theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10 backdrop-blur-xl'
+                  }`}>
+                    <h2 className={`text-[10px] font-black uppercase tracking-[0.3em] mb-10 ${
+                      theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                    }`}>
+                      {t('client.support.title')}
+                    </h2>
+                    <div className="space-y-4">
+                      <Link to="/contact" className={`flex items-center gap-4 p-6 border transition-all group rounded-lg ${
+                        theme === 'light' ? 'bg-slate-50/50 border-slate-100 hover:border-blue-500/50' : 'bg-white/5 border-white/5 hover:border-blue-500/50'
+                      }`}>
+                         <div className={`w-12 h-12 flex items-center justify-center transition-colors rounded-lg ${
+                           theme === 'light' ? 'bg-white border-slate-100 text-blue-600' : 'bg-white/5 border-white/10 text-blue-400'
+                         }`}>
+                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
                          </div>
                          <div>
-                            <p className="text-sm font-bold text-text-main">{t('client.support.need_help')}</p>
-                            <p className="text-xs text-text-muted">{t('client.support.contact')}</p>
+                            <p className={`text-sm font-bold tracking-tight mb-1 ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                              {t('client.support.need_help')}
+                            </p>
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${
+                              theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                            }`}>
+                              {t('client.support.contact')}
+                            </p>
                          </div>
                       </Link>
-                   </div>
+                    </div>
                   </div>
                 </RevealOnScroll>
               </div>
@@ -340,49 +417,69 @@ const ClientDashboard = () => {
 
           {activeTab === 'requests' && (
             <RevealOnScroll>
-              <div className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
-               <div className="p-8 border-b border-border-main flex justify-between items-center">
-                  <h2 className="text-2xl font-black text-text-main">{t('request.title')}</h2>
+              <div className={`shadow-2xl border transition-all duration-500 rounded-lg overflow-hidden ${
+                theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10 backdrop-blur-xl'
+              }`}>
+               <div className={`p-8 border-b transition-colors ${
+                 theme === 'light' ? 'border-slate-100' : 'border-white/5'
+               }`}>
+                  <h2 className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                  }`}>
+                    {t('request.title')}
+                  </h2>
                </div>
                <div className="overflow-x-auto">
                  <table className="w-full text-left">
                    <thead>
-                     <tr className="bg-bg-soft border-b border-border-main text-xs uppercase font-black text-text-muted tracking-widest">
-                       <th className="p-6">{t('client.table.id')}</th>
-                       <th className="p-6">{t('client.table.property')}</th>
-                       <th className="p-6 text-center">{t('client.table.status')}</th>
-                       <th className="p-6 text-right">{t('client.table.actions')}</th>
+                     <tr className={`border-b transition-colors ${
+                       theme === 'light' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'
+                     }`}>
+                       <th className="p-8 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('client.table.id')}</th>
+                       <th className="p-8 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('client.table.property')}</th>
+                       <th className="p-8 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('client.table.status')}</th>
+                       <th className="p-8 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">{t('client.table.actions')}</th>
                      </tr>
                    </thead>
-                   <tbody className="divide-y divide-border-main">
+                   <tbody className={`divide-y transition-colors ${
+                     theme === 'light' ? 'divide-slate-100' : 'divide-white/5'
+                   }`}>
                      {requests.map(request => (
-                       <tr key={request.id} className="hover:bg-bg-soft/50 transition-colors">
-                         <td className="p-6 text-sm font-mono text-text-muted">#{request.id}</td>
-                         <td className="p-6">
-                           <p className="font-bold text-text-main">{request.property?.title ? t(request.property.title) : ''}</p>
-                           <p className="text-xs text-text-muted">{request.property?.city}</p>
+                       <tr key={request.id} className={`transition-colors ${
+                         theme === 'light' ? 'hover:bg-slate-50' : 'hover:bg-white/5'
+                       }`}>
+                         <td className="p-8 text-[10px] font-black tracking-tighter text-slate-400">#{request.id}</td>
+                         <td className="p-8">
+                           <p className={`font-bold tracking-tight mb-1 ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                             {request.property?.title ? t(request.property.title) : ''}
+                           </p>
+                           <p className={`text-[10px] font-black uppercase tracking-widest ${
+                             theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                           }`}>
+                             {request.property?.city}
+                           </p>
                          </td>
-                          <td className="p-6 text-center">
+                          <td className="p-8 text-center">
                              {getStatusBadge(request.status)}
                              {request.status === 'rejected' && request.rejection_reason && (
-                               <p className="text-[10px] text-red-500 mt-1 italic max-w-[150px] mx-auto line-clamp-2" title={request.rejection_reason}>
+                               <p className="text-[10px] text-red-500 mt-2 font-light italic max-w-[200px] mx-auto line-clamp-2" title={request.rejection_reason}>
                                  "{request.rejection_reason}"
                                </p>
                              )}
                           </td>
-                          <td className="p-6 text-right">
-                             <div className="flex flex-col items-end gap-2">
-                                <div className="flex gap-4">
-                                  <Link to={`/properties/${request.property_id}`} className="text-primary dark:text-secondary font-bold text-sm hover:underline">{t('client.requests.details')}</Link>
+                          <td className="p-8 text-right">
+                             <div className="flex flex-col items-end gap-3">
+                                <div className="flex gap-6">
+                                  <Link to={`/properties/${request.property_id}`} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">{t('client.requests.details')}</Link>
                                   {request.status === 'pending' && (
-                                    <button onClick={() => cancelRequest(request.id)} className="text-rose-500 font-bold text-sm hover:underline">{t('client.requests.cancel')}</button>
+                                    <button onClick={() => cancelRequest(request.id)} className="text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline">{t('client.requests.cancel')}</button>
                                   )}
                                 </div>
                                 {request.status === 'approved' && (
                                    <Link 
                                      to={`/properties/${request.property_id}/payment`} 
                                      state={{ property: request.property, request: request }}
-                                     className="px-4 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
+                                     className="px-6 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                                    >
                                      {t('client.requests.pay_now')}
                                    </Link>
@@ -403,33 +500,66 @@ const ClientDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  {contracts.map((contract, i) => (
                    <RevealOnScroll key={contract.id} delay={i * 100}>
-                     <div className="bg-bg-card rounded-3xl border border-border-main p-8 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-primary transition-all duration-500 group h-full">
-                    <div className="flex justify-between items-start mb-6">
+                     <div className={`shadow-2xl border transition-all duration-500 group h-full rounded-lg p-8 ${
+                       theme === 'light' ? 'bg-white border-slate-100 hover:border-blue-500/50' : 'bg-white/5 border-white/10 hover:border-blue-500/50'
+                     }`}>
+                    <div className="flex justify-between items-start mb-10">
                       <div>
-                        <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">{contract.property?.title ? t(contract.property.title) : ''}</h3>
-                        <p className="text-sm text-text-muted">{contract.property?.address}</p>
+                        <h3 className={`text-xl font-bold tracking-tight mb-1 transition-colors group-hover:text-blue-500 ${
+                          theme === 'light' ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          {contract.property?.title ? t(contract.property.title) : ''}
+                        </h3>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${
+                          theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                        }`}>
+                          {contract.property?.address}
+                        </p>
                       </div>
                       {getStatusBadge(contract.status)}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                       <div className="p-4 bg-bg-soft rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">{t('client.contracts.monthly_rent')}</p>
-                          <p className="text-lg font-black text-text-main">{contract.monthly_rent?.toLocaleString()} DH</p>
+                    <div className="grid grid-cols-2 gap-6 mb-10">
+                       <div className={`p-6 border transition-colors rounded-lg ${
+                         theme === 'light' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'
+                       }`}>
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${
+                            theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                          }`}>
+                            {t('client.contracts.monthly_rent')}
+                          </p>
+                          <p className={`text-xl font-black ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                            {contract.monthly_rent?.toLocaleString()} <span className="text-xs">DH</span>
+                          </p>
                        </div>
-                       <div className="p-4 bg-bg-soft rounded-2xl">
-                          <p className="text-[10px] font-black uppercase text-text-muted mb-1">{t('client.contracts.sign_date')}</p>
-                          <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
+                       <div className={`p-6 border transition-colors rounded-lg ${
+                         theme === 'light' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'
+                       }`}>
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${
+                            theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                          }`}>
+                            {t('client.contracts.sign_date')}
+                          </p>
+                          <p className={`text-xl font-black ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                            {new Date(contract.start_date).toLocaleDateString()}
+                          </p>
                        </div>
-                      </div>
-                      <Link to={`/contracts/${contract.id}`} className="btn-primary !text-white w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
+                    </div>
+                    <Link 
+                      to={`/contracts/${contract.id}`} 
+                      className="block w-full py-4 bg-blue-600 text-white text-center text-[10px] font-black uppercase tracking-[0.3em] rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                    >
+                      {t('client.contracts.view')}
+                    </Link>
                    </div>
                  </RevealOnScroll>
                ))}
                {contracts.length === 0 && (
-                 <div className="col-span-full py-20 text-center bg-bg-card rounded-3xl border-2 border-dashed border-border-main">
-                    <p className="text-text-muted font-bold italic">{t('client.contracts.no_data')}</p>
-                 </div>
-               )}
+                  <div className={`col-span-full py-24 text-center border-2 border-dashed rounded-lg ${
+                    theme === 'light' ? 'border-slate-100' : 'border-white/5'
+                  }`}>
+                     <p className="text-slate-400 font-light italic">{t('client.contracts.no_data')}</p>
+                  </div>
+                )}
               </div>
             </RevealOnScroll>
           )}

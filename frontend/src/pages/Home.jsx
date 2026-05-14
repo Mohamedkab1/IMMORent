@@ -168,7 +168,7 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {categories.map((cat, i) => (
                 <RevealOnScroll key={i} delay={i * 100}>
-                  <Link to={`/properties?type=${cat.type}`} className="group relative h-[450px] overflow-hidden rounded-sm cursor-pointer shadow-xl transition-all duration-500 hover:-translate-y-2 block">
+                  <Link to={`/properties?type=${cat.type}`} className="group relative h-[450px] overflow-hidden rounded-lg cursor-pointer shadow-xl transition-all duration-500 hover:-translate-y-2 block">
                     <img src={cat.img} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
                     
@@ -231,7 +231,7 @@ const Home = () => {
                     <p className="text-[10px] opacity-30 mb-8 font-light italic">
                       {t('home.contact.privacy_notice')}
                     </p>
-                    <button type="submit" className={`px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 ${theme === 'light' ? '!text-white' : 'text-white'} font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-sm`}>
+                    <button type="submit" className={`px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 ${theme === 'light' ? '!text-white' : 'text-white'} font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-lg`}>
                       {t('home.contact.submit')}
                     </button>
                   </div>

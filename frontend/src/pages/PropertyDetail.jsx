@@ -463,7 +463,7 @@ const PropertyDetail = () => {
                   </div>
 
                   <button type="submit" disabled={sendingMessage} className="pd-submit-btn">
-                     {sendingMessage ? t('common.sending', 'Envoi...') : t('prop.detail.contact.send', 'Envoyer')}
+                     {sendingMessage ? t('common.sending', 'Envoi...') : t('prop.detail.contact.send', 'Envoyer le message')}
                   </button>
                 </form>
                 
