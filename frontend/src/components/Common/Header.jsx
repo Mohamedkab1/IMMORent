@@ -357,9 +357,10 @@ const Header = () => {
         <div className="flex justify-between items-center h-12 md:h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className={`text-3xl font-bold tracking-tighter transition-colors ${!scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white' : 'text-text-main'}`}>
-              IMMO<span className="opacity-50">Rent</span>
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src={logo} alt="IMMORent" className="h-10 w-10 object-cover rounded-xl shadow-sm" />
+            <span className={`text-3xl font-black tracking-tighter transition-colors ${!scrolled && (location.pathname === '/' || location.pathname.startsWith('/properties/')) ? 'text-white' : 'text-text-main'}`}>
+              IMMO<span className="text-yellow-400">Rent</span>
             </span>
           </Link>
 

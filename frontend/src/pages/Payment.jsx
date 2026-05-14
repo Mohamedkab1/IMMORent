@@ -68,15 +68,9 @@ const Payment = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-<<<<<<< HEAD
-
-    // Empêcher la modification de la date si elle vient de la demande
-    if (name === 'entryDate' && (location.state?.request?.start_date || location.state?.contract?.start_date)) return;
-=======
     
     // La date est toujours en lecture seule (provient du contrat/demande)
     if (name === 'entryDate') return;
->>>>>>> 8515e47ed60aa66cf06cbd392658bab5d24045fb
 
     // Formatage simple pour la carte bancaire
     if (name === 'cardNumber') {
@@ -171,17 +165,10 @@ const Payment = () => {
           </div>
 
           <div className="flex flex-col gap-3">
-<<<<<<< HEAD
-            {invoiceUrl && (
-              <a
-                href={invoiceUrl}
-                target="_blank"
-=======
             {invoiceUrl && paymentMethod !== 'agency' && (
               <a 
                 href={invoiceUrl} 
                 target="_blank" 
->>>>>>> 8515e47ed60aa66cf06cbd392658bab5d24045fb
                 rel="noopener noreferrer"
                 className="w-full py-3 bg-primary text-white rounded-xl font-bold shadow-md hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
               >
@@ -246,16 +233,6 @@ const Payment = () => {
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-text-sub mb-1">{t('pay.entry_date', 'Date d\'entrée souhaitée')}</label>
-<<<<<<< HEAD
-                    <input
-                      required
-                      type="date"
-                      name="entryDate"
-                      value={formData.entryDate}
-                      onChange={handleChange}
-                      readOnly={!!(location.state?.request?.start_date || location.state?.contract?.start_date)}
-                      className={`w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none ${(location.state?.request?.start_date || location.state?.contract?.start_date) ? 'opacity-70 cursor-not-allowed bg-bg-main' : ''}`}
-=======
                     <input 
                       required 
                       type="date" 
@@ -264,7 +241,6 @@ const Payment = () => {
                       onChange={handleChange} 
                       readOnly
                       className="w-full px-4 py-2 bg-bg-soft border border-border-main rounded-xl focus:outline-none opacity-70 cursor-not-allowed" 
->>>>>>> 8515e47ed60aa66cf06cbd392658bab5d24045fb
                     />
                   </div>
                 </div>
