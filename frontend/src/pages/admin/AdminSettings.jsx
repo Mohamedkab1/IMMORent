@@ -320,7 +320,7 @@ const AdminSettings = () => {
           width: 100%;
           padding: 0.75rem;
           background: #d4af37;
-          color: #0f2b4d;
+          color: #ffffff !important;
           border: none;
           border-radius: 0.5rem;
           font-weight: 600;

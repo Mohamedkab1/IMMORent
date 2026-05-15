@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { toast } from 'react-toastify';
 import { 
@@ -64,6 +65,7 @@ const ClientDashboard = () => {
   const { favoritesCount } = useFavorites();
   const location = useLocation();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [requests, setRequests] = useState([]);
   const [contracts, setContracts] = useState([]);
@@ -226,10 +228,10 @@ const ClientDashboard = () => {
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-primary to-primary-light h-48 md:h-64 flex items-center justify-center text-white px-4">
         <div className="max-w-4xl w-full">
-          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up">
+          <h1 className="text-3xl md:text-5xl font-black mb-2 animate-slide-up !text-white">
             {t('dash.client.welcome')}, <span className="text-secondary">{user?.name}</span>
           </h1>
-          <p className="text-white/70 font-medium animate-slide-up animation-delay-100">
+          <p className="!text-white font-medium animate-slide-up animation-delay-100">
             {t('client.dashboard.subtitle', 'Gérez vos demandes et contrats depuis votre espace personnel.')}
           </p>
         </div>
@@ -242,7 +244,7 @@ const ClientDashboard = () => {
             { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon },
             { id: 'requests', label: t('client.requests.history'), icon: ClipboardDocumentListIcon || BellIcon },
             { id: 'contracts', label: t('client.contracts.active_title'), icon: DocumentTextIcon },
-            { id: 'payments', label: 'Paiements', icon: CurrencyDollarIcon },
+            { id: 'payments', label: t('common.payments', 'Paiements'), icon: CurrencyDollarIcon },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -255,8 +257,8 @@ const ClientDashboard = () => {
               }}
               className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
                 activeTab === tab.id 
-                  ? 'bg-primary text-white shadow-lg dark:bg-secondary dark:text-primary shadow-primary/20' 
-                  : 'text-text-sub hover:bg-bg-soft hover:text-text-main'
+                  ? 'bg-primary !text-white shadow-lg dark:bg-secondary dark:!text-primary shadow-primary/20' 
+                  : `hover:bg-bg-soft hover:text-text-main ${theme === 'light' ? '!text-black' : 'text-text-sub'}`
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -419,7 +421,7 @@ const ClientDashboard = () => {
                           <p className="text-lg font-black text-text-main">{new Date(contract.start_date).toLocaleDateString()}</p>
                        </div>
                       </div>
-                      <Link to={`/contracts/${contract.id}`} className="btn-primary w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
+                      <Link to={`/contracts/${contract.id}`} className="btn-primary !text-white w-full text-center block shadow-lg hover:shadow-primary/30 transition-all">{t('client.contracts.view')}</Link>
                    </div>
                  </RevealOnScroll>
                ))}

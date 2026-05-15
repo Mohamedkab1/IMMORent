@@ -331,7 +331,7 @@ const EditProperty = () => {
                       className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       DH {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
+                       {t('prop.currency')} {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
                     </div>
                   </div>
                 </div>
@@ -497,7 +497,7 @@ const EditProperty = () => {
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                    {imagePreviews.map((preview, i) => (
                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-primary/20 bg-bg-card shadow-sm group">
-                       <div className="absolute top-0 left-0 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10">Nouveau</div>
+                       <div className="absolute top-0 left-0 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10">{t('common.new')}</div>
                        <img src={preview} alt="Prévisualisation" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                        <button 

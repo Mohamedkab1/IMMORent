@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon, ClockIcon, CheckCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -50,6 +51,7 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 
 const Contact = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -73,30 +75,27 @@ const Contact = () => {
       
       {/* Hero Section */}
       {/* Hero Section */}
-      <div className="relative flex items-center justify-center min-h-[40vh] bg-slate-900 group overflow-hidden border-b border-primary/20 dark:border-slate-800">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-slate-900/90 z-10 transition-opacity duration-700 group-hover:opacity-80"></div>
-        <img 
-          src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80" 
-          alt="Contact Us Background" 
-          className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-[15s] group-hover:scale-110" 
-        />
+      <div className={`relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'bg-gradient-to-b from-white via-slate-50/50 to-white' : 'bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f]'}`}>
         
+        {/* Bottom Fade Transition */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-soft to-transparent z-20 pointer-events-none"></div>
+
         {/* Abstract Background patterns */}
-        <div className="absolute inset-0 opacity-10 z-10 mix-blend-overlay">
-          <svg className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 text-white" width="600" height="600" fill="currentColor" viewBox="0 0 100 100">
+        <div className="absolute inset-0 opacity-20 z-10 mix-blend-overlay pointer-events-none">
+          <svg className={`absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 ${theme === 'light' ? 'text-slate-200' : 'text-white'}`} width="600" height="600" fill="currentColor" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="50" />
           </svg>
         </div>
         
-        <div className="relative z-20 max-w-4xl mx-auto text-center px-4 mt-8">
+        <div className="relative z-20 max-w-4xl mx-auto text-center px-4">
           <RevealOnScroll>
-            <span className="inline-block py-1 px-4 rounded-full bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold mb-4 tracking-widest uppercase">
+            <span className="inline-block py-1 px-4 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-bold mb-6 tracking-widest uppercase shadow-sm">
               {t('nav.contact')}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">
-              {t('contact.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary to-yellow-200">{t('contact.hero.title_p2')}</span>
+            <h1 className={`text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-lg ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+              {t('contact.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500">{t('contact.hero.title_p2')}</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-md leading-relaxed">
+            <p className={`text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
               {t('contact.hero.subtitle')}
             </p>
           </RevealOnScroll>
@@ -115,8 +114,8 @@ const Contact = () => {
             { icon: ClockIcon, title: t('contact.info.hours.title'), line1: t('contact.info.hours.l1'), line2: t('contact.info.hours.l2'), note: t('contact.info.hours.note') }
           ].map((info, i) => (
             <RevealOnScroll key={i} delay={i * 100}>
-              <div className="bg-bg-card p-6 rounded-3xl shadow-sm border border-border-main text-center hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 h-full group">
-                <div className="w-16 h-16 mx-auto bg-primary/10 dark:bg-secondary/10 rounded-2xl flex items-center justify-center mb-6 rotate-3 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
+              <div className="bg-bg-card p-6 rounded-xl shadow-sm border border-border-main text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 h-full flex flex-col items-center">
+                <div className="w-16 h-16 bg-primary/10 dark:bg-secondary/10 rounded-lg flex items-center justify-center mb-6">
                   <info.icon className="w-8 h-8 text-primary dark:text-secondary" />
                 </div>
                 <h3 className="text-lg font-bold text-text-main mb-3">{info.title}</h3>
@@ -133,10 +132,10 @@ const Contact = () => {
           
           {/* Form */}
           <RevealOnScroll delay={200}>
-            <div className="bg-bg-card p-8 md:p-12 rounded-3xl shadow-sm border border-border-main relative overflow-hidden group hover:shadow-xl transition-shadow duration-500">
+            <div className="bg-bg-card p-8 md:p-12 rounded-xl shadow-sm border border-border-main relative overflow-hidden group hover:shadow-xl transition-shadow duration-500">
                
                {/* Decorative blob */}
-               <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-secondary/10 dark:bg-secondary/5 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-150"></div>
+               <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 dark:bg-secondary/5 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-150"></div>
 
                <h2 className="text-3xl font-extrabold text-text-main mb-2 relative z-10">{t('contact.form.title')}</h2>
                <p className="text-text-sub mb-8 relative z-10 font-medium">{t('contact.form.subtitle')}</p>
@@ -146,7 +145,7 @@ const Contact = () => {
                    <CheckCircleIcon className="w-20 h-20 text-green-500 mb-6" />
                    <h3 className="text-2xl font-bold text-text-main mb-4">{t('contact.form.success.title')}</h3>
                    <p className="text-text-sub mb-8 max-w-sm">{t('contact.form.success.desc')}</p>
-                   <button onClick={() => setSubmitted(false)} className="px-8 py-3 bg-text-main text-bg-card hover:opacity-90 rounded-xl font-bold transition-colors">
+                   <button onClick={() => setSubmitted(false)} className="px-8 py-3 bg-primary text-white hover:bg-primary-hover rounded-lg font-bold transition-colors shadow-md">
                      {t('contact.form.success.btn')}
                    </button>
                  </div>
@@ -155,22 +154,22 @@ const Contact = () => {
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2 group/input">
                         <label className="text-sm font-bold text-text-sub uppercase tracking-wider group-focus-within/input:text-primary transition-colors">{t('contact.form.label.name')} <span className="text-rose-500">*</span></label>
-                        <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder={t('contact.form.placeholder.name')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-2xl text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder={t('contact.form.placeholder.name')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-lg text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
                       </div>
                       <div className="space-y-2 group/input">
                         <label className="text-sm font-bold text-text-sub uppercase tracking-wider group-focus-within/input:text-primary transition-colors">{t('contact.form.label.email')} <span className="text-rose-500">*</span></label>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder={t('contact.form.placeholder.email')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-2xl text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder={t('contact.form.placeholder.email')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-lg text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
                       </div>
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2 group/input">
                         <label className="text-sm font-bold text-text-sub uppercase tracking-wider group-focus-within/input:text-primary transition-colors">{t('contact.form.label.phone')}</label>
-                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 00 00 00 00" className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-2xl text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="06 00 00 00 00" className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-lg text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner" />
                       </div>
                       <div className="space-y-2 group/input">
                         <label className="text-sm font-bold text-text-sub uppercase tracking-wider group-focus-within/input:text-primary transition-colors">{t('contact.form.label.subject')} <span className="text-rose-500">*</span></label>
-                        <select name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border outline-none border-border-main rounded-2xl text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer shadow-inner">
+                        <select name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border outline-none border-border-main rounded-lg text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer shadow-inner">
                          <option value="">{t('contact.form.subject.placeholder')}</option>
                          <option value="info">{t('contact.form.subject.opt1')}</option>
                          <option value="support">{t('contact.form.subject.opt2')}</option>
@@ -183,7 +182,7 @@ const Contact = () => {
 
                    <div className="space-y-2 group/input">
                      <label className="text-sm font-bold text-text-sub uppercase tracking-wider group-focus-within/input:text-primary transition-colors">{t('contact.form.label.message')} <span className="text-rose-500">*</span></label>
-                     <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder={t('contact.form.placeholder.message')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-2xl text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y shadow-inner" />
+                     <textarea name="message" value={formData.message} onChange={handleChange} rows="5" required placeholder={t('contact.form.placeholder.message')} className="w-full px-4 py-3 bg-bg-soft hover:bg-bg-main border appearance-none outline-none border-border-main rounded-lg text-text-main font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y shadow-inner" />
                    </div>
 
                    <div className="flex items-start gap-3 mt-4">
@@ -193,7 +192,7 @@ const Contact = () => {
                      </label>
                    </div>
 
-                   <button type="submit" disabled={submitting} className="w-full py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl font-black uppercase tracking-wider shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 mt-4">
+                   <button type="submit" disabled={submitting} className="w-full py-4 bg-primary text-white dark:bg-secondary dark:text-slate-900 hover:bg-primary-hover dark:hover:bg-yellow-400 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-lg font-bold uppercase tracking-widest shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3 mt-4">
                      {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                      {submitting ? t('contact.form.submitting') : <><PaperAirplaneIcon className="w-5 h-5" /> {t('contact.form.submit')}</>}
                    </button>
@@ -204,7 +203,7 @@ const Contact = () => {
 
           {/* Map */}
           <RevealOnScroll delay={400} className="h-full">
-            <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-3xl overflow-hidden shadow-sm border border-border-main relative group z-0">
+            <div className="h-[400px] lg:h-full min-h-[500px] w-full rounded-xl overflow-hidden shadow-sm border border-border-main relative group z-0">
               <MapContainer 
                 center={[31.6295, -7.9811]} 
                 zoom={13} 
@@ -228,9 +227,9 @@ const Contact = () => {
 
         <div className="text-center max-w-4xl mx-auto">
           <RevealOnScroll>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-text-main inline-block relative mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main inline-block relative mb-16 tracking-tight">
               {t('contact.faq.title')}
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-gradient-to-r from-primary to-secondary rounded-full"></div>
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-secondary"></div>
             </h2>
           </RevealOnScroll>
           
@@ -242,7 +241,7 @@ const Contact = () => {
               { q: t('contact.faq.q4'), a: t('contact.faq.a4') }
             ].map((faq, i) => (
               <RevealOnScroll key={i} delay={i * 150}>
-                <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-sm hover:shadow-lg transition-all duration-300 h-full group">
+                <div className="bg-bg-card p-6 rounded-xl border border-border-main shadow-sm hover:shadow-lg transition-all duration-300 h-full group">
                   <h3 className="text-lg font-bold text-text-main mb-3 flex items-start gap-3 group-hover:text-primary dark:group-hover:text-secondary transition-colors">
                      <div className="mt-1.5 w-2 h-2 rounded-full bg-secondary flex-shrink-0 group-hover:scale-150 transition-transform"></div>
                      {faq.q}

@@ -296,7 +296,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    if (window.confirm('Supprimer définitivement cet utilisateur ?')) {
+    if (window.confirm(t('admin.users.del_confirm'))) {
       try {
         const res = await userService.delete(id);
         if (res.success) {
@@ -322,7 +322,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteProperty = async (id) => {
-    if (window.confirm('Supprimer définitivement ce bien ?')) {
+    if (window.confirm(t('admin.prop.del_confirm_title'))) {
       try {
         const res = await propertyService.delete(id);
         if (res.success) {
@@ -360,7 +360,7 @@ const AdminDashboard = () => {
   };
 
   const handleProcessAgentRequest = async (userId, status) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir ${status === 'approved' ? 'approuver' : 'refuser'} cette demande ?`)) {
+    if (window.confirm(t('admin.req.process_confirm'))) {
       try {
         const res = await userService.processAgentRequest(userId, status);
         if (res.success) {
@@ -408,7 +408,7 @@ const AdminDashboard = () => {
   const handleDownloadContract = async (id) => {
     try {
       await contractService.download(id);
-      toast.success('Téléchargement lancé');
+      toast.success(t('admin.contracts.downloading'));
     } catch (error) {
       toast.error('Erreur téléchargement');
     }
@@ -445,7 +445,7 @@ const AdminDashboard = () => {
 
   // --- Render Helpers ---
   if (!user || !user.role || user.role.slug !== 'admin') {
-    return <div className="p-8 text-center">Accès restreint.</div>;
+    return <div className="p-8 text-center">{t('common.restricted')}</div>;
   }
 
 
@@ -466,31 +466,31 @@ const AdminDashboard = () => {
         <nav className="flex flex-col gap-1.5">
           <Link 
             to="/dashboard/admin" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-large scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'dashboard' ? 'bg-primary !text-white shadow-large scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <ChartBarIcon className="w-5 h-5" /> {t('admin.tabs.overview')}
           </Link>
           <Link 
             to="/dashboard/admin/users" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'users' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserGroupIcon className="w-5 h-5" /> {t('admin.tabs.users')}
           </Link>
           <Link 
             to="/dashboard/admin/properties" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'properties' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <HomeIcon className="w-5 h-5" /> {t('admin.tabs.properties')}
           </Link>
           <Link 
             to="/dashboard/admin/contracts" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'contracts' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentTextIcon className="w-5 h-5" /> {t('admin.tabs.contracts')}
           </Link>
           <Link 
             to="/dashboard/admin/payments" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'payments' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <CurrencyDollarIcon className="w-5 h-5" /> {t('admin.tabs.payments')}
           </Link>
@@ -498,12 +498,12 @@ const AdminDashboard = () => {
             onClick={() => navigate('/payments/history')}
             className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm text-text-sub hover:bg-bg-soft hover:text-text-main`}
           >
-            <CurrencyDollarIcon className="w-5 h-5" /> Historique complet
+            <CurrencyDollarIcon className="w-5 h-5" /> {t('pay.history.title', 'Historique complet')}
           </button>
           <div className="h-px bg-border-main my-4 mx-4"></div>
           <Link 
             to="/dashboard/admin/agent-requests" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm relative ${activeTab === 'agent-requests' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <UserIcon className="w-5 h-5" /> {t('admin.tabs.agent_requests')}
             {stats?.requests?.pending > 0 && (
@@ -520,7 +520,7 @@ const AdminDashboard = () => {
           </Link>
           <Link 
             to="/dashboard/admin/settings" 
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === 'settings' ? 'bg-primary !text-white shadow-xl shadow-primary/30 scale-[1.02]' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <Cog6ToothIcon className="w-5 h-5" /> {t('admin.tabs.settings')}
           </Link>
@@ -560,7 +560,7 @@ const AdminDashboard = () => {
               {activeTab === 'settings' && t('admin.tabs.settings')}
             </h2>
             <p className="text-text-sub font-medium mt-1">
-              {t('dash.client.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
+              {t('dash.admin.welcome')}, {user.name}. {t('admin.welcome_subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -569,7 +569,7 @@ const AdminDashboard = () => {
                 if (activeTab === 'users') loadUsers();
                 else if (activeTab === 'properties') loadProperties();
                 else if (activeTab === 'dashboard') loadDashboardStats();
-                toast.info('Actualisation...');
+                toast.info(t('common.refreshing'));
               }}
               className="p-3 bg-bg-card text-text-sub rounded-2xl border border-border-main shadow-sm hover:shadow-md hover:scale-105 active:scale-95 hover:text-primary transition-all"
             >
@@ -709,7 +709,7 @@ const AdminDashboard = () => {
                      <option value="agent">{t('auth.role.agent')}</option>
                      <option value="client">{t('auth.role.client')}</option>
                    </select>
-                   <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white text-xs font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                   <button className="flex items-center gap-2 px-6 py-3 bg-primary !text-white text-xs font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
                      <PlusIcon className="w-4 h-4" /> {t('admin.actions.new')}
                    </button>
                  </div>
@@ -1122,10 +1122,10 @@ const AdminDashboard = () => {
                   <button 
                     onClick={handleSaveSettings}
                     disabled={savingSettings}
-                    className="px-8 py-3 bg-primary text-white text-sm font-bold rounded-2xl hover:bg-primary/90 disabled:opacity-50 shadow-xl shadow-primary/30 transition-all flex items-center gap-2"
+                    className="px-8 py-3 bg-primary !text-white !opacity-100 text-sm font-bold rounded-2xl hover:bg-primary/90 disabled:opacity-50 shadow-xl shadow-primary/30 transition-all flex items-center gap-2"
                   >
-                    {savingSettings ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
-                    {savingSettings ? t('admin.settings.saving') : t('admin.settings.save')}
+                    {savingSettings ? <ArrowPathIcon className="w-4 h-4 animate-spin !text-white" /> : <CheckCircleIcon className="w-5 h-5 !text-white" />}
+                    <span className="!text-white !opacity-100">{savingSettings ? t('admin.settings.saving') : t('admin.settings.save')}</span>
                   </button>
                </div>
 

@@ -6,6 +6,7 @@ import { requestService } from '../services/requests';
 import { contractService } from '../services/contracts';
 import { dashboardService } from '../services/dashboard';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { 
   BuildingOfficeIcon, 
@@ -68,10 +69,11 @@ const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
 };
 
 const AgentDashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -346,14 +348,14 @@ const AgentDashboard = () => {
         <nav className="flex-1 p-4 space-y-2">
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'dashboard' ? 'bg-primary dark:bg-secondary !text-white dark:!text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
-            <BuildingOfficeIcon className="w-5 h-5" /> {t('nav.dashboard')}
+            <BuildingOfficeIcon className="w-5 h-5" /> <span className={activeTab === 'dashboard' ? '' : (theme === 'light' ? '!text-black' : 'text-text-sub')}>{t('nav.dashboard')}</span>
           </button>
           
           <button 
             onClick={() => setActiveTab('properties')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'properties' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'properties' ? 'bg-primary dark:bg-secondary !text-white dark:!text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <HomeIcon className="w-5 h-5" /> {t('nav.properties')}
             {stats.totalProperties > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-bg-soft text-text-main text-xs rounded-full font-bold">{stats.totalProperties}</span>}
@@ -361,7 +363,7 @@ const AgentDashboard = () => {
 
           <button 
             onClick={() => setActiveTab('requests')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'requests' ? 'bg-primary dark:bg-secondary !text-white dark:!text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentTextIcon className="w-5 h-5" /> {t('dash.stats.pending_requests')}
             {stats.pendingRequests > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full font-bold">{stats.pendingRequests}</span>}
@@ -369,14 +371,14 @@ const AgentDashboard = () => {
           
           <button 
             onClick={() => setActiveTab('contracts')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${activeTab === 'contracts' ? 'bg-primary dark:bg-secondary !text-white dark:!text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <DocumentDuplicateIcon className="w-5 h-5" /> {t('dash.stats.active_contracts')}
           </button>
 
           <button 
             onClick={() => setActiveTab('reviews')}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'reviews' ? 'bg-primary dark:bg-secondary text-white dark:text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative ${activeTab === 'reviews' ? 'bg-primary dark:bg-secondary !text-white dark:!text-primary shadow-main' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
           >
             <ChatBubbleLeftRightIcon className="w-5 h-5" /> {t('agent.reviews.title')}
             {stats.pendingReviews > 0 && <span className="absolute end-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-rose-500 text-white text-xs rounded-full font-bold">{stats.pendingReviews}</span>}
@@ -386,12 +388,12 @@ const AgentDashboard = () => {
             onClick={() => navigate('/payments/history')}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 text-text-sub hover:bg-bg-soft hover:text-text-main`}
           >
-            <CurrencyDollarIcon className="w-5 h-5" /> Paiements
+            <CurrencyDollarIcon className="w-5 h-5" /> {t('common.payments')}
           </button>
         </nav>
         
         <div className="p-4 border-t border-border-main">
-          <Link to="/properties/new" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
+          <Link to="/properties/new" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary !text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
             <PlusIcon className="w-5 h-5" /> {t('common.save')}
           </Link>
         </div>
@@ -564,7 +566,7 @@ const AgentDashboard = () => {
                           </div>
                        </td>
                        <td className="p-4 text-sm font-bold text-text-main text-right">
-                         {(property.price || 0).toLocaleString()} DH
+                         {(property.price || 0).toLocaleString()} {t('prop.currency')}
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(property.status)}</td>
                        <td className="p-4 text-right">
@@ -611,7 +613,7 @@ const AgentDashboard = () => {
                     onClick={() => setRequestFilter(filter.id)}
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       requestFilter === filter.id 
-                        ? 'bg-primary text-white' 
+                        ? 'bg-primary !text-white' 
                         : 'text-text-sub hover:text-text-main'
                     }`}
                   >
@@ -722,7 +724,7 @@ const AgentDashboard = () => {
                          <div className="text-sm text-text-main">{contract.tenant?.name}</div>
                        </td>
                        <td className="p-4 text-sm font-bold text-text-main text-right">
-                         {(contract.monthly_rent || 0).toLocaleString()} DH
+                         {(contract.monthly_rent || 0).toLocaleString()} {t('prop.currency')}
                        </td>
                        <td className="p-4 text-center">{getStatusBadge(contract.status)}</td>
                        <td className="p-4 text-right">
@@ -791,7 +793,7 @@ const AgentDashboard = () => {
                     <div className="flex sm:flex-col justify-end gap-2 shrink-0">
                       <button 
                         onClick={() => handleProcessReview(review.id, 'approved')}
-                        className="flex-1 px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 transition-all shadow-sm flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-green-500 !text-white rounded-xl text-sm font-bold hover:bg-green-600 transition-all shadow-sm flex items-center justify-center gap-2"
                       >
                         <CheckCircleIcon className="w-4 h-4" /> {t('common.approve')}
                       </button>

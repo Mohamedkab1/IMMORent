@@ -163,14 +163,14 @@ html, body {
   color: var(--color-text-primary); /* Force base color */
 }
 
-/* Fix for hardcoded light/white text in Light Mode */
-:root:not(.dark) .text-white:not(.bg-primary .text-white):not(.bg-slate-900 .text-white) {
+/* Fix for hardcoded light/white text in Light Mode - More selective to preserve white text on dark backgrounds */
+:root:not(.dark) .text-white:not(.bg-primary .text-white):not(.bg-slate-900 .text-white):not(.bg-slate-800 .text-white):not(.bg-black .text-white):not(.bg-secondary .text-white):not(.bg-primary-dark .text-white):not(.bg-blue-600 .text-white):not(.bg-blue-500 .text-white) {
   color: var(--color-text-primary) !important;
 }
 
-:root:not(.dark) .text-slate-400, 
-:root:not(.dark) .text-slate-300, 
-:root:not(.dark) .text-slate-200 {
+:root:not(.dark) .text-slate-400:not(.bg-primary .text-slate-400):not(.bg-slate-900 .text-slate-400), 
+:root:not(.dark) .text-slate-300:not(.bg-primary .text-slate-300):not(.bg-slate-900 .text-slate-300), 
+:root:not(.dark) .text-slate-200:not(.bg-primary .text-slate-200):not(.bg-slate-900 .text-slate-200) {
   color: var(--color-text-secondary) !important;
 }
 

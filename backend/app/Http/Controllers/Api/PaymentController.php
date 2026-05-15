@@ -179,6 +179,7 @@ class PaymentController extends Controller
             }
 
 
+
             $this->updateRelatedStatuses($payment);
 
             // Notifier l'agent que le paiement a été reçu
@@ -202,8 +203,8 @@ class PaymentController extends Controller
             return response()->json([
                 'success' => true,
                 'payment' => $payment,
-                'invoice' => $invoice,
-                'invoiceUrl' => $pdfUrl
+                'invoice' => $invoice ?? null,
+                'invoiceUrl' => $pdfUrl ?? null
             ]);
         }
 

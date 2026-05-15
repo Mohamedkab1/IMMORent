@@ -147,7 +147,7 @@ const FilterForm = ({ filters, onChange, onSubmit, onReset, roomOptions, propert
 
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        {t('prop.price_month', 'Prix (DH / mois)')}
+        {t('prop.price_month', `Prix (${t('prop.currency')} / mois)`)}
       </label>
       <div className="grid grid-cols-2 gap-2">
         <input

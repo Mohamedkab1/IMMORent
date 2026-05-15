@@ -252,13 +252,13 @@ const Notifications = () => {
           <div className="p-6 border-b border-border-main bg-bg-soft/30 flex gap-4">
             <button 
               onClick={() => setFilter('all')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${filter === 'all' ? 'bg-primary text-white shadow-lg' : 'text-text-sub hover:bg-bg-soft'}`}
+              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${filter === 'all' ? 'bg-primary !text-white shadow-lg' : 'text-text-sub hover:bg-bg-soft'}`}
             >
               {t('notif.all', 'Toutes')}
             </button>
             <button 
               onClick={() => setFilter('unread')}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${filter === 'unread' ? 'bg-primary text-white shadow-lg' : 'text-text-sub hover:bg-bg-soft'}`}
+              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${filter === 'unread' ? 'bg-primary !text-white shadow-lg' : 'text-text-sub hover:bg-bg-soft'}`}
             >
               {t('notif.unread', 'Non lues')}
               {notifications.filter(n => !n.read_at).length > 0 && (

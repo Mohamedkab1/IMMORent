@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
 import {
@@ -20,6 +21,7 @@ const Payment = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const [property, setProperty] = useState(null);
   const [invoiceUrl, setInvoiceUrl] = useState(null);
 
@@ -332,7 +334,7 @@ const Payment = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary-hover hover:-translate-y-1 active:translate-y-0 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-primary !text-white rounded-xl font-bold shadow-lg hover:bg-primary-hover hover:-translate-y-1 active:translate-y-0 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <><ArrowPathIcon className="w-5 h-5 animate-spin" /> {t('pay.processing', 'Traitement en cours...')}</>
@@ -361,24 +363,24 @@ const Payment = () => {
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-text-sub">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
-                    <span className="font-semibold text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
+                    <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-text-sub">{t('pay.base_price', 'Prix')} {property.transaction_type === 'rent' ? t('pay.monthly', 'mensuel') : t('pay.base', 'de base')}</span>
+                    <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">{property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH</span>
                   </div>
                   {property.transaction_type === 'rent' && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-sub">{t('pay.fee', 'Frais de dossier')}</span>
-                      <span className="font-semibold text-text-main">500 DH</span>
+                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-text-sub">{t('pay.fee', 'Frais de dossier')}</span>
+                      <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-semibold text-text-main">500 {t('prop.currency')}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
-                  <span className="font-bold text-primary dark:text-white">{t('pay.total', 'Total à payer')}</span>
-                  <span className="text-xl font-black text-primary dark:text-white">
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-bold dark:!text-white">{t('pay.total', 'Total à payer')}</span>
+                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-xl font-black dark:!text-white">
 
                     {property.transaction_type === 'rent'
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
-                      : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
+                      : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} {t('prop.currency')}
                   </span>
                 </div>
               </div>

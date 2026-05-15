@@ -372,7 +372,7 @@ const AddProperty = () => {
                       className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
                     />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       DH {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
+                       {t('prop.currency')} {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
                     </div>
                   </div>
                   {validationErrors.price && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.price}</p>}
@@ -541,9 +541,9 @@ const AddProperty = () => {
                  />
                  <button 
                    type="button" onClick={addFeature} 
-                   className="px-6 py-3 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
+                   className="px-6 py-3 bg-primary !text-white !opacity-100 hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
                  >
-                   <PlusIcon className="w-5 h-5"/> {t('admin.add.add_btn', 'Ajouter')}
+                   <PlusIcon className="w-5 h-5 !text-white"/> {t('admin.add.add_btn', 'Ajouter')}
                  </button>
                </div>
                
@@ -611,9 +611,9 @@ const AddProperty = () => {
             <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card hover:bg-bg-soft text-text-main border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
               {t('common.cancel', 'Annuler')}
             </button>
-            <button type="submit" disabled={loading} className="px-10 py-4 bg-primary text-white hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
+            <button type="submit" disabled={loading} className="px-10 py-4 bg-primary !text-white !opacity-100 hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
               {loading && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-              {loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}
+              <span className="!text-white !opacity-100">{loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}</span>
             </button>
           </div>
           
@@ -641,7 +641,7 @@ const AddProperty = () => {
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(`${window.location.origin}/properties/${newPropertyId}`);
-                      toast.success("Lien copié !");
+                      toast.success(t('prop.detail.link_copied'));
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-text-muted hover:text-primary transition-colors"
                   >
