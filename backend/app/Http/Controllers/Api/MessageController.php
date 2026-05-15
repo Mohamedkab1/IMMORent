@@ -21,6 +21,10 @@ class MessageController extends Controller
         $user = $request->user();
 
         $conversations = Conversation::with(['userOne', 'userTwo', 'property'])
+            ->withCount(['messages as unread_count' => function ($query) use ($user) {
+                $query->where('sender_id', '!=', $user->id)
+                    ->whereNull('read_at');
+            }])
             ->where('user_one_id', $user->id)
             ->orWhere('user_two_id', $user->id)
             ->orderBy('last_message_at', 'desc')
@@ -33,11 +37,6 @@ class MessageController extends Controller
                 : $conversation->userOne;
             
             $conversation->other_user = $otherUser;
-            $conversation->unread_count = $conversation->messages()
-                ->where('sender_id', '!=', $user->id)
-                ->whereNull('read_at')
-                ->count();
-            
             return $conversation;
         });
 

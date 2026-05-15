@@ -154,10 +154,9 @@ const AgentDashboard = () => {
     try {
       const response = await propertyService.getMyProperties();
       if (response.success) {
-        // Le service renvoie déjà response.data, qui contient l'objet {success, data: [...]}
-        // Donc response.data ici est le tableau
-        const items = response.data || [];
-        setProperties(items);
+        // Handle both paginated ({data: {data: []}}) and direct array ({data: []}) responses
+        const items = response.data?.data || response.data || [];
+        setProperties(Array.isArray(items) ? items : []);
       }
     } catch (error) {
       console.error('Erreur chargement biens:', error);
@@ -169,8 +168,8 @@ const AgentDashboard = () => {
     try {
       const response = await requestService.getAll();
       if (response.success) {
-        const items = response.data || [];
-        setRequests(items);
+        const items = response.data?.data || response.data || [];
+        setRequests(Array.isArray(items) ? items : []);
       }
     } catch (error) {
       console.error('Erreur chargement demandes:', error);
@@ -181,7 +180,8 @@ const AgentDashboard = () => {
     try {
       const response = await contractService.getAgentContracts();
       if (response.success) {
-        let items = response.data || [];
+        let items = response.data?.data || response.data || [];
+        if (!Array.isArray(items)) items = [];
         
         items = items.map(contract => ({
           ...contract,
@@ -200,8 +200,10 @@ const AgentDashboard = () => {
     try {
       const response = await propertyService.getAgentPendingReviews();
       if (response.success) {
-        setReviews(response.data || []);
-        setStats(prev => ({ ...prev, pendingReviews: response.data?.length || 0 }));
+        const items = response.data?.data || response.data || [];
+        const itemsArray = Array.isArray(items) ? items : [];
+        setReviews(itemsArray);
+        setStats(prev => ({ ...prev, pendingReviews: itemsArray.length }));
       }
     } catch (error) {
       console.error('Erreur chargement avis:', error);

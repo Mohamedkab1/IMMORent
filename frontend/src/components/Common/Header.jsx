@@ -360,7 +360,7 @@ const Header = () => {
   ];
 
   const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
-  const isTransparentNav = location.pathname === '/' || location.pathname.startsWith('/properties/') || location.pathname === '/about' || location.pathname === '/contact' || location.pathname.startsWith('/dashboard/') || location.pathname === '/profile' || location.pathname === '/favoris' || location.pathname === '/messages' || isAuthPage;
+  const isTransparentNav = location.pathname === '/' || location.pathname === '/properties' || location.pathname.startsWith('/properties/') || location.pathname === '/about' || location.pathname === '/contact' || location.pathname.startsWith('/dashboard/') || location.pathname === '/profile' || location.pathname === '/favoris' || location.pathname === '/messages' || isAuthPage;
   const isLightText = !scrolled && isTransparentNav;
 
   return (

@@ -42,6 +42,7 @@ const PropertyDetail = () => {
   
   // Reviews state
   const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState(null);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -96,9 +97,17 @@ const PropertyDetail = () => {
     try {
       const response = await propertyService.getReviews(id);
       if (response.success) {
-        setReviews(response.data.reviews);
-        setAverageRating(response.data.average_rating);
-        setTotalReviews(response.data.total_reviews);
+        if (response.data && response.data.reviews) {
+          setReviews(response.data.reviews);
+          setUserReview(response.data.user_review);
+          setAverageRating(response.data.average_rating || 0);
+          setTotalReviews(response.data.total_reviews || 0);
+        } else if (Array.isArray(response.data)) {
+          setReviews(response.data);
+          const sum = response.data.reduce((acc, r) => acc + (r.rating || 0), 0);
+          setAverageRating(response.data.length ? sum / response.data.length : 0);
+          setTotalReviews(response.data.length);
+        }
       }
     } catch (err) {
       console.error('Erreur chargement avis:', err);
@@ -119,12 +128,13 @@ const PropertyDetail = () => {
     try {
       const response = await propertyService.submitReview(id, newReview);
       if (response.success) {
-        toast.success(t('prop.detail.reviews.success', 'Votre avis a été ajouté avec succès.'));
+        toast.success(t('prop.detail.review.submitted', 'Votre avis a été ajouté avec succès.'));
         setNewReview({ rating: 5, comment: '' });
         fetchReviews();
       }
     } catch (err) {
-      toast.error(t('prop.detail.reviews.error', 'Erreur lors de l\'ajout de l\'avis. Vous avez peut-être déjà laissé un avis.'));
+      const errorMsg = err.response?.data?.message || t('prop.detail.review.error', 'Erreur lors de l\'ajout de l\'avis.');
+      toast.error(errorMsg);
     } finally {
       setSubmittingReview(false);
     }
@@ -338,7 +348,7 @@ const PropertyDetail = () => {
               ) : reviews.length === 0 ? (
                 <div className="pd-empty-reviews bg-slate-50 rounded-xl p-8 text-center border border-slate-100 dark:bg-slate-800 dark:border-slate-700" style={{backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-main)'}}>
                   <StarIconSolid className="w-12 h-12 text-slate-200 dark:text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-500 font-medium">{t('prop.detail.reviews.empty', 'Soyez le premier à donner votre avis sur ce bien.')}</p>
+                  <p className="text-slate-500 font-medium">{t('prop.detail.review.empty', 'Soyez le premier à donner votre avis sur ce bien.')}</p>
                 </div>
               ) : (
                 <div className="pd-reviews-container">
@@ -352,7 +362,7 @@ const PropertyDetail = () => {
                           <StarIconSolid key={star} className={`w-5 h-5 ${star <= Math.round(averageRating) ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'}`} />
                         ))}
                       </div>
-                      <div className="font-medium" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.reviews.based_on', 'Basé sur')} {totalReviews} {t('prop.detail.reviews.count', 'avis')}</div>
+                      <div className="font-medium" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.review.based_on', 'Basé sur')} {totalReviews} {t('prop.detail.review.count', 'avis')}</div>
                     </div>
                   </div>
                   
@@ -383,48 +393,76 @@ const PropertyDetail = () => {
               )}
 
               {/* Review Form */}
-              {isAuthenticated && user?.role?.slug === 'client' && (
-                <div className="mt-8 p-6 rounded-xl border shadow-sm" style={{backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-main)'}}>
-                  <h3 className="text-lg font-bold mb-4" style={{color: 'var(--color-text-main)'}}>{t('prop.detail.reviews.add', 'Ajouter un avis')}</h3>
-                  <form onSubmit={handleReviewSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.reviews.rating', 'Note')}</label>
-                      <div className="flex gap-2">
-                        {[1,2,3,4,5].map(star => (
-                          <button 
-                            key={star} 
-                            type="button" 
-                            onClick={() => setNewReview({...newReview, rating: star})}
-                            className="focus:outline-none hover:scale-110 transition-transform"
-                          >
-                            <StarIconSolid className={`w-8 h-8 ${star <= newReview.rating ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'} transition-colors`} />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.reviews.comment', 'Votre commentaire')}</label>
-                      <textarea
-                        value={newReview.comment}
-                        onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-                        className="w-full rounded-lg p-3 border focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                        style={{backgroundColor: 'var(--color-bg-soft)', borderColor: 'var(--color-border-main)', color: 'var(--color-text-main)'}}
-                        rows="3"
-                        required
-                        placeholder={t('prop.detail.reviews.placeholder', 'Partagez votre expérience...')}
-                      ></textarea>
-                    </div>
-                    <button 
-                      type="submit" 
-                      disabled={submittingReview}
-                      className="px-6 py-3 rounded-lg font-bold text-white transition-all disabled:opacity-50 hover:opacity-90 active:scale-95 shadow-md"
-                      style={{backgroundColor: 'var(--color-primary)'}}
-                    >
-                      {submittingReview ? t('common.sending', 'Envoi...') : t('prop.detail.reviews.submit', 'Publier l\'avis')}
-                    </button>
-                  </form>
+              {!isAuthenticated ? (
+                <div className="mt-8 p-10 rounded-xl border border-dashed text-center bg-bg-soft/50" style={{borderColor: 'var(--color-border-main)'}}>
+                   <StarIconSolid className="w-10 h-10 text-text-muted/20 mx-auto mb-4" />
+                   <p className="text-text-sub font-medium mb-6">{t('prop.detail.review.login_required', 'Veuillez vous connecter pour partager votre expérience.')}</p>
+                   <Link 
+                    to="/login" 
+                    state={{ from: `/properties/${id}` }}
+                    className="px-8 py-3 bg-primary text-white rounded-lg font-bold transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20"
+                   >
+                    {t('nav.login')}
+                   </Link>
                 </div>
-              )}
+              ) : user?.role?.slug === 'client' ? (
+                userReview ? (
+                  <div className="mt-8 p-6 rounded-xl border shadow-sm flex items-center gap-4 bg-amber-50/30 border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30" style={{borderColor: 'var(--color-border-main)'}}>
+                    <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                      <CheckCircleIcon className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-800 dark:text-slate-100">
+                        {userReview.status === 'pending' ? t('prop.detail.review.pending_notice', 'Votre avis est en attente de modération.') : t('prop.detail.review.already_submitted', 'Vous avez déjà laissé un avis pour ce bien.')}
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        {t('prop.detail.review.one_per_user', 'Un seul avis est autorisé par utilisateur et par bien.')}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-8 p-6 rounded-xl border shadow-sm" style={{backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-main)'}}>
+                    <h3 className="text-lg font-bold mb-4" style={{color: 'var(--color-text-main)'}}>{t('prop.detail.review.add', 'Ajouter un avis')}</h3>
+                    <form onSubmit={handleReviewSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.review.rating', 'Note')}</label>
+                        <div className="flex gap-2">
+                          {[1,2,3,4,5].map(star => (
+                            <button 
+                              key={star} 
+                              type="button" 
+                              onClick={() => setNewReview({...newReview, rating: star})}
+                              className="focus:outline-none hover:scale-110 transition-transform"
+                            >
+                              <StarIconSolid className={`w-8 h-8 ${star <= newReview.rating ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'} transition-colors`} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{color: 'var(--color-text-sub)'}}>{t('prop.detail.review.comment', 'Votre commentaire')}</label>
+                        <textarea
+                          value={newReview.comment}
+                          onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                          className="w-full rounded-lg p-3 border focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                          style={{backgroundColor: 'var(--color-bg-soft)', borderColor: 'var(--color-border-main)', color: 'var(--color-text-main)'}}
+                          rows="3"
+                          required
+                          placeholder={t('prop.detail.review.placeholder', 'Partagez votre expérience...')}
+                        ></textarea>
+                      </div>
+                      <button 
+                        type="submit" 
+                        disabled={submittingReview}
+                        className="px-6 py-3 rounded-lg font-bold text-white transition-all disabled:opacity-50 hover:opacity-90 active:scale-95 shadow-md"
+                        style={{backgroundColor: 'var(--color-primary)'}}
+                      >
+                        {submittingReview ? t('common.sending', 'Envoi...') : t('prop.detail.review.submit', 'Publier l\'avis')}
+                      </button>
+                    </form>
+                  </div>
+                )
+              ) : null}
 
             </div>
 

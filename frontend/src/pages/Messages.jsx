@@ -129,7 +129,21 @@ const Messages = () => {
     try {
       const response = await messageService.getMessages(id);
       if (response.success) {
-        setMessages(response.data.data || []);
+        const incomingMessages = response.data.data || [];
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const trulyNew = incomingMessages.filter(m => !existingIds.has(m.id));
+          
+          if (trulyNew.length === 0) {
+            // Update read_at for existing messages if changed
+            return prev.map(m => {
+              const updated = incomingMessages.find(im => im.id === m.id);
+              return updated ? { ...m, read_at: updated.read_at } : m;
+            });
+          }
+          
+          return [...prev, ...trulyNew];
+        });
       }
     } catch (error) {}
   };
@@ -138,23 +152,35 @@ const Messages = () => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
 
-    setSending(true);
+    const body = newMessage;
+    setNewMessage('');
+    
+    // Optimistic message
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`,
+      sender_id: user.id,
+      body: body,
+      created_at: new Date().toISOString(),
+      sending: true
+    };
+    
+    setMessages(prev => [...prev, optimisticMessage]);
+
     try {
       const response = await messageService.sendMessage({
         receiver_id: selectedConversation.other_user.id,
         conversation_id: selectedConversation.id,
-        body: newMessage
+        body: body
       });
 
       if (response.success) {
-        setMessages([...messages, response.data]);
-        setNewMessage('');
+        setMessages(prev => prev.map(m => m.id === optimisticMessage.id ? response.data : m));
         loadConversations(false);
       }
     } catch (error) {
       toast.error(t('msg.error.send'));
-    } finally {
-      setSending(false);
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
+      setNewMessage(body);
     }
   };
 
@@ -343,9 +369,9 @@ const Messages = () => {
                     return (
                       <motion.div 
                         key={msg.id}
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        initial={msg.sending ? { opacity: 0, y: 10, scale: 0.95 } : false}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${isMine ? 'justify-end' : 'justify-start'} transition-opacity`}
                       >
                         <div className={`max-w-[80%] md:max-w-[65%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                           <div className={`px-5 py-4 rounded-lg shadow-xl ${
@@ -354,7 +380,7 @@ const Messages = () => {
                             : theme === 'light' 
                               ? 'bg-white text-slate-900 rounded-bl-none border border-slate-100' 
                               : 'bg-white/5 text-white rounded-bl-none border border-white/10 backdrop-blur-md'
-                          }`}>
+                          } ${msg.sending ? 'opacity-70 animate-pulse' : ''}`}>
                             <p className={`text-sm leading-relaxed font-medium whitespace-pre-wrap ${isMine ? '!text-white' : ''}`}>{msg.body}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-2 px-1">
@@ -363,7 +389,7 @@ const Messages = () => {
                             }`}>
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                            {isMine && (
+                            {isMine && !msg.sending && (
                               msg.read_at 
                               ? <CheckCircleIcon className="w-3.5 h-3.5 text-primary" /> 
                               : <CheckIcon className={`w-3.5 h-3.5 ${theme === 'light' ? 'text-slate-400' : 'text-text-muted'}`} />
@@ -403,7 +429,7 @@ const Messages = () => {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-              <RevealOnScroll>
+              <RevealOnScroll className="flex flex-col items-center">
                 <div className={`w-32 h-32 rounded-lg flex items-center justify-center shadow-huge mb-10 border animate-float ${
                   theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10'
                 }`}>
