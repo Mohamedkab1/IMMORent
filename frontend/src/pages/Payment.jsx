@@ -150,7 +150,7 @@ const Payment = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-bg-soft flex items-center justify-center p-4">
+      <div className="min-h-screen bg-bg-soft flex items-center justify-center pt-[120px] px-4 pb-4">
         <div className="bg-bg-card max-w-md w-full rounded-2xl shadow-huge p-8 text-center animate-fade-in border border-border-main">
           <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircleIcon className="w-14 h-14 text-green-500" />
@@ -191,7 +191,7 @@ const Payment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-soft py-12">
+    <div className="min-h-screen bg-bg-soft pt-[120px] pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="mb-8">

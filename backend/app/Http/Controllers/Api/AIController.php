@@ -17,8 +17,19 @@ class AIController extends Controller
 
         $userMessage = $request->input('message');
         $apiKey = env('GEMINI_API_KEY');
+        
+        // Fallback: If env() is cached or returning null after a .env edit without server restart, read it directly
+        if (!$apiKey || $apiKey === 'your_api_key_here') {
+            $envPath = base_path('.env');
+            if (file_exists($envPath)) {
+                $envContent = file_get_contents($envPath);
+                if (preg_match('/GEMINI_API_KEY=(.*)/', $envContent, $matches)) {
+                    $apiKey = trim($matches[1]);
+                }
+            }
+        }
 
-        if (!$apiKey) {
+        if (!$apiKey || $apiKey === 'your_api_key_here') {
             return response()->json([
                 'success' => false,
                 'message' => 'Service temporarily unavailable. Please try again later.'
@@ -59,7 +70,7 @@ class AIController extends Controller
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey, $payload);
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" . $apiKey, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
