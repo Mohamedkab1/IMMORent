@@ -9,12 +9,15 @@ import {
   EnvelopeIcon, 
   LockClosedIcon, 
   ArrowRightIcon, 
-  ArrowLeftIcon 
+  ArrowLeftIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { t } = useLanguage();
@@ -158,17 +161,30 @@ const Login = () => {
                       <LockClosedIcon className="h-5 w-5" />
                     </div>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`block w-full pl-8 py-4 bg-transparent border-b outline-none transition-all font-light ${
+                      className={`block w-full pl-8 pr-10 py-4 bg-transparent border-b outline-none transition-all font-light ${
                         theme === 'light' 
                           ? 'border-slate-100 text-slate-900 focus:border-blue-500' 
                           : 'border-white/10 text-white focus:border-blue-500'
                       }`}
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={`absolute inset-y-0 right-0 flex items-center pr-2 transition-colors ${
+                        theme === 'light' ? 'text-slate-400 hover:text-blue-500' : 'text-white/30 hover:text-white'
+                      }`}
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

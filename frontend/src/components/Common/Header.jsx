@@ -342,22 +342,34 @@ const Header = () => {
 
   const navLinks = [
     { name: t('nav.home'), path: '/' },
-    { name: t('nav.properties'), path: '/properties' },
+    { 
+      name: t('nav.properties'), 
+      path: '/properties',
+      subLinks: [
+        { name: t('property.type.apartment'), type: 'apartment' },
+        { name: t('property.type.villa'), type: 'villa' },
+        { name: t('property.type.office'), type: 'office' },
+        { name: t('property.type.studio'), type: 'studio' },
+        { name: t('property.type.house'), type: 'house' },
+        { name: t('property.type.commercial'), type: 'commercial' },
+        { name: t('property.type.land'), type: 'land' },
+      ]
+    },
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.contact'), path: '/contact' },
   ];
 
   const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
-  const isTransparentNav = location.pathname === '/' || location.pathname.startsWith('/properties/') || location.pathname === '/about' || location.pathname === '/contact' || isAuthPage;
+  const isTransparentNav = location.pathname === '/' || location.pathname === '/properties' || location.pathname.startsWith('/properties/') || location.pathname === '/about' || location.pathname === '/contact' || location.pathname.startsWith('/dashboard/') || location.pathname === '/profile' || location.pathname === '/favoris' || location.pathname === '/messages' || isAuthPage;
   const isLightText = !scrolled && isTransparentNav;
 
   return (
     <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
       scrolled 
         ? 'bg-bg-main/95 backdrop-blur-md shadow-lg border-b border-border-main py-2' 
-        : isTransparentNav 
+        : (isTransparentNav && theme === 'dark')
           ? 'bg-transparent py-6' 
-          : 'bg-bg-main py-4'
+          : 'bg-bg-main/80 backdrop-blur-md py-4 border-b border-border-main'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-12 md:h-16">
@@ -375,27 +387,51 @@ const Header = () => {
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onMouseEnter={() => setHoveredLink(link.path)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                  className={`relative py-2 focus:outline-none transition-colors duration-300 ${
-                    isActive ? 'text-primary dark:text-yellow-400' : scrolled ? 'text-text-sub hover:text-yellow-400' : isLightText ? (theme === 'light' ? 'text-slate-900 hover:text-primary' : 'text-white/80 hover:text-yellow-400') : 'text-text-sub hover:text-yellow-400'
-                  }`}
-                >
-                  {link.name}
-                  {hoveredLink === link.path && (
-                    <motion.div
-                      layoutId="navHoverIndicator"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-yellow-400 rounded-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
+                <div key={link.path} className="relative group/nav-item">
+                  <Link
+                    to={link.path}
+                    onMouseEnter={() => setHoveredLink(link.path)}
+                    onMouseLeave={() => setHoveredLink(null)}
+                    className={`relative py-2 focus:outline-none transition-colors duration-300 flex items-center gap-1 ${
+                      isActive ? 'text-primary dark:text-yellow-400' : scrolled ? 'text-text-sub hover:text-yellow-400' : isLightText ? (theme === 'light' ? 'text-slate-900 hover:text-primary' : 'text-white/80 hover:text-yellow-400') : 'text-text-sub hover:text-yellow-400'
+                    }`}
+                  >
+                    {link.name}
+                    {link.subLinks && (
+                      <svg className="w-3 h-3 opacity-50 group-hover/nav-item:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                    {hoveredLink === link.path && (
+                      <motion.div
+                        layoutId="navHoverIndicator"
+                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-yellow-400 rounded-full"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                  
+                  {link.subLinks && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible group-hover/nav-item:opacity-100 group-hover/nav-item:visible transition-all duration-300 translate-y-2 group-hover/nav-item:translate-y-0 z-[60]">
+                      <div className="bg-bg-main/95 backdrop-blur-xl border border-border-main rounded-lg shadow-huge p-2 w-56 grid grid-cols-1 gap-1">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-bg-main/95 border-t border-l border-border-main rotate-45"></div>
+                        {link.subLinks.map((sub) => (
+                          <Link
+                            key={sub.type}
+                            to={`/properties?type=${sub.type}`}
+                            className="px-4 py-3 rounded-md text-xs font-bold text-text-sub hover:bg-primary/5 hover:text-primary dark:hover:bg-secondary/10 dark:hover:text-secondary transition-all flex items-center justify-between group/sub"
+                          >
+                            {sub.name}
+                            <span className="opacity-0 -translate-x-2 group-hover/sub:opacity-100 group-hover/sub:translate-x-0 transition-all">→</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </nav>
@@ -420,12 +456,12 @@ const Header = () => {
                 <span>{language}</span>
               </button>
               
-              <div className="absolute top-full right-0 mt-3 w-32 bg-bg-main/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border-main opacity-0 invisible translate-y-4 scale-95 group-hover/lang:opacity-100 group-hover/lang:visible group-hover/lang:translate-y-0 group-hover/lang:scale-100 transition-all duration-300 origin-top-right overflow-hidden p-1.5">
+              <div className="absolute top-full right-0 mt-3 w-32 bg-bg-main/95 backdrop-blur-xl rounded-lg shadow-2xl border border-border-main opacity-0 invisible translate-y-4 scale-95 group-hover/lang:opacity-100 group-hover/lang:visible group-hover/lang:translate-y-0 group-hover/lang:scale-100 transition-all duration-300 origin-top-right overflow-hidden p-1.5">
                 {['fr', 'en', 'ar'].map((lang) => (
                   <button
                     key={lang}
                     onClick={() => changeLanguage(lang)}
-                    className={`block w-full text-center px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-200 ${
+                    className={`block w-full text-center px-4 py-2.5 text-xs font-extrabold rounded-md transition-all duration-200 ${
                       language === lang 
                         ? 'bg-primary text-white dark:bg-secondary dark:text-slate-900 shadow-md' 
                         : 'text-text-sub hover:bg-bg-soft hover:text-text-main'
@@ -458,15 +494,9 @@ const Header = () => {
                 </Link>
 
                 {/* Notifications */}
-                <div className="relative">
+                <div className="relative group/notif">
                   <button 
-                    onClick={() => {
-                      setNotifOpen(!notifOpen);
-                      setDropdownOpen(false);
-                    }}
-                    className={`relative p-2.5 rounded-full transition-all duration-300 hover:scale-110 ${
-                      notifOpen ? 'bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary' : 'text-text-sub bg-bg-secondary/50 hover:bg-primary/5 hover:text-primary'
-                    }`}
+                    className={`relative p-2.5 rounded-full transition-all duration-300 hover:scale-110 text-text-sub bg-bg-secondary/50 group-hover/notif:bg-primary/10 group-hover/notif:text-primary dark:group-hover/notif:bg-secondary/10 dark:group-hover/notif:text-secondary`}
                   >
                     <BellIcon className="w-5 h-5" />
                     {unreadCount > 0 && (
@@ -476,7 +506,7 @@ const Header = () => {
                     )}
                   </button>
 
-                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-xl shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${notifOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-96 bg-bg-main rounded-lg shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 opacity-0 invisible translate-y-4 scale-95 group-hover/notif:opacity-100 group-hover/notif:visible group-hover/notif:translate-y-0 group-hover/notif:scale-100`}>
                     <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">{t('nav.notifications')}</h3>
                        {unreadCount > 0 && <button onClick={handleMarkAllRead} className="text-[10px] font-bold text-primary hover:underline">{t('nav.mark_all_read')}</button>}
@@ -522,16 +552,12 @@ const Header = () => {
                   </div>
                 </div>
 
-                <div className="relative">
+                <div className="relative group/profile">
 
                   <button 
-                    onClick={() => {
-                      setDropdownOpen(!dropdownOpen);
-                      setNotifOpen(false);
-                    }} 
-                    className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-xl border border-transparent hover:border-border-main transition-all"
+                    className="flex items-center gap-2 p-1.5 pe-3 bg-bg-secondary rounded-lg border border-transparent group-hover/profile:border-border-main transition-all"
                   >
-                    <div className="w-9 h-9 rounded-lg overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-sm border border-white/10">
+                    <div className="w-9 h-9 rounded-md overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-sm border border-white/10">
                       {user?.profile_photo ? (
                         <img 
                           src={`http://localhost:8000/storage/${user.profile_photo}`} 
@@ -549,19 +575,19 @@ const Header = () => {
                   </button>
 
 
-                  <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-xl shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible translate-y-4 scale-95'}`}>
+                  <div className={`absolute right-0 mt-3 w-64 bg-bg-main rounded-lg shadow-xl border border-border-main transition-all duration-300 origin-top-right ring-1 ring-black/5 opacity-0 invisible translate-y-4 scale-95 group-hover/profile:opacity-100 group-hover/profile:visible group-hover/profile:translate-y-0 group-hover/profile:scale-100`}>
                     <div className="p-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{t('nav.personal_space')}</p>
                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.email}</p>
                     </div>
                     <div className="p-2">
-                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-text-sub hover:bg-bg-secondary hover:text-primary dark:hover:text-white transition-all">
+                      <Link to={dashboardLink} className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-text-sub hover:bg-bg-soft hover:text-secondary dark:hover:text-secondary transition-all">
                         <ChartBarIcon className="w-5 h-5 opacity-70" /> {t('nav.dashboard')}
                       </Link>
-                      <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
+                      <Link to="/messages" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-text-sub hover:bg-bg-soft hover:text-secondary dark:hover:text-secondary transition-all">
                         <ChatBubbleLeftRightIcon className="w-5 h-5 opacity-70" /> {t('nav.messages')}
                       </Link>
-                      <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white transition-all">
+                      <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold text-text-sub hover:bg-bg-soft hover:text-secondary dark:hover:text-secondary transition-all">
                         <UserCircleIcon className="w-5 h-5 opacity-70" /> {t('nav.profile')}
                       </Link>
                     </div>

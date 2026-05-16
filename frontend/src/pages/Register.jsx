@@ -12,7 +12,9 @@ import {
   PhoneIcon,
   MapPinIcon,
   ArrowRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 
 const Register = () => {
@@ -29,6 +31,8 @@ const Register = () => {
     address: '',
     role: selectedRole
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const { t } = useLanguage();
@@ -267,17 +271,30 @@ const Register = () => {
                   </div>
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className={`block w-full pl-8 py-3 bg-transparent border-b outline-none transition-all font-light ${
+                    className={`block w-full pl-8 pr-10 py-3 bg-transparent border-b outline-none transition-all font-light ${
                       theme === 'light' 
                         ? 'border-slate-100 text-slate-900 focus:border-blue-500' 
                         : 'border-white/10 text-white focus:border-blue-500'
                     }`}
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute inset-y-0 right-0 flex items-center pr-2 transition-colors ${
+                      theme === 'light' ? 'text-slate-400 hover:text-blue-500' : 'text-white/30 hover:text-white'
+                    }`}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -295,17 +312,30 @@ const Register = () => {
                   </div>
                   <input
                     name="password_confirmation"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     required
                     value={formData.password_confirmation}
                     onChange={handleChange}
-                    className={`block w-full pl-8 py-3 bg-transparent border-b outline-none transition-all font-light ${
+                    className={`block w-full pl-8 pr-10 py-3 bg-transparent border-b outline-none transition-all font-light ${
                       theme === 'light' 
                         ? 'border-slate-100 text-slate-900 focus:border-blue-500' 
                         : 'border-white/10 text-white focus:border-blue-500'
                     }`}
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={`absolute inset-y-0 right-0 flex items-center pr-2 transition-colors ${
+                      theme === 'light' ? 'text-slate-400 hover:text-blue-500' : 'text-white/30 hover:text-white'
+                    }`}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 

@@ -1,9 +1,11 @@
 import React from 'react';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue" }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const colorClasses = {
     blue: "bg-blue-500 shadow-blue-500/20",
     green: "bg-emerald-500 shadow-emerald-500/20",
@@ -21,11 +23,18 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
   };
 
   return (
-    <div className="bg-bg-card rounded-3xl p-6 shadow-main border border-border-main hover:shadow-large transition-all duration-300 group overflow-hidden relative">
+    <div className={`p-8 shadow-2xl border transition-all duration-500 group overflow-hidden relative rounded-lg ${
+      color === 'blue' ? (theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10') :
+      (theme === 'light' ? 'bg-white border-slate-100' : 'bg-white/5 border-white/10')
+    }`}>
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <p className="text-sm font-semibold text-text-sub mb-1 uppercase tracking-tight">{title}</p>
-          <h3 className="text-3xl font-black text-text-main tracking-tighter leading-none mb-4">{value}</h3>
+          <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${
+            theme === 'light' ? 'text-slate-400' : 'text-white/30'
+          }`}>{title}</p>
+          <h3 className={`text-4xl font-black tracking-tighter leading-none mb-6 ${
+            theme === 'light' ? 'text-slate-900' : 'text-white'
+          }`}>{value}</h3>
           
           {trend && (
             <div className="flex items-center gap-1">
@@ -38,13 +47,15 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
           )}
         </div>
         
-        <div className={`p-3.5 rounded-2xl flex-shrink-0 ${iconClasses[color]}`}>
+        <div className={`p-4 border transition-colors rounded-lg ${
+          theme === 'light' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/10'
+        } ${iconClasses[color].split(' ')[0]}`}>
           <Icon className="w-7 h-7" />
         </div>
       </div>
       
       {/* Decorative gradient blob */}
-      <div className={`absolute -right-12 -bottom-12 w-32 h-32 rounded-full opacity-[0.05] group-hover:scale-125 transition-transform duration-700 ${colorClasses[color]}`}></div>
+      <div className={`absolute -right-16 -bottom-16 w-48 h-48 rounded-full opacity-[0.03] group-hover:opacity-[0.08] group-hover:scale-150 transition-all duration-1000 ${colorClasses[color]}`}></div>
     </div>
   );
 };

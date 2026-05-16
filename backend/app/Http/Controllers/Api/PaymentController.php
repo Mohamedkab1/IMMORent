@@ -64,7 +64,7 @@ class PaymentController extends Controller
         $currency = $request->currency ?? 'MAD';
         
         if ($request->method === 'card') {
-            $stripe = new StripeClient(env('STRIPE_SECRET'));
+            $stripe = new StripeClient(config('services.stripe.secret'));
             
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount' => (int) ($request->amount * 100),

@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import Header from './components/Common/Header';
@@ -41,6 +41,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Component to handle layout and conditional rendering
 const AppContent = () => {
+  const { theme } = useTheme();
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
 
@@ -99,15 +100,25 @@ const AppContent = () => {
       <PageLoader />
       <ToastContainer 
         position="top-right"
-        autoClose={5000}
+        autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop={true}
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored"
+        theme={theme}
+        toastClassName={() => 
+          theme === 'light'
+            ? `Toastify__toast flex items-center w-full cursor-pointer overflow-hidden mb-3`
+            : `Toastify__toast relative flex p-1 min-h-10 rounded-lg justify-between overflow-hidden cursor-pointer shadow-huge border border-border-main glass-panel mb-4`
+        }
+        bodyClassName={() => 
+          theme === 'light'
+            ? "Toastify__toast-body flex items-center gap-3 w-full py-1"
+            : "Toastify__toast-body flex text-xs font-black uppercase tracking-widest p-3"
+        }
       />
     </div>
   );

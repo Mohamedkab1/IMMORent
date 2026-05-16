@@ -14,10 +14,11 @@ class ReviewController extends Controller
     /**
      * Get all approved reviews for a property.
      */
-    public function index($propertyId)
+    public function index(Request $request, $propertyId)
     {
         try {
             $property = Property::findOrFail($propertyId);
+            $user = $request->user('sanctum');
             
             // Only approved reviews for public display
             $reviews = $property->reviews()
@@ -26,6 +27,13 @@ class ReviewController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            $userReview = null;
+            if ($user) {
+                $userReview = Review::where('property_id', $propertyId)
+                    ->where('user_id', $user->id)
+                    ->first();
+            }
+
             $averageRating = $property->reviews()->where('status', 'approved')->avg('rating') ?: 0;
             $totalReviews = $property->reviews()->where('status', 'approved')->count();
 
@@ -33,6 +41,7 @@ class ReviewController extends Controller
                 'success' => true,
                 'data' => [
                     'reviews' => $reviews,
+                    'user_review' => $userReview,
                     'average_rating' => round($averageRating, 1),
                     'total_reviews' => $totalReviews
                 ]
