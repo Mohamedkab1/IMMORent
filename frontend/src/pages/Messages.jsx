@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { messageService } from '../services/messages';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,7 +14,10 @@ import {
   CheckIcon,
   CheckCircleIcon,
   BuildingOfficeIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  TrashIcon,
+  EyeIcon,
+  NoSymbolIcon
 } from '@heroicons/react/24/outline';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enGB, arMA } from 'date-fns/locale';
@@ -65,7 +69,10 @@ const Messages = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [showMobileList, setShowMobileList] = useState(true);
+  const [showOptions, setShowOptions] = useState(false);
   
+  const navigate = useNavigate();
+  const optionsRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const getLocale = () => {
@@ -94,6 +101,16 @@ const Messages = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadConversations = async (showLoading = true) => {
     try {
@@ -181,6 +198,28 @@ const Messages = () => {
       toast.error(t('msg.error.send'));
       setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       setNewMessage(body);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!window.confirm(t('msg.confirm_delete', 'Voulez-vous vraiment supprimer cette conversation ?'))) return;
+    
+    try {
+      const response = await messageService.deleteConversation(selectedConversation.id);
+      if (response.success) {
+        toast.success(t('msg.success.delete', 'Conversation supprimée'));
+        setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
+        setSelectedConversation(null);
+        setShowOptions(false);
+      }
+    } catch (error) {
+      toast.error(t('msg.error.delete', 'Erreur lors de la suppression'));
+    }
+  };
+
+  const handleViewDetails = () => {
+    if (selectedConversation?.property) {
+      navigate(`/properties/${selectedConversation.property.id}`);
     }
   };
 
@@ -334,12 +373,55 @@ const Messages = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <button className={`p-3 rounded-lg transition-all ${
+                <div className="flex items-center gap-3 relative" ref={optionsRef}>
+                  <button 
+                    onClick={() => setShowOptions(!showOptions)}
+                    className={`p-3 rounded-lg transition-all ${
                     theme === 'light' ? 'bg-slate-100 hover:bg-slate-200 text-slate-600' : 'bg-white/5 hover:bg-white/10 text-white/60'
                   }`}>
                     <EllipsisHorizontalIcon className="w-6 h-6" />
                   </button>
+
+                  <AnimatePresence>
+                    {showOptions && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className={`absolute right-0 top-full mt-2 w-56 rounded-xl shadow-huge border z-50 overflow-hidden ${
+                          theme === 'light' ? 'bg-white border-slate-100' : 'bg-bg-soft border-white/5'
+                        }`}
+                      >
+                        <div className="p-2 space-y-1">
+                          <button 
+                            onClick={handleViewDetails}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                              theme === 'light' ? 'hover:bg-slate-50 text-slate-600' : 'hover:bg-white/5 text-white/70'
+                            }`}
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                            {t('common.view_details')}
+                          </button>
+                          <button 
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                              theme === 'light' ? 'hover:bg-slate-50 text-slate-600' : 'hover:bg-white/5 text-white/70'
+                            }`}
+                          >
+                            <NoSymbolIcon className="w-4 h-4" />
+                            {t('msg.options.block', 'Bloquer')}
+                          </button>
+                          <div className={`h-px my-1 ${theme === 'light' ? 'bg-slate-100' : 'bg-white/5'}`} />
+                          <button 
+                            onClick={handleDeleteConversation}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 transition-all"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                            {t('msg.options.delete', 'Supprimer')}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </header>
 
@@ -353,7 +435,9 @@ const Messages = () => {
                             {t('msg.property.concerning')} <span className={theme === 'light' ? 'text-slate-900' : 'text-white'}>{selectedConversation.property.title}</span>
                           </span>
                       </div>
-                      <button className={`transition-colors shrink-0 ml-4 border-b border-primary/30 hover:border-primary ${
+                      <button 
+                        onClick={handleViewDetails}
+                        className={`transition-colors shrink-0 ml-4 border-b border-primary/30 hover:border-primary ${
                         theme === 'light' ? 'text-blue-600 hover:text-blue-700' : 'text-primary hover:text-primary-dark'
                       }`}>
                         {t('common.view_details')}

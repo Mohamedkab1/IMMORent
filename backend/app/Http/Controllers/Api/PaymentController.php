@@ -64,7 +64,7 @@ class PaymentController extends Controller
         $currency = $request->currency ?? 'MAD';
         
         if ($request->method === 'card') {
-            $stripe = new StripeClient(env('STRIPE_SECRET'));
+            $stripe = new StripeClient(config('services.stripe.secret'));
             
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount' => (int) ($request->amount * 100),
@@ -178,12 +178,7 @@ class PaymentController extends Controller
                 Log::error('Erreur lors de l\'envoi de l\'email de facture: ' . $e->getMessage());
             }
 
-            // Mettre à jour le statut du bien (Loué ou Vendu)
-            if ($payment->property) {
-                $newStatus = $payment->property->transaction_type === 'sale' ? 'sold' : 'rented';
-                $payment->property->update(['status' => $newStatus]);
-                Log::info("Bien ID {$payment->property_id} mis à jour vers le statut: {$newStatus}");
-            }
+
 
             $this->updateRelatedStatuses($payment);
 
@@ -213,10 +208,10 @@ class PaymentController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Paiement échoué ou annulé.'
-        ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Paiement échoué ou annulé.'
+            ]);
     }
 
     /**

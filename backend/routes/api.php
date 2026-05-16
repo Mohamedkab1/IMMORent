@@ -245,6 +245,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========== MESSAGERIE ==========
     Route::get('/conversations', [MessageController::class, 'index']);
     Route::get('/conversations/{id}', [MessageController::class, 'show']);
+    Route::delete('/conversations/{id}', [MessageController::class, 'destroy']);
     Route::post('/messages', [MessageController::class, 'store']);
 
 });

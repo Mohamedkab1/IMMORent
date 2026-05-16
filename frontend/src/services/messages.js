@@ -26,5 +26,14 @@ export const messageService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    deleteConversation: async (id) => {
+        try {
+            const response = await api.delete(`/conversations/${id}`);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };

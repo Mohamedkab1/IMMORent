@@ -166,4 +166,24 @@ class MessageController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur lors de l\'envoi'], 500);
         }
     }
+    /**
+     * Delete a conversation.
+     */
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        $conversation = Conversation::findOrFail($id);
+
+        // Vérification de l'accès
+        if ($conversation->user_one_id !== $user->id && $conversation->user_two_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+
+        $conversation->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation supprimée avec succès'
+        ]);
+    }
 }
