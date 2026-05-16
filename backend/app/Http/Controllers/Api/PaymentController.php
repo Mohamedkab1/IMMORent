@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\GeneralNotification;
+use App\Models\User;
 use App\Models\Invoice;
 use App\Mail\InvoicePaidMail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -182,21 +183,34 @@ class PaymentController extends Controller
 
             $this->updateRelatedStatuses($payment);
 
-            // Notifier l'agent que le paiement a été reçu
+            // Notifier l'agent et les admins que le paiement a été reçu
             $agent = $payment->contract ? $payment->contract->agent : ($payment->property ? $payment->property->user : null);
+            $admins = User::getAdmins();
+
+            $notifData = [
+                'title' => 'Paiement reçu',
+                'message' => "Un paiement de {$payment->amount} DH a été reçu pour le bien : " . ($payment->property ? $payment->property->title : 'Bien inconnu'),
+                'type' => 'payment_received',
+                'link' => '/dashboard/agent',
+                'icon' => 'currency-dollar'
+            ];
+
             if ($agent) {
-                $notifData = [
-                    'title' => 'Paiement reçu',
-                    'message' => "Un paiement de {$payment->amount} DH a été reçu pour le bien : " . ($payment->property ? $payment->property->title : 'Bien inconnu'),
-                    'type' => 'payment_received',
-                    'link' => '/dashboard/agent',
-                    'icon' => 'currency-dollar'
-                ];
                 $agent->notify(new GeneralNotification($notifData));
                 try {
                     event(new \App\Events\RealTimeNotification($agent->id, $notifData));
                 } catch (\Exception $e) {
                     Log::warning('Erreur RealTimeNotification (payment) dans PaymentController: ' . $e->getMessage());
+                }
+            }
+
+            // Notifier les admins
+            foreach ($admins as $admin) {
+                if (!$agent || $admin->id !== $agent->id) {
+                    $admin->notify(new GeneralNotification($notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($admin->id, $notifData));
+                    } catch (\Exception $e) {}
                 }
             }
 
