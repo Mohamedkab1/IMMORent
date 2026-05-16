@@ -26,7 +26,7 @@ const RevenueChart = ({ data, title }) => {
   }));
 
   return (
-    <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-main h-full">
+    <div className="bg-bg-card p-6 rounded-lg border border-border-main shadow-main h-full">
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-lg font-bold text-text-main tracking-tight">{title}</h3>
         <select className="text-xs font-semibold bg-bg-soft border-none rounded-lg focus:ring-0 text-text-sub">
@@ -35,8 +35,8 @@ const RevenueChart = ({ data, title }) => {
         </select>
       </div>
       
-      <div className="h-64 w-full" style={{ minHeight: '250px' }}>
-        <ResponsiveContainer width="99%" height="100%" minWidth={0}>
+      <div className="w-full h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={formattedData}>
             <defs>
               <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">

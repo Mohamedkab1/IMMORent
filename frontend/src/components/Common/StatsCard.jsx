@@ -9,18 +9,24 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
   const colorClasses = {
     blue: "bg-blue-500 shadow-blue-500/20",
     green: "bg-emerald-500 shadow-emerald-500/20",
+    emerald: "bg-emerald-500 shadow-emerald-500/20",
     amber: "bg-amber-500 shadow-amber-500/20",
     rose: "bg-rose-500 shadow-rose-500/20",
     indigo: "bg-indigo-500 shadow-indigo-500/20"
   };
 
+  const selectedColorClass = colorClasses[color] || colorClasses.blue;
+
   const iconClasses = {
     blue: "text-blue-500 bg-blue-50 dark:bg-blue-900/20",
     green: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20",
+    emerald: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20",
     amber: "text-amber-500 bg-amber-50 dark:bg-amber-900/20",
     rose: "text-rose-500 bg-rose-50 dark:bg-rose-900/20",
     indigo: "text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
   };
+
+  const selectedIconClass = iconClasses[color] || iconClasses.blue;
 
   return (
     <div className={`p-8 shadow-2xl border transition-all duration-500 group overflow-hidden relative rounded-lg ${
@@ -49,13 +55,13 @@ const StatsCard = ({ title, value, icon: Icon, trend, trendValue, color = "blue"
         
         <div className={`p-4 border transition-colors rounded-lg ${
           theme === 'light' ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/10'
-        } ${iconClasses[color].split(' ')[0]}`}>
+        } ${selectedIconClass.split(' ')[0]}`}>
           <Icon className="w-7 h-7" />
         </div>
       </div>
       
       {/* Decorative gradient blob */}
-      <div className={`absolute -right-16 -bottom-16 w-48 h-48 rounded-full opacity-[0.03] group-hover:opacity-[0.08] group-hover:scale-150 transition-all duration-1000 ${colorClasses[color]}`}></div>
+      <div className={`absolute -right-16 -bottom-16 w-48 h-48 rounded-full opacity-[0.03] group-hover:opacity-[0.08] group-hover:scale-150 transition-all duration-1000 ${selectedColorClass}`}></div>
     </div>
   );
 };

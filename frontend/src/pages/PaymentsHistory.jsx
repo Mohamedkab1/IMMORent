@@ -11,13 +11,36 @@ import {
   XCircleIcon,
   HomeIcon,
   ArrowLeftIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  CreditCardIcon,
+  BanknotesIcon,
+  BuildingLibraryIcon,
+  ArrowsRightLeftIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] }
+  }
+};
 
 const PaymentsHistory = () => {
-  const { user, isAgent, isAdmin } = useAuth();
+  const { user } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [payments, setPayments] = useState([]);
@@ -36,153 +59,174 @@ const PaymentsHistory = () => {
         setPayments(response.data.data || []);
       }
     } catch (error) {
-      console.error('Erreur:', error);
-      toast.error(t('pay.error_msg', 'Impossible de charger l\'historique des paiements'));
+      toast.error(t('pay.history.error_load', 'Erreur de chargement'));
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusBadge = (status) => {
-    const config = {
-      paid: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-500', icon: CheckCircleIcon, label: t('payment.status.paid', 'Payé') },
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-500', icon: ClockIcon, label: t('payment.status.pending', 'En attente') },
-      failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-500', icon: XCircleIcon, label: t('pay.status.failed', 'Échoué') },
-      late: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-500', icon: ClockIcon, label: t('payment.status.late', 'En retard') }
-    };
-    const s = config[status] || config.pending;
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${s.bg} ${s.text}`}>
-        <s.icon className="w-3.5 h-3.5" />
-        {s.label}
-      </span>
-    );
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'paid': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+      case 'pending': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      case 'failed': return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+      default: return 'bg-bg-soft text-text-muted border-border-main';
+    }
   };
 
   const filteredPayments = payments.filter(p => 
-    p.payment_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.contract?.property?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    p.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.property?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const stats = [
+    { title: t('pay.stats.total', 'Total Payé'), value: `${payments.filter(p => p.status === 'paid').reduce((acc, p) => acc + parseFloat(p.amount), 0).toLocaleString()} DH`, icon: CheckCircleIcon, color: 'emerald' },
+    { title: t('pay.stats.pending', 'En Attente'), value: `${payments.filter(p => p.status === 'pending').length}`, icon: ClockIcon, color: 'amber' },
+    { title: t('pay.stats.count', 'Transactions'), value: `${payments.length}`, icon: ArrowsRightLeftIcon, color: 'primary' }
+  ];
+
   return (
-    <div className="min-h-screen bg-bg-soft py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 text-text-sub hover:text-primary transition-colors mb-2 font-medium"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
+    <div className="min-h-screen bg-bg-soft pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-outfit">
+      <div className="max-w-7xl mx-auto space-y-12">
+        
+        {/* Header Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-border-main/50 pb-12"
+        >
+          <div className="space-y-4">
+            <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-text-sub hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
               {t('common.prev', 'Retour')}
             </button>
-            <h1 className="text-3xl font-black text-text-main tracking-tight">{t('pay.history.title', 'Historique des')} <span className="text-primary">{t('common.payments', 'Paiements')}</span></h1>
-            <p className="text-text-sub mt-1">{t('pay.history.subtitle', 'Consultez et gérez tous les paiements effectués sur la plateforme.')}</p>
+            <h1 className="text-5xl md:text-6xl font-black text-text-main tracking-tighter leading-none uppercase">
+              {t('pay.history.title_p1', 'Historique')} <span className="text-primary">{t('pay.history.title_p2', 'Paiements')}</span>
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted opacity-60">
+              {t('pay.history.subtitle', 'Gestion & Suivi des Transactions')}
+            </p>
           </div>
 
-          <div className="relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-            <input 
-              type="text" 
-              placeholder={t('pay.history.search', 'Rechercher un paiement...')} 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-bg-card border border-border-main rounded-xl focus:ring-2 focus:ring-primary focus:outline-none w-full md:w-64"
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted opacity-40 group-focus-within:text-primary group-focus-within:opacity-100 transition-all" />
+              <input 
+                type="text" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t('pay.history.search', 'Rechercher...')}
+                className="bg-bg-card border border-border-main rounded-xl pl-12 pr-6 py-3.5 text-xs font-bold text-text-main outline-none focus:border-primary transition-all min-w-[300px]"
+              />
+            </div>
+            <button onClick={fetchPayments} className="p-3.5 rounded-xl bg-bg-card border border-border-main text-text-muted hover:text-primary transition-all shadow-sm">
+              <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-        </div>
+        </motion.div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-border-main border-t-primary rounded-full animate-spin mb-4"></div>
-            <p className="text-text-sub font-medium">{t('pay.history.loading', 'Chargement des transactions...')}</p>
-          </div>
-        ) : (
-          <div className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-bg-soft border-b border-border-main text-xs uppercase tracking-widest font-black text-text-muted">
-                    <th className="p-6">{t('pay.history.table.ref', 'Réf. Paiement')}</th>
-                    <th className="p-6">{t('common.date', 'Date')}</th>
-                    <th className="p-6">{t('pay.history.table.property', 'Bien Immobilier')}</th>
-                    <th className="p-6">{t('common.amount', 'Montant')}</th>
-                    <th className="p-6 text-center">{t('pay.history.table.method', 'Méthode')}</th>
-                    <th className="p-6 text-center">{t('common.status', 'Statut')}</th>
-                    <th className="p-6 text-right">{t('common.actions', 'Actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-main">
-                  {filteredPayments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-bg-soft/50 transition-colors group">
-                      <td className="p-6">
-                        <span className="font-mono text-sm font-bold text-text-main">{payment.payment_number}</span>
-                      </td>
-                      <td className="p-6">
-                        <div className="flex items-center gap-2 text-sm text-text-sub">
-                          <CalendarIcon className="w-4 h-4" />
-                          {new Date(payment.payment_date || payment.created_at).toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR')}
-                        </div>
-                      </td>
-                      <td className="p-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                            <HomeIcon className="w-5 h-5" />
+        {/* Stats Grid */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        >
+          {stats.map((s, i) => (
+            <motion.div 
+              key={i} 
+              variants={itemVariants}
+              className="bg-bg-card border border-border-main p-8 rounded-xl shadow-xl flex items-center gap-6 relative overflow-hidden group"
+            >
+              <div className={`absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-primary/10 transition-all`} />
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center border border-border-main bg-bg-soft text-${s.color === 'emerald' ? 'emerald-500' : s.color === 'amber' ? 'amber-500' : 'primary'} group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm`}>
+                <s.icon className="w-7 h-7" />
+              </div>
+              <div className="space-y-1 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-60">{s.title}</p>
+                <p className="text-2xl font-black text-text-main tracking-tight">{s.value}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Table Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-bg-card border border-border-main rounded-xl shadow-2xl overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-bg-soft/50 border-b border-border-main">
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">{t('pay.table.id', 'ID')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">{t('pay.table.property', 'Bien')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">{t('pay.table.date', 'Date')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">{t('pay.table.method', 'Méthode')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">{t('pay.table.amount', 'Montant')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted text-center">{t('pay.table.status', 'Statut')}</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted text-right">{t('pay.table.actions', 'Actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-main/50">
+                <AnimatePresence mode="popLayout">
+                  {loading ? (
+                    [1, 2, 3, 4, 5].map(i => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan="7" className="px-8 py-6"><div className="h-4 bg-bg-soft rounded w-full" /></td>
+                      </tr>
+                    ))
+                  ) : filteredPayments.length > 0 ? (
+                    filteredPayments.map((p) => (
+                      <motion.tr 
+                        key={p.id}
+                        variants={itemVariants}
+                        className="hover:bg-bg-soft/30 transition-colors group"
+                      >
+                        <td className="px-8 py-6 text-[10px] font-black text-text-muted opacity-40 uppercase tracking-widest">{p.transaction_id?.slice(0, 12)}...</td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-bg-soft border border-border-main flex items-center justify-center overflow-hidden shrink-0">
+                               {p.property?.images?.[0] ? <img src={`http://localhost:8000/storage/${p.property.images[0]}`} className="w-full h-full object-cover" alt="" /> : <HomeIcon className="w-5 h-5 text-text-muted opacity-20" />}
+                            </div>
+                            <span className="text-xs font-black text-text-main tracking-tight line-clamp-1">{p.property?.title || 'Contrat Direct'}</span>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-text-main line-clamp-1">{payment.contract?.property?.title || t('pay.history.unknown_property', 'Bien non spécifié')}</p>
-                            <p className="text-xs text-text-muted">{payment.contract?.property?.city}</p>
+                        </td>
+                        <td className="px-8 py-6 text-xs font-bold text-text-sub">{new Date(p.created_at).toLocaleDateString()}</td>
+                        <td className="px-8 py-6">
+                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-soft border border-border-main w-fit">
+                             {p.payment_method === 'card' ? <CreditCardIcon className="w-4 h-4 text-primary" /> : p.payment_method === 'cash' ? <BanknotesIcon className="w-4 h-4 text-emerald-500" /> : <BuildingLibraryIcon className="w-4 h-4 text-amber-500" />}
+                             <span className="text-[10px] font-black uppercase tracking-widest text-text-sub opacity-60">{p.payment_method}</span>
+                           </div>
+                        </td>
+                        <td className="px-8 py-6 text-sm font-black text-text-main tracking-tighter">{parseFloat(p.amount).toLocaleString()} DH</td>
+                        <td className="px-8 py-6">
+                          <div className={`mx-auto w-fit px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(p.status)}`}>
+                            {t(`pay.status.${p.status}`, p.status)}
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-6">
-                        <span className="font-black text-text-main">{parseFloat(payment.amount).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} {t('prop.currency', 'DH')}</span>
-                      </td>
-                      <td className="p-6 text-center">
-                        <span className="text-xs font-semibold text-text-sub bg-bg-soft px-2 py-1 rounded-lg border border-border-main">
-                          {payment.payment_method === 'card' ? t('pay.card', 'Carte') : payment.payment_method === 'transfer' ? t('pay.transfer', 'Virement') : t('pay.agency', 'Agence')}
-                        </span>
-                      </td>
-                      <td className="p-6 text-center">
-                        {getStatusBadge(payment.status)}
-                      </td>
-                      <td className="p-6 text-right">
-                        {payment.pdf_url ? (
-                          <a 
-                            href={payment.pdf_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-primary hover:underline font-bold text-xs"
-                          >
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <button className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
                             <ArrowDownTrayIcon className="w-4 h-4" />
-                            {t('pay.history.invoice', 'Facture')}
-                          </a>
-                        ) : (
-                          <span className="text-xs text-text-muted italic">{t('pay.history.unavailable', 'Indisponible')}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredPayments.length === 0 && (
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan="7" className="p-20 text-center">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="w-20 h-20 bg-bg-soft rounded-full flex items-center justify-center text-text-muted">
-                            <CurrencyDollarIcon className="w-10 h-10" />
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold text-text-main">{t('pay.history.no_data', 'Aucune transaction trouvée')}</p>
-                            <p className="text-sm text-text-sub">{t('pay.history.no_data_desc', 'Les paiements apparaîtront ici une fois effectués.')}</p>
-                          </div>
-                        </div>
+                      <td colSpan="7" className="px-8 py-20 text-center space-y-4">
+                        <CurrencyDollarIcon className="w-12 h-12 text-text-muted opacity-20 mx-auto" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted opacity-40">{t('pay.history.empty', 'Aucune transaction trouvée.')}</p>
                       </td>
                     </tr>
                   )}
-                </tbody>
-              </table>
-            </div>
+                </AnimatePresence>
+              </tbody>
+            </table>
           </div>
-        )}
+        </motion.div>
       </div>
     </div>
   );

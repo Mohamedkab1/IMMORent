@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { paymentService } from '../services/payments';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CreditCardIcon,
   BanknotesIcon,
@@ -12,7 +13,8 @@ import {
   CheckCircleIcon,
   ShieldCheckIcon,
   ArrowPathIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 const Payment = () => {
@@ -29,6 +31,8 @@ const Payment = () => {
   const [success, setSuccess] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [showTransferConfirm, setShowTransferConfirm] = useState(false);
+  const [hasConfirmedCheckbox, setHasConfirmedCheckbox] = useState(false);
 
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
@@ -99,7 +103,24 @@ const Payment = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    // Si c'est un virement et qu'on n'a pas encore confirmé via le modal
+    if (paymentMethod === 'transfer' && !showTransferConfirm) {
+      if (!formData.transferCode) {
+        toast.error(t('pay.transfer_code_required', "Veuillez saisir le code de transaction."));
+        return;
+      }
+      setShowTransferConfirm(true);
+      return;
+    }
+
+    // Si on est dans le virement et qu'on a cliqué sur confirmer dans le modal
+    if (paymentMethod === 'transfer' && showTransferConfirm && !hasConfirmedCheckbox) {
+      toast.error(t('pay.please_verify_checkbox', "Veuillez cocher la case de confirmation."));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -140,6 +161,8 @@ const Payment = () => {
       toast.error(serverMessage);
     } finally {
       setLoading(false);
+      setShowTransferConfirm(false);
+      setHasConfirmedCheckbox(false);
     }
   };
 
@@ -389,8 +412,118 @@ const Payment = () => {
 
         </div>
       </div>
+
+      {/* Modal de confirmation de virement */}
+      <AnimatePresence>
+        {showTransferConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setShowTransferConfirm(false);
+                setHasConfirmedCheckbox(false);
+              }}
+              className="absolute inset-0 bg-bg-main/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md bg-bg-card border border-border-main rounded-2xl p-8 shadow-huge text-center overflow-hidden"
+            >
+              {/* Luxury Accent Line */}
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-primary to-blue-500"></div>
+
+              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mx-auto mb-6">
+                <BuildingLibraryIcon className="w-10 h-10" />
+              </div>
+              
+              <h3 className="text-xl font-black text-text-main uppercase tracking-widest mb-4">
+                {t('pay.transfer_confirm_title', 'Vérification du Paiement')}
+              </h3>
+              
+              <div className="bg-bg-soft rounded-xl p-4 mb-6 border border-border-main">
+                <p className="text-sm font-bold text-text-sub leading-relaxed">
+                  {t('pay.transfer_confirm_msg', 'Avez-vous réellement effectué le virement bancaire sur le RIB indiqué ?')}
+                </p>
+                <div className="mt-3 pt-3 border-t border-border-main text-xs space-y-1">
+                   <div className="flex justify-between items-center text-text-muted">
+                      <span>RIB IMMORent:</span>
+                      <strong className="text-text-main">1234 5678 9101 1121 3141 5161</strong>
+                   </div>
+                   <div className="flex justify-between items-center text-text-muted">
+                      <span>{t('pay.transfer_code', 'Code de transaction')}:</span>
+                      <strong className="text-primary font-mono">{formData.transferCode}</strong>
+                   </div>
+                   <div className="flex justify-between items-center text-text-muted">
+                      <span>{t('pay.total', 'Montant total')}:</span>
+                      <strong className="text-text-main">
+                         {property.transaction_type === 'rent'
+                            ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
+                            : property.price?.toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')} DH
+                      </strong>
+                   </div>
+                </div>
+              </div>
+
+              {/* Verification Section */}
+              <div className="mb-8 p-4 bg-red-500/5 border border-red-500/20 rounded-xl text-left">
+                <div className="flex gap-3 items-start">
+                  <div className="mt-1 flex-shrink-0">
+                    <input 
+                      id="verify-transfer"
+                      type="checkbox" 
+                      checked={hasConfirmedCheckbox}
+                      onChange={(e) => setHasConfirmedCheckbox(e.target.checked)}
+                      className="w-5 h-5 rounded border-border-main text-primary focus:ring-primary cursor-pointer"
+                    />
+                  </div>
+                  <label htmlFor="verify-transfer" className="text-sm font-bold text-text-main cursor-pointer leading-tight">
+                    {t('pay.transfer_checkbox', 'Je confirme avoir effectué le virement bancaire correspondant au montant total.')}
+                  </label>
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-[10px] text-red-500 font-black uppercase tracking-wider">
+                   <ExclamationTriangleIcon className="w-4 h-4" />
+                   {t('pay.transfer_warning', 'Toute fausse déclaration entraînera l\'annulation immédiate.')}
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  disabled={!hasConfirmedCheckbox || loading}
+                  onClick={() => handleSubmit()} 
+                  className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                    hasConfirmedCheckbox 
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]' 
+                      : 'bg-bg-soft text-text-muted border border-border-main cursor-not-allowed'
+                  }`}
+                >
+                  {loading ? (
+                    <><ArrowPathIcon className="w-4 h-4 animate-spin" /> {t('pay.processing', 'Traitement...')}</>
+                  ) : (
+                    t('pay.transfer_confirm_btn', 'Oui, je confirme avoir payé')
+                  )}
+                </button>
+                <button 
+                  disabled={loading}
+                  onClick={() => {
+                    setShowTransferConfirm(false);
+                    setHasConfirmedCheckbox(false);
+                  }} 
+                  className="w-full py-3 bg-transparent text-xs font-bold text-text-muted hover:text-text-main transition-all"
+                >
+                  {t('common.cancel', 'Annuler')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
 export default Payment;
+

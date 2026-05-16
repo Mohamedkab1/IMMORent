@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   EyeIcon, 
   CheckCircleIcon, 
@@ -12,9 +13,33 @@ import {
   BuildingOfficeIcon, 
   HomeIcon, 
   MapPinIcon, 
-  CurrencyEuroIcon,
-  ClockIcon
+  CurrencyDollarIcon,
+  ClockIcon,
+  UserIcon,
+  ChevronRightIcon,
+  FunnelIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import StatsCard from '../../components/Common/StatsCard';
+import { propertyService } from '../../services/properties';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
 
 const AdminProperties = () => {
   const [properties, setProperties] = useState([]);
@@ -23,18 +48,23 @@ const AdminProperties = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
 
   useEffect(() => { fetchProperties(); }, []);
 
   const fetchProperties = async () => {
-    setProperties([
-      { id: 1, title: 'Bel appartement centre-ville', city: 'Lyon', price: 850, status: 'available', type: 'apartment', user: { name: 'Jean Dupont' }, created_at: '2024-03-20', verified: true },
-      { id: 2, title: 'Maison familiale avec jardin', city: 'Caluire-et-Cuire', price: 1500, status: 'available', type: 'house', user: { name: 'Jean Dupont' }, created_at: '2024-03-18', verified: true },
-      { id: 3, title: 'Studio proche université', city: 'Villeurbanne', price: 450, status: 'rented', type: 'studio', user: { name: 'Marie Martin' }, created_at: '2024-03-15', verified: true },
-      { id: 4, title: 'Local commercial Part-Dieu', city: 'Lyon', price: 2000, status: 'pending', type: 'commercial', user: { name: 'Pierre Durand' }, created_at: '2024-03-10', verified: false },
-    ]);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const response = await propertyService.getAdminAll();
+      if (response.success) {
+        setProperties(response.data);
+      }
+    } catch (error) {
+      toast.error(t('dash.error_load', 'Erreur de chargement des biens'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredProperties = properties.filter(p => {
@@ -47,29 +77,40 @@ const AdminProperties = () => {
 
   const getStatusBadge = (status) => {
     const config = { 
-      available: { bg: '#dcfce7', color: '#059669', text: t('prop.status.available', 'Disponible') }, 
-      rented: { bg: '#f3f4f6', color: '#6b7280', text: t('prop.status.rented', 'Loué') }, 
-      pending: { bg: '#fef3c7', color: '#d97706', text: t('prop.status.pending', 'En attente') } 
+      available: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20', label: t('prop.status.available', 'Disponible') }, 
+      rented: { bg: 'bg-slate-500/10', text: 'text-slate-500', border: 'border-slate-500/20', label: t('prop.status.rented', 'Loué') }, 
+      pending: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20', label: t('prop.status.pending', 'En attente') } 
     };
     const c = config[status] || config.available;
-    return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
+    return (
+      <span className={`px-2 py-0.5 rounded-md border ${c.bg} ${c.text} ${c.border} text-[10px] font-black uppercase tracking-widest`}>
+        {c.label}
+      </span>
+    );
   };
 
-  const getTypeLabel = (type) => {
-    const types = { apartment: t('prop.types.apartment', 'Appartement'), house: t('prop.types.house', 'Maison'), studio: t('prop.types.studio', 'Studio'), commercial: t('prop.types.commercial', 'Commercial'), land: t('prop.types.land', 'Terrain') };
-    return types[type] || type;
-  };
-
-  const handleVerify = (id) => { 
-    setProperties(properties.map(p => p.id === id ? { ...p, verified: true, status: 'available' } : p)); 
-    toast.success(t('admin.prop.verified_success', 'Bien vérifié')); 
+  const handleVerify = async (id) => { 
+    try {
+      const response = await propertyService.approve(id);
+      if (response.success) {
+        setProperties(properties.map(p => p.id === id ? { ...p, verified: true, status: 'available' } : p)); 
+        toast.success(t('admin.prop.verified_success', 'Bien vérifié avec succès')); 
+      }
+    } catch (error) {
+      toast.error(t('common.error', 'Une erreur est survenue'));
+    }
   };
   
-  const handleReject = (id) => { 
-    if (window.confirm(t('admin.prop.reject_confirm', 'Refuser ce bien ?'))) { 
-      setProperties(properties.filter(p => p.id !== id)); 
-      toast.success(t('admin.prop.rejected_success', 'Bien refusé')); 
-    } 
+  const handleReject = async (id) => { 
+    try {
+      const response = await propertyService.reject(id);
+      if (response.success) {
+        setProperties(properties.filter(p => p.id !== id)); 
+        toast.success(t('admin.prop.rejected_success', 'Publication refusée')); 
+      }
+    } catch (error) {
+      toast.error(t('common.error', 'Une erreur est survenue'));
+    }
   };
   
   const confirmDelete = (p) => { 
@@ -77,12 +118,18 @@ const AdminProperties = () => {
     setShowDeleteConfirm(true); 
   };
   
-  const handleDelete = () => { 
+  const handleDelete = async () => { 
     if (propertyToDelete) { 
-      setProperties(properties.filter(p => p.id !== propertyToDelete.id)); 
-      toast.success(t('admin.prop.deleted_success', 'Bien supprimé')); 
-      setShowDeleteConfirm(false); 
-      setPropertyToDelete(null); 
+      try {
+        await propertyService.delete(propertyToDelete.id);
+        setProperties(properties.filter(p => p.id !== propertyToDelete.id)); 
+        toast.success(t('admin.prop.deleted_success', 'Bien supprimé du catalogue')); 
+      } catch (error) {
+        toast.error(t('common.error', 'Une erreur est survenue'));
+      } finally {
+        setShowDeleteConfirm(false); 
+        setPropertyToDelete(null); 
+      }
     } 
   };
 
@@ -93,380 +140,210 @@ const AdminProperties = () => {
     pending: properties.filter(p => p.status === 'pending' || !p.verified).length 
   };
 
-  if (loading) return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement...')}</p></div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p className="text-xs font-black uppercase tracking-widest text-text-muted">{t('common.loading', 'Chargement...')}</p>
+    </div>
+  );
 
   return (
-    <>
-      <div className="admin-properties">
-        <div className="header">
-          <h1>{t('admin.prop.title', 'Gestion des biens')}</h1>
-        </div>
-
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon"><BuildingOfficeIcon /></div>
-            <div><span>{t('admin.prop.total', 'Total')}</span><strong>{stats.total}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><HomeIcon /></div>
-            <div><span>{t('prop.status.available', 'Disponibles')}</span><strong>{stats.available}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><HomeIcon /></div>
-            <div><span>{t('prop.status.rented', 'Loués')}</span><strong>{stats.rented}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><ClockIcon /></div>
-            <div><span>{t('prop.status.pending', 'En attente')}</span><strong>{stats.pending}</strong></div>
-          </div>
-        </div>
-
-        <div className="filters-section">
-          <div className="search-wrapper">
-            <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder={t('common.search', 'Rechercher...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          </div>
-          <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">{t('common.all', 'Tous')}</option>
-            <option value="available">{t('prop.status.available', 'Disponibles')}</option>
-            <option value="rented">{t('prop.status.rented', 'Loués')}</option>
-            <option value="pending">{t('prop.status.pending', 'En attente')}</option>
-          </select>
-        </div>
-
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t('admin.prop.id', 'ID')}</th>
-                <th>{t('admin.prop.table_title', 'Titre')}</th>
-                <th>{t('admin.add.city', 'Ville')}</th>
-                <th>{t('admin.add.prop_type', 'Type')}</th>
-                <th>{t('admin.add.price', 'Prix')}</th>
-                <th>{t('admin.edit.status', 'Statut')}</th>
-                <th>{t('admin.prop.agent', 'Agent')}</th>
-                <th>{t('admin.prop.verified', 'Vérifié')}</th>
-                <th>{t('admin.prop.actions', 'Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProperties.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td><strong>{p.title}</strong></td>
-                  <td><MapPinIcon className="inline-icon" /> {p.city}</td>
-                  <td>{getTypeLabel(p.type)}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {p.price.toLocaleString()}DH{p.type === 'rent' ? t('prop.per_month', '/ ms') : ''}</td>
-                  <td>{getStatusBadge(p.status)}</td>
-                  <td>{p.user.name}</td>
-                  <td>{p.verified ? <CheckCircleIcon className="text-success" /> : <XCircleIcon className="text-warning" />}</td>
-                  <td className="actions">
-                    <Link to={`/properties/${p.id}`} className="btn-icon" title={t('common.view', 'Voir')}><EyeIcon /></Link>
-                    {!p.verified && (
-                      <>
-                        <button className="btn-icon success" onClick={() => handleVerify(p.id)} title={t('admin.prop.verify', 'Vérifier')}><CheckCircleIcon /></button>
-                        <button className="btn-icon warning" onClick={() => handleReject(p.id)} title={t('admin.prop.reject', 'Refuser')}><XCircleIcon /></button>
-                      </>
-                    )}
-                    <button className="btn-icon delete" onClick={() => confirmDelete(p)} title={t('common.delete', 'Supprimer')}><TrashIcon /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-12"
+    >
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard title={t('admin.prop.total', 'Total Biens')} value={stats.total} icon={BuildingOfficeIcon} color="blue" delay={0} />
+        <StatsCard title={t('prop.status.available', 'Disponibles')} value={stats.available} icon={HomeIcon} color="emerald" delay={100} />
+        <StatsCard title={t('prop.status.rented', 'Loués')} value={stats.rented} icon={CheckCircleIcon} color="indigo" delay={200} />
+        <StatsCard title={t('prop.status.pending', 'En Attente')} value={stats.pending} icon={ClockIcon} color="amber" delay={300} />
       </div>
 
-      {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="modal-content confirm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t('admin.prop.del_confirm_title', 'Confirmer la suppression')}</h2>
+      {/* Main Table Container */}
+      <motion.div variants={itemVariants} className="bg-bg-card border border-border-main rounded-lg shadow-2xl overflow-hidden">
+        <div className="p-8 border-b border-border-main flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-text-main uppercase tracking-widest">{t('admin.prop.title', 'Parc Immobilier')}</h2>
+            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest opacity-60">
+              {filteredProperties.length} {t('admin.prop.count', 'Annonces répertoriées')}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input 
+                type="text" 
+                placeholder={t('common.search', 'Filtrer par titre, ville...')}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-11 pr-4 py-3 bg-bg-soft border border-border-main rounded-lg text-xs focus:border-primary outline-none transition-all w-64 font-bold"
+              />
             </div>
-            <div className="modal-body">
-              <p>{t('admin.prop.del_confirm_msg', 'Êtes-vous sûr de vouloir supprimer le bien')} <strong>{propertyToDelete?.title}</strong> ?</p>
-              <p className="warning">{t('admin.prop.del_warning', 'Cette action est irréversible.')}</p>
-            </div>
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>{t('common.cancel', 'Annuler')}</button>
-              <button className="btn-delete" onClick={handleDelete}>{t('common.delete', 'Supprimer')}</button>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-hover:text-primary transition-colors">
+                <FunnelIcon className="w-4 h-4" />
+              </div>
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                className="pl-11 pr-8 py-3 bg-bg-soft border border-border-main rounded-lg text-xs font-black uppercase tracking-widest outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+              >
+                <option value="all">{t('common.all', 'Tous les statuts')}</option>
+                <option value="available">{t('prop.status.available', 'Disponibles')}</option>
+                <option value="rented">{t('prop.status.rented', 'Loués')}</option>
+                <option value="pending">{t('prop.status.pending', 'En attente')}</option>
+              </select>
             </div>
           </div>
         </div>
-      )}
 
-      <style>{`
-        .admin-properties {
-          padding: 1.5rem;
-          background: #f8f9fa;
-          min-height: calc(100vh - 70px);
-        }
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-bg-soft/50">
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.table_title', 'Bien Immobilier')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.add.price', 'Prix Mensuel')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.edit.status', 'État')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.agent', 'Propriétaire/Agent')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.verified', 'Audit')}</th>
+                <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.actions', 'Actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-main/50">
+              <AnimatePresence>
+                {filteredProperties.map((p, idx) => (
+                  <motion.tr 
+                    key={p.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="group hover:bg-bg-soft/30 transition-colors"
+                  >
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-bg-soft border border-border-main flex items-center justify-center text-primary group-hover:border-primary/30 transition-all shadow-sm">
+                        <BuildingOfficeIcon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black text-text-main group-hover:text-primary transition-colors">{p.title}</div>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted mt-0.5">
+                          <MapPinIcon className="w-3 h-3" />
+                          {p.city}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-black text-text-main">{p.price.toLocaleString()} DH</div>
+                    <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{t('prop.per_month', 'Par mois')}</div>
+                  </td>
+                  <td className="px-8 py-6">{getStatusBadge(p.status)}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-primary text-[10px] font-black">
+                        {p.user.name[0]}
+                      </div>
+                      <span className="text-xs font-bold text-text-main">{p.user.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    {p.verified ? (
+                      <div className="flex items-center gap-1.5 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                        <CheckCircleIcon className="w-4 h-4" />
+                        {t('admin.prop.verified', 'Certifié')}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-rose-500 text-[10px] font-black uppercase tracking-widest">
+                        <XCircleIcon className="w-4 h-4" />
+                        {t('admin.prop.not_verified', 'Non audité')}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Link to={`/properties/${p.id}`} className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm block">
+                          <EyeIcon className="w-4 h-4" />
+                        </Link>
+                      </motion.div>
+                      {!p.verified && (
+                        <motion.button 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleVerify(p.id)} 
+                          className="p-2.5 rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all"
+                        >
+                          <CheckCircleIcon className="w-4 h-4" />
+                        </motion.button>
+                      )}
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => confirmDelete(p)} 
+                        className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all shadow-sm"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+          </table>
+          {filteredProperties.length === 0 && (
+            <div className="py-20 text-center">
+              <BuildingOfficeIcon className="w-16 h-16 text-text-muted opacity-10 mx-auto mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-text-muted opacity-40">{t('admin.prop.no_match', 'Aucun bien ne correspond à votre recherche')}</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
-        .header {
-          margin-bottom: 1.5rem;
-        }
-
-        .header h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-        }
-
-        .stats-cards {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 1rem;
-          border-radius: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-icon {
-          width: 2.5rem;
-          height: 2.5rem;
-          background: #f3f4f6;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #d4af37;
-        }
-
-        .stat-card span {
-          display: block;
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .stat-card strong {
-          font-size: 1.25rem;
-          color: #0f2b4d;
-        }
-
-        .filters-section {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .search-wrapper {
-          position: relative;
-          flex: 1;
-          max-width: 300px;
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 0.75rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 1rem;
-          height: 1rem;
-          color: #9ca3af;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 0.5rem 0.5rem 0.5rem 2rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-        }
-
-        .status-filter {
-          padding: 0.5rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          background: white;
-        }
-
-        .table-container {
-          background: white;
-          border-radius: 0.75rem;
-          overflow-x: auto;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table th {
-          text-align: left;
-          padding: 1rem;
-          background: #f8f9fa;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: #6b7280;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .data-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #e5e7eb;
-          font-size: 0.75rem;
-        }
-
-        .inline-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-          display: inline;
-          vertical-align: middle;
-          margin-right: 0.25rem;
-        }
-
-        .text-success {
-          color: #059669;
-        }
-
-        .text-warning {
-          color: #d97706;
-        }
-
-
-        .actions {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        .btn-icon {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #6b7280;
-          padding: 0.25rem;
-          border-radius: 0.25rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 2rem;
-          height: 2rem;
-          transition: all 0.3s;
-        }
-
-        .btn-icon svg {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .btn-icon:hover {
-          background: #f3f4f6;
-          color: #d4af37;
-        }
-
-        .btn-icon.success:hover {
-          color: #059669;
-        }
-
-        .btn-icon.warning:hover {
-          color: #d97706;
-        }
-
-        .btn-icon.delete:hover {
-          color: #dc2626;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-
-        .modal-content {
-          background: white;
-          border-radius: 0.75rem;
-          width: 90%;
-          max-width: 400px;
-        }
-
-        .modal-header {
-          padding: 1rem 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .modal-header h2 {
-          font-size: 1.125rem;
-          color: #0f2b4d;
-        }
-
-        .modal-body {
-          padding: 1.5rem;
-        }
-
-        .warning {
-          color: #dc2626;
-          font-size: 0.75rem;
-          margin-top: 0.5rem;
-        }
-
-        .modal-actions {
-          display: flex;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .btn-cancel {
-          flex: 1;
-          padding: 0.5rem;
-          background: #f3f4f6;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-        }
-
-        .btn-delete {
-          flex: 1;
-          padding: 0.5rem;
-          background: #dc2626;
-          color: white;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-        }
-
-        .loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-    </>
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(false)}
+              className="absolute inset-0 bg-bg-main/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-bg-card border border-border-main rounded-lg p-8 shadow-huge text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mx-auto mb-6">
+                <TrashIcon className="w-10 h-10" />
+              </div>
+              <h3 className="text-xl font-black text-text-main uppercase tracking-widest mb-4">{t('admin.prop.del_confirm_title', 'Retrait du Bien')}</h3>
+              <p className="text-sm font-bold text-text-sub opacity-60 mb-8 leading-relaxed">
+                {t('admin.prop.del_confirm_msg', 'Souhaitez-vous définitivement retirer')} <br />
+                <span className="text-text-main font-black underline">{propertyToDelete?.title}</span> ?
+                <br />
+                <span className="text-[10px] text-rose-500 font-black uppercase tracking-widest mt-4 block">{t('admin.prop.del_warning', 'Cette annonce sera supprimée pour tous les utilisateurs.')}</span>
+              </p>
+              <div className="flex gap-4">
+                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 bg-bg-soft border border-border-main rounded-lg text-[10px] font-black uppercase tracking-widest text-text-sub transition-all">
+                  {t('common.cancel', 'Annuler')}
+                </button>
+                <button onClick={handleDelete} className="flex-1 py-3 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 transition-all">
+                  {t('common.delete', 'Supprimer')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

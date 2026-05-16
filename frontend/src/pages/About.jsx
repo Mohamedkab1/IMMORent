@@ -1,202 +1,164 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { HandRaisedIcon, LightBulbIcon, StarIcon, HeartIcon, ArrowLeftIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { motion } from 'framer-motion';
 
-const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef(null);
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => {
-      if (ref.current) observer.unobserve(ref.current);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-[0.98]'
-      } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] }
+  }
 };
 
 const About = () => {
   const { t } = useLanguage();
   const { theme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-bg-soft transition-colors duration-300">
+    <div className="min-h-screen bg-bg-soft font-outfit">
       
       {/* Hero Section */}
-      <div className={`relative flex items-center justify-center min-h-[45vh] pt-40 pb-20 overflow-hidden transition-colors duration-500 ${theme === 'light' ? 'bg-gradient-to-b from-white via-slate-50/50 to-white' : 'bg-gradient-to-br from-[#050a1f] via-[#0a1a1a] to-[#050a1f]'}`}>
+      <section className="relative pt-40 pb-20 overflow-hidden border-b border-border-main/50">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-bg-soft to-bg-soft opacity-50" />
         
-        {/* Bottom Fade Transition */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg-soft to-transparent z-20 pointer-events-none"></div>
-
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-20 z-10 mix-blend-overlay pointer-events-none">
-           <svg className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="40" stroke={theme === 'light' ? 'black' : 'white'} strokeWidth="0.5" fill="none" />
-              <circle cx="50" cy="50" r="30" stroke={theme === 'light' ? 'black' : 'white'} strokeWidth="0.5" fill="none" strokeDasharray="2 2" />
-           </svg>
-        </div>
-        
-        <div className="relative z-20 max-w-4xl mx-auto text-center px-4">
-          <RevealOnScroll>
-            <span className="inline-block py-1 px-4 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-bold mb-6 tracking-widest uppercase shadow-sm">
-              {t('nav.about')}
-            </span>
-            <h1 className={`text-4xl md:text-6xl font-extrabold mb-6 tracking-tight drop-shadow-lg ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
-              {t('about.hero.title_p1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500">{t('about.hero.title_p2')}</span>
+        <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              <CheckBadgeIcon className="w-3.5 h-3.5" />
+              {t('nav.about_label', 'Qui sommes-nous')}
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black text-text-main tracking-tighter leading-none mb-6">
+              {t('about.hero.title_p1', 'Redéfinir')} <span className="text-primary">{t('about.hero.title_p2', "L'Immobilier")}</span>
             </h1>
-            <p className={`text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
-              {t('about.hero.subtitle')}
+            <p className="text-sm md:text-lg text-text-sub font-bold uppercase tracking-[0.3em] max-w-2xl mx-auto opacity-60">
+              {t('about.hero.subtitle', 'La plateforme premium de gestion immobilière au Maroc.')}
             </p>
-          </RevealOnScroll>
+          </motion.div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 space-y-24">
+        {/* Decorative element */}
+        <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-full max-w-4xl h-48 bg-primary/20 blur-[120px] rounded-full opacity-20" />
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 space-y-40">
         
-        {/* Story Section */}
-        <RevealOnScroll>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 dark:bg-secondary/10 rounded-xl translate-x-4 translate-y-4 transition-transform duration-500 group-hover:translate-x-6 group-hover:translate-y-6"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80" 
-                alt="Notre histoire" 
-                className="relative rounded-xl shadow-xl w-full h-auto object-cover z-10 transition-transform duration-500" 
-              />
+        {/* Mission Section */}
+        <motion.section 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center"
+        >
+          <motion.div variants={itemVariants} className="relative aspect-square md:aspect-video lg:aspect-square overflow-hidden rounded-xl border border-border-main shadow-2xl">
+            <img 
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop" 
+              className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-110" 
+              alt="Mission" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-8 left-8 right-8">
+              <p className="text-white text-3xl font-black tracking-tighter">{t('about.mission.tag', 'Expertise & Excellence')}</p>
             </div>
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-text-main tracking-tight">{t('about.story.title')}</h2>
-              <div className="w-16 h-1 bg-gradient-to-r from-primary to-secondary"></div>
-              <div className="prose dark:prose-invert prose-lg text-text-sub">
-                <p>
-                  {t('about.story.p1')}
-                </p>
-                <p>
-                  {t('about.story.p2')}
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border-main">
-                <div className="text-center p-5 bg-bg-card rounded-xl shadow-sm border border-border-main hover:border-primary/30 transition-colors">
-                  <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">500+</span>
-                  <span className="text-xs font-bold text-text-muted uppercase tracking-widest">{t('about.stats.properties')}</span>
-                </div>
-                <div className="text-center p-5 bg-bg-card rounded-xl shadow-sm border border-border-main hover:border-primary/30 transition-colors">
-                  <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">10k+</span>
-                  <span className="text-xs font-bold text-text-muted uppercase tracking-widest">{t('about.stats.clients')}</span>
-                </div>
-                <div className="text-center p-5 bg-bg-card rounded-xl shadow-sm border border-border-main hover:border-primary/30 transition-colors">
-                  <span className="block text-3xl font-black text-primary dark:text-secondary mb-1">50+</span>
-                  <span className="text-xs font-bold text-text-muted uppercase tracking-widest">{t('about.stats.agencies')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </RevealOnScroll>
+          </motion.div>
 
-        <div className="text-center">
-          <RevealOnScroll>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main inline-block relative mb-16 tracking-tight">
-              {t('about.values.title')}
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-secondary"></div>
-            </h2>
-          </RevealOnScroll>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div variants={itemVariants} className="space-y-8">
+            <div className="w-12 h-1 bg-primary" />
+            <h2 className="text-4xl font-black text-text-main tracking-tight">{t('about.story.title', 'Notre Histoire')}</h2>
+            <div className="space-y-6 text-sm text-text-sub font-medium leading-relaxed">
+              <p>{t('about.story.p1', "Née de la volonté de moderniser le marché immobilier marocain, IMMORent s'est imposée comme la référence pour la location de prestige.")}</p>
+              <p>{t('about.story.p2', "Nous connectons propriétaires exigeants et locataires de confiance via une plateforme technologique de pointe.")}</p>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-6 pt-12">
+              {[
+                { val: '500+', label: t('about.stats.properties', 'Biens') },
+                { val: '10k+', label: t('about.stats.clients', 'Clients') },
+                { val: '50+', label: t('about.stats.agencies', 'Agences') }
+              ].map(s => (
+                <div key={s.label} className="space-y-1">
+                  <p className="text-2xl font-black text-primary">{s.val}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-60">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </motion.section>
+
+        {/* Values Grid */}
+        <motion.section 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="space-y-20"
+        >
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-black text-text-main uppercase tracking-widest">{t('about.values.title', 'Nos Valeurs')}</h2>
+            <div className="w-12 h-1 bg-primary mx-auto" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: HandRaisedIcon, title: t('about.values.trust.title'), desc: t('about.values.trust.desc'), color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-              { icon: LightBulbIcon, title: t('about.values.innovation.title'), desc: t('about.values.innovation.desc'), color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-              { icon: StarIcon, title: t('about.values.excellence.title'), desc: t('about.values.excellence.desc'), color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
-              { icon: HeartIcon, title: t('about.values.passion.title'), desc: t('about.values.passion.desc'), color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' }
+              { icon: HandRaisedIcon, title: t('about.values.trust.title'), desc: t('about.values.trust.desc'), color: 'text-blue-500' },
+              { icon: LightBulbIcon, title: t('about.values.innovation.title'), desc: t('about.values.innovation.desc'), color: 'text-amber-500' },
+              { icon: StarIcon, title: t('about.values.excellence.title'), desc: t('about.values.excellence.desc'), color: 'text-emerald-500' },
+              { icon: HeartIcon, title: t('about.values.passion.title'), desc: t('about.values.passion.desc'), color: 'text-rose-500' }
             ].map((v, i) => (
-              <RevealOnScroll key={i} delay={i * 150}>
-                <div className="bg-bg-card p-8 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-2 border border-border-main transition-all duration-300 h-full flex flex-col items-center text-center">
-                  <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-6 ${v.bg} ${v.color}`}>
-                    <v.icon className={`w-8 h-8`} />
-                  </div>
-                  <h3 className="text-lg font-bold text-text-main mb-3">{v.title}</h3>
-                  <p className="text-text-sub leading-relaxed font-medium text-sm">{v.desc}</p>
+              <motion.div 
+                key={v.title}
+                variants={itemVariants}
+                className="bg-bg-card border border-border-main rounded-xl p-8 shadow-sm hover:shadow-xl transition-all group"
+              >
+                <div className={`w-12 h-12 rounded-lg bg-bg-soft flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300 ${v.color}`}>
+                  <v.icon className="w-6 h-6" />
                 </div>
-              </RevealOnScroll>
+                <h3 className="text-lg font-black text-text-main tracking-tight mb-4">{v.title}</h3>
+                <p className="text-xs text-text-sub font-bold leading-relaxed opacity-60">{v.desc}</p>
+              </motion.div>
             ))}
           </div>
-        </div>
-
-        {/* Team Section */}
-        <div className="text-center">
-          <RevealOnScroll>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-text-main inline-block relative mb-16 tracking-tight">
-              {t('about.team.title')}
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-secondary"></div>
-            </h2>
-          </RevealOnScroll>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { img: 'https://randomuser.me/api/portraits/men/1.jpg', name: 'Jean Martin', role: t('about.team.founder') },
-              { img: 'https://randomuser.me/api/portraits/women/2.jpg', name: 'Sophie Bernard', role: t('about.team.sales_dir') },
-              { img: 'https://randomuser.me/api/portraits/men/3.jpg', name: 'Pierre Dubois', role: t('about.team.tech_dir') },
-              { img: 'https://randomuser.me/api/portraits/women/4.jpg', name: 'Marie Lambert', role: t('about.team.client_mgr') }
-            ].map((member, i) => (
-              <RevealOnScroll key={i} delay={i * 150}>
-                <div className="bg-bg-card p-8 rounded-xl shadow-sm hover:shadow-xl border border-border-main transition-all duration-300 group h-full">
-                  <div className="relative w-32 h-32 mx-auto mb-6">
-                    <img 
-                      src={member.img} 
-                      alt={member.name} 
-                      className="relative w-full h-full rounded-lg object-cover border border-border-main shadow-md group-hover:scale-105 transition-transform duration-500" 
-                    />
-                  </div>
-                  <h3 className="text-lg font-bold text-text-main mb-1 group-hover:text-primary dark:group-hover:text-secondary transition-colors">{member.name}</h3>
-                  <p className="text-xs font-bold text-primary/80 dark:text-secondary/80 uppercase tracking-widest">{member.role}</p>
-                </div>
-              </RevealOnScroll>
-            ))}
-          </div>
-        </div>
+        </motion.section>
 
         {/* CTA Section */}
-        <RevealOnScroll>
-          <div className="bg-bg-card border border-border-main rounded-2xl p-8 md:p-16 text-center shadow-xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-primary/5 dark:bg-secondary/5 opacity-50 transition-opacity duration-500 group-hover:opacity-100"></div>
-            <div className="relative z-10 max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-text-main mb-6 tracking-tight">{t('about.cta.title')}</h2>
-              <p className="text-lg text-text-sub mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-                {t('about.cta.subtitle')}
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <Link to="/register" className="w-full sm:w-auto px-8 py-4 bg-primary text-white dark:bg-secondary dark:text-slate-900 hover:bg-primary-hover dark:hover:bg-yellow-400 rounded-lg font-bold uppercase tracking-widest transition-all shadow-md hover:shadow-lg">
-                  {t('about.cta.btn_register')}
-                </Link>
-                <Link to="/contact" className="w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-primary dark:border-secondary text-primary dark:text-secondary hover:bg-primary/10 dark:hover:bg-secondary/10 rounded-lg font-bold uppercase tracking-widest transition-all shadow-sm">
-                  {t('about.cta.btn_contact')}
-                </Link>
-              </div>
+        <motion.section 
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative bg-bg-card border border-border-main rounded-xl p-12 md:p-24 text-center shadow-2xl overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-primary/5 opacity-50" />
+          <div className="relative z-10 max-w-3xl mx-auto space-y-10">
+            <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tighter">{t('about.cta.title', 'Prêt à commencer ?')}</h2>
+            <p className="text-sm md:text-lg text-text-sub font-bold uppercase tracking-[0.2em] opacity-60">
+              {t('about.cta.subtitle', 'Rejoignez la communauté IMMORent et découvrez une nouvelle façon de vivre l\'immobilier.')}
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+              <Link to="/register" className="w-full sm:w-auto px-12 py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98]">
+                {t('about.cta.btn_register', 'Créer un compte')}
+              </Link>
+              <Link to="/contact" className="w-full sm:w-auto px-12 py-5 bg-bg-soft border border-border-main text-text-main rounded-xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-border-main transition-all">
+                {t('about.cta.btn_contact', 'Nous contacter')}
+              </Link>
             </div>
           </div>
-        </RevealOnScroll>
+        </motion.section>
 
       </div>
     </div>
