@@ -454,7 +454,7 @@ const PropertyDetail = () => {
                       <button 
                         type="submit" 
                         disabled={submittingReview}
-                        className="px-6 py-3 rounded-lg font-bold text-white transition-all disabled:opacity-50 hover:opacity-90 active:scale-95 shadow-md"
+                        className="px-6 py-3 rounded-lg font-bold !text-white transition-all disabled:opacity-50 hover:opacity-90 active:scale-95 shadow-md"
                         style={{backgroundColor: 'var(--color-primary)'}}
                       >
                         {submittingReview ? t('common.sending', 'Envoi...') : t('prop.detail.review.submit', 'Publier l\'avis')}

@@ -325,10 +325,10 @@ const AgentDashboard = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-bg-soft">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-bg-soft pt-[120px]">
       
       {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300 md:sticky md:top-[70px] md:h-[calc(100vh-70px)] overflow-y-auto shrink-0 shadow-sm z-10">
+      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300 md:sticky md:top-[120px] md:h-[calc(100vh-120px)] overflow-y-auto shrink-0 shadow-sm z-10">
         <div className="p-6 border-b border-border-main flex flex-col items-center text-center">
            <div className="w-24 h-24 overflow-hidden bg-gradient-to-tr from-primary to-blue-400 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-lg border-4 border-bg-card mb-4">
             {user?.profile_photo ? (
@@ -538,7 +538,7 @@ const AgentDashboard = () => {
             <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
              <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.properties.title')}</h2>
-                <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
+                <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary !text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
                   <PlusIcon className="w-4 h-4" /> {t('agent.properties.add')}
                 </Link>
              </div>

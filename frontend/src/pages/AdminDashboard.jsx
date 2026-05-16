@@ -450,9 +450,9 @@ const AdminDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-bg-soft flex flex-col md:flex-row font-outfit">
+    <div className="min-h-screen bg-bg-soft flex flex-col md:flex-row font-outfit pt-[120px]">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-80 bg-bg-card border-r border-border-main p-6 flex flex-col gap-8 sticky top-0 h-screen overflow-y-auto z-50 shadow-large shrink-0">
+      <aside className="w-full md:w-80 bg-bg-card border-r border-border-main p-6 flex flex-col gap-8 sticky top-[120px] h-[calc(100vh-120px)] overflow-y-auto z-40 shadow-large shrink-0">
         <div className="flex items-center gap-3 px-2">
           <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
             <BuildingOfficeIcon className="w-7 h-7 text-white" />
@@ -605,7 +605,7 @@ const AdminDashboard = () => {
                     icon={UserGroupIcon} 
                     trend="+5%" 
                     trendUp={true}
-                    color="purple"
+                    color="indigo"
                   />
                   <StatsCard 
                     title={t('dash.stats.revenue')} 

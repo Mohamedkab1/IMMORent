@@ -14,11 +14,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { notificationService } from '../services/notifications';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import LoadingSkeleton from '../components/Common/LoadingSkeleton';
 
 const Notifications = () => {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,19 +94,19 @@ const Notifications = () => {
   const getNotifIcon = (type) => {
     switch (type) {
       case 'message':
-        return <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />;
+        return <ChatBubbleLeftRightIcon className="w-6 h-6 !text-blue-500" />;
       case 'rental_request':
       case 'agent_request':
-        return <DocumentTextIcon className="w-6 h-6 text-purple-500" />;
+        return <DocumentTextIcon className="w-6 h-6 !text-purple-500" />;
       case 'property_status':
       case 'agent_request_processed':
-        return <BuildingOfficeIcon className="w-6 h-6 text-amber-500" />;
+        return <BuildingOfficeIcon className="w-6 h-6 !text-amber-500" />;
       case 'contract':
-        return <CheckCircleIcon className="w-6 h-6 text-emerald-500" />;
+        return <CheckCircleIcon className="w-6 h-6 !text-emerald-500" />;
       case 'payment':
-        return <BanknotesIcon className="w-6 h-6 text-green-500" />;
+        return <BanknotesIcon className="w-6 h-6 !text-green-500" />;
       default:
-        return <BellIcon className="w-6 h-6 text-primary" />;
+        return <BellIcon className="w-6 h-6 !text-primary" />;
     }
   };
 
@@ -230,7 +232,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-soft py-12 px-4 sm:px-6 lg:px-8 font-outfit">
+    <div className="min-h-screen bg-bg-soft pt-[120px] pb-12 px-4 sm:px-6 lg:px-8 font-outfit">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
@@ -280,10 +282,10 @@ const Notifications = () => {
               filteredNotifications.map(notif => (
                 <div 
                   key={notif.id} 
-                  className={`p-6 flex gap-5 transition-all cursor-pointer hover:bg-bg-soft/50 group ${!notif.read_at ? 'bg-primary/5 border-l-4 border-primary' : ''}`}
+                  className={`p-6 flex gap-5 transition-all cursor-pointer hover:bg-bg-soft/50 group ${!notif.read_at ? (theme === 'light' ? 'bg-primary/5 border-l-4 border-primary' : 'bg-primary/10 border-l-4 border-primary') : ''}`}
                   onClick={() => markAsRead(notif.id, notif.data?.link)}
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${!notif.read_at ? 'bg-white dark:bg-slate-800' : 'bg-bg-soft'}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${!notif.read_at ? (theme === 'light' ? 'bg-white border border-slate-200' : 'bg-slate-800') : 'bg-bg-soft'}`}>
                     {getNotifIcon(notif.data?.type_notif || notif.data?.type)}
                   </div>
                   <div className="flex-1 min-w-0">

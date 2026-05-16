@@ -375,8 +375,8 @@ const Payment = () => {
                 </div>
 
                 <div className="p-3 bg-primary/5 rounded-xl flex justify-between items-center">
-                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="font-bold dark:!text-white">{t('pay.total', 'Total à payer')}</span>
-                  <span style={{ color: theme === 'light' ? '#000000' : '' }} className="text-xl font-black dark:!text-white">
+                  <span className={`font-bold ${theme === 'light' ? '!text-slate-900' : '!text-white'}`}>{t('pay.total', 'Total à payer')}</span>
+                  <span className={`text-xl font-black ${theme === 'light' ? '!text-slate-900' : '!text-white'}`}>
 
                     {property.transaction_type === 'rent'
                       ? (property.price + 500).toLocaleString(language === 'ar' ? 'ar-MA' : 'fr-FR')
