@@ -325,12 +325,13 @@ const AgentDashboard = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-70px)] bg-bg-soft pt-[120px]">
+    <div className="flex-1 bg-bg-soft flex font-outfit pt-[120px]">
       
-      {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-bg-card border-e border-border-main flex flex-col transition-colors duration-300 md:sticky md:top-[120px] md:h-[calc(100vh-120px)] overflow-y-auto shrink-0 shadow-sm z-10">
+      {/* Sidebar Background Wrapper */}
+      <div className="w-full md:w-[280px] bg-bg-card border-r border-border-main shrink-0">
+        <aside className="flex flex-col sticky top-[120px] h-[calc(100vh-120px)] z-40 overflow-y-auto">
         <div className="p-6 border-b border-border-main flex flex-col items-center text-center">
-           <div className="w-24 h-24 overflow-hidden bg-gradient-to-tr from-primary to-blue-400 rounded-[2rem] flex items-center justify-center text-white text-3xl font-black shadow-lg border-4 border-bg-card mb-4">
+           <div className="w-24 h-24 overflow-hidden bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg border-4 border-bg-card mb-4">
             {user?.profile_photo ? (
                 <img 
                     src={`http://localhost:8000/storage/${user.profile_photo}`} 
@@ -394,12 +395,13 @@ const AgentDashboard = () => {
           </button>
         </nav>
         
-        <div className="p-4 border-t border-border-main">
+        <div className="p-4 border-t border-border-main mt-auto">
           <Link to="/properties/new" className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-primary !text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
             <PlusIcon className="w-5 h-5" /> {t('common.save')}
           </Link>
         </div>
-      </aside>
+        </aside>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -464,7 +466,7 @@ const AgentDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Dernières Demandes */}
               <RevealOnScroll delay={200}>
-                <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
+                <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <BellIcon className="w-5 h-5 text-amber-500" />
@@ -499,7 +501,7 @@ const AgentDashboard = () => {
 
               {/* Derniers Contrats */}
               <RevealOnScroll delay={300}>
-                <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
+                <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 p-6 overflow-hidden h-full">
                  <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
                     <DocumentDuplicateIcon className="w-5 h-5 text-blue-500" />
@@ -535,7 +537,7 @@ const AgentDashboard = () => {
         {/* Properties Tab */}
         {activeTab === 'properties' && (
           <RevealOnScroll>
-            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+            <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
              <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.properties.title')}</h2>
                 <Link to="/properties/new" className="inline-flex items-center gap-2 px-4 py-2 bg-primary !text-white hover:bg-primary-hover rounded-lg text-sm font-bold shadow-md transition-colors">
@@ -601,7 +603,7 @@ const AgentDashboard = () => {
         {/* Requests Tab */}
         {activeTab === 'requests' && (
           <RevealOnScroll>
-            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+            <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
             <div className="p-6 border-b border-border-main flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-bg-soft">
               <h2 className="text-lg font-bold text-text-main">{t('agent.requests.title')}</h2>
               <div className="flex bg-bg-card p-1 rounded-xl border border-border-main">
@@ -699,7 +701,7 @@ const AgentDashboard = () => {
         {/* Contracts Tab - Full View */}
         {activeTab === 'contracts' && (
           <RevealOnScroll>
-            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+            <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
              <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
                 <h2 className="text-lg font-bold text-text-main">{t('agent.contracts.title')}</h2>
                 <span className="text-sm text-text-muted">{stats.activeContracts}{t('agent.contracts.active_count')}</span>
@@ -751,7 +753,7 @@ const AgentDashboard = () => {
         {/* Reviews Moderation Tab */}
         {activeTab === 'reviews' && (
           <RevealOnScroll>
-            <section className="bg-bg-card rounded-3xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden animate-fade-in">
+            <section className="bg-bg-card rounded-xl border border-border-main shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden animate-fade-in">
             <div className="p-6 border-b border-border-main flex justify-between items-center bg-bg-soft">
               <h2 className="text-lg font-bold text-text-main">{t('agent.reviews.title')}</h2>
               <span className="px-3 py-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-500 rounded-full text-xs font-bold uppercase">

@@ -17,7 +17,8 @@ import {
   TrashIcon,
   EyeIcon,
   EyeSlashIcon,
-  KeyIcon
+  KeyIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline';
 import { userService } from '../services/users';
 import { useLanguage } from '../context/LanguageContext';
@@ -65,6 +66,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
+    cin: user?.cin || '',
     address: user?.address || '',
   });
   const [passwordData, setPasswordData] = useState({
@@ -83,6 +85,7 @@ const Profile = () => {
       setFormData({
         name: user.name || '',
         phone: user.phone || '',
+        cin: user.cin || '',
         address: user.address || '',
       });
     }
@@ -440,6 +443,31 @@ const Profile = () => {
                                           : theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900 cursor-not-allowed' : 'bg-white/5 border-white/5 text-white/50 cursor-not-allowed'
                                       }`}
                                   />
+                              </div>
+
+                              <div className="space-y-4">
+                                  <label className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${
+                                    theme === 'light' ? 'text-slate-400' : 'text-white/30'
+                                  }`}>
+                                      <IdentificationIcon className="w-4 h-4" /> {t('profile.cin_label', 'Carte Nationale (CIN)')}
+                                  </label>
+                                  <input 
+                                      type="text" 
+                                      name="cin" 
+                                      value={formData.cin} 
+                                      onChange={handleChange} 
+                                      disabled={!isEditing}
+                                      placeholder="AB123456"
+                                      maxLength={10}
+                                      className={`w-full px-6 py-5 rounded-lg border transition-all duration-500 font-bold text-lg uppercase tracking-widest ${
+                                        isEditing 
+                                          ? 'bg-transparent border-blue-600/50 shadow-2xl shadow-blue-600/5 text-blue-600 focus:border-blue-600 outline-none' 
+                                          : theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-900 cursor-not-allowed' : 'bg-white/5 border-white/5 text-white/50 cursor-not-allowed'
+                                      }`}
+                                  />
+                                  <p className={`text-[10px] font-black uppercase tracking-widest ${
+                                    theme === 'light' ? 'text-slate-300' : 'text-white/20'
+                                  }`}>{t('profile.cin_desc', 'Utilisé pour les contrats officiels')}</p>
                               </div>
 
                               <div className="space-y-4">

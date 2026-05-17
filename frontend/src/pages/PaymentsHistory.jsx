@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 import { paymentService } from '../services/payments';
 import { toast } from 'react-toastify';
 import { 
@@ -64,9 +65,26 @@ const PaymentsHistory = () => {
     p.contract?.property?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="min-h-screen bg-bg-soft pt-24 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-bg-soft pt-[120px] pb-12 px-4 sm:px-6 lg:px-8 font-outfit">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-7xl mx-auto"
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <button 
@@ -98,7 +116,7 @@ const PaymentsHistory = () => {
             <p className="text-text-sub font-medium">{t('pay.history.loading', 'Chargement des transactions...')}</p>
           </div>
         ) : (
-          <div className="bg-bg-card rounded-3xl border border-border-main shadow-large overflow-hidden">
+          <div className="bg-bg-card rounded-xl border border-border-main shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -112,9 +130,14 @@ const PaymentsHistory = () => {
                     <th className="p-6 text-right">{t('common.actions', 'Actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-main">
+                <motion.tbody 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="divide-y divide-border-main"
+                >
                   {filteredPayments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-bg-soft/50 transition-colors group">
+                    <motion.tr variants={itemVariants} key={payment.id} className="hover:bg-bg-soft/50 transition-colors group">
                       <td className="p-6">
                         <span className="font-mono text-sm font-bold text-text-main">{payment.payment_number}</span>
                       </td>
@@ -161,7 +184,7 @@ const PaymentsHistory = () => {
                           <span className="text-xs text-text-muted italic">{t('pay.history.unavailable', 'Indisponible')}</span>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                   {filteredPayments.length === 0 && (
                     <tr>
@@ -178,12 +201,12 @@ const PaymentsHistory = () => {
                       </td>
                     </tr>
                   )}
-                </tbody>
+                </motion.tbody>
               </table>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

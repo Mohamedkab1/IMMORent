@@ -315,107 +315,220 @@ public function store(StoreContractRequest $request)
     public function download($id)
     {
         try {
-            // Récupérer le contrat
-            $contract = Contract::find($id);
+            $contract = Contract::with(['property', 'tenant', 'owner', 'agent'])->find($id);
             
             if (!$contract) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Contrat non trouvé'
-                ], 404);
+                return response()->json(['success' => false, 'message' => 'Contrat non trouvé'], 404);
             }
 
             $this->authorize('view', $contract);
-            
-            // Déterminer le type de contrat et les labels
-            $isSale = $contract->contract_type === 'sale';
-            $title = $isSale ? 'Contrat de vente' : 'Contrat de location';
-            $party1Label = $isSale ? 'Vendeur' : 'Bailleur';
-            $party2Label = $isSale ? 'Acquéreur' : 'Locataire';
 
-            // Préparer le contenu HTML avec des données formatées
+            $isSale     = $contract->contract_type === 'sale';
+            $isRent     = !$isSale;
+            $title      = $isSale ? 'CONTRAT DE VENTE IMMOBILIÈRE' : 'CONTRAT DE LOCATION IMMOBILIÈRE';
+
+            // Couleurs monochromes (Noir/Blanc/Gris)
+            $accent     = '#0f172a'; // Noir (slate-900)
+            $accentDark = '#000000'; // Noir pur
+            $bgLight    = '#f8fafc'; // Gris très clair (slate-50)
+            $borderLight= '#e2e8f0'; // Gris pour bordures (slate-200)
+            $cinBg      = '#f1f5f9'; // Gris clair pour badge CIN (slate-100)
+            $cinBorder  = '#cbd5e1'; // Gris bordure CIN (slate-300)
+
+            // Données parties
+            $tenant  = $contract->tenant;
+            $owner   = $contract->owner;
+            $agent   = $contract->agent;
+            $property = $contract->property;
+
             $signedDate = $contract->signed_at ? $contract->signed_at->format('d/m/Y') : date('d/m/Y');
-            
-            $html = '<!DOCTYPE html>
-            <html>
-            <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-                <title>' . $title . '</title>
-                <style>
-                    * { font-family: "DejaVu Sans", sans-serif; }
-                    body { padding: 40px; color: #333; line-height: 1.5; }
-                    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
-                    .logo { color: #2563eb; font-size: 28px; font-weight: bold; }
-                    .title { font-size: 22px; text-transform: uppercase; margin-top: 10px; font-weight: bold; }
-                    .info-block { margin: 20px 0; }
-                    .info-row { margin-bottom: 10px; }
-                    .label { font-weight: bold; display: inline-block; width: 180px; color: #4b5563; }
-                    .value { font-weight: normal; color: #1f2937; }
-                    .signature-section { margin-top: 80px; width: 100%; }
-                    .signature-box { display: inline-block; width: 45%; }
-                    .signature-line { border-top: 1px solid #9ca3af; width: 100%; margin-top: 60px; }
-                    footer { position: fixed; bottom: -20px; left: 0; right: 0; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 10px; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="logo">IMMORent</div>
-                    <div class="title">' . $title . '</div>
-                    <p style="color: #6b7280;">N° ' . $contract->contract_number . '</p>
-                </div>
 
-                <div class="info-block">
-                    <div class="info-row"><span class="label">Référence:</span> <span class="value">' . $contract->contract_number . '</span></div>
-                    <div class="info-row"><span class="label">Date de signature:</span> <span class="value">' . $signedDate . '</span></div>
-                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                    ';
-
-            if ($isSale) {
-                $saleDate = $contract->sale_date ? $contract->sale_date->format('d/m/Y') : '-';
-                $html .= '
-                    <div class="info-row"><span class="label">Prix de vente:</span> <span class="value">' . number_format((float)$contract->sale_price, 2, ',', ' ') . ' DH</span></div>
-                    <div class="info-row"><span class="label">Date de vente:</span> <span class="value">' . $saleDate . '</span></div>';
-            } else {
+            // Infos financières
+            if ($isRent) {
                 $startDate = $contract->start_date ? $contract->start_date->format('d/m/Y') : '-';
-                $endDate = $contract->end_date ? $contract->end_date->format('d/m/Y') : '-';
+                $endDate   = $contract->end_date   ? $contract->end_date->format('d/m/Y')   : '-';
+                $loyer     = number_format((float)$contract->monthly_rent, 2, ',', ' ');
+                $charges   = number_format((float)($contract->charges ?? 0), 2, ',', ' ');
+                $total     = number_format((float)$contract->monthly_rent + (float)($contract->charges ?? 0), 2, ',', ' ');
+                $depot     = number_format((float)$contract->security_deposit, 2, ',', ' ');
+            } else {
+                $saleDate  = $contract->sale_date ? $contract->sale_date->format('d/m/Y') : date('d/m/Y');
+                $prix      = number_format((float)$contract->sale_price, 2, ',', ' ');
+            }
+
+            $html = '<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>' . $title . '</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:11px; color:#1e293b; background:#fff; }
+
+/* HEADER */
+.header {
+    background: #ffffff;
+    color: #1e293b;
+    padding:28px 36px 20px;
+    border-bottom: 2px solid ' . $accent . ';
+}
+.brand { font-size:26px; font-weight:900; letter-spacing:-1px; color: #2563eb; }
+.brand span { color: #eab308; opacity: 1; }
+.contract-type { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-top:4px; color: #64748b; }
+.header-meta { display:table; width:100%; margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; }
+.header-meta-cell { display:table-cell; font-size:9px; letter-spacing:1px; color: #64748b; }
+.header-meta-cell strong { display:block; font-size:12px; letter-spacing:0; color: #0f172a; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:8px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; background: ' . $accent . '; color: #fff; }
+
+/* BODY */
+.body { padding:28px 36px; }
+
+/* PARTIES */
+.parties { display:table; width:100%; margin-bottom:22px; }
+.partie { display:table-cell; width:33%; vertical-align:top; padding:12px; border:1.5px solid ' . $borderLight . '; border-top:4px solid ' . $accent . '; background:' . $bgLight . '; }
+.partie + .partie { padding-left:14px; margin-left:10px; }
+.partie-role { font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:' . $accentDark . '; margin-bottom:6px; }
+.partie-name { font-size:13px; font-weight:700; color:#0f172a; margin-bottom:5px; }
+.partie-line { font-size:10px; color:#475569; margin:2px 0; }
+.partie-line b { color:#64748b; font-weight:600; }
+.cin-badge { display:inline-block; background:' . $cinBg . '; border:1px solid ' . $cinBorder . '; color:' . $accentDark . '; padding:2px 8px; font-size:10px; font-weight:700; letter-spacing:1px; margin-top:6px; }
+
+/* SEPARATEUR */
+.sep-title { font-size:8px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:' . $accent . '; border-bottom:2px solid ' . $cinBorder . '; padding-bottom:5px; margin-bottom:12px; }
+
+/* TABLE INFO */
+.info-table { width:100%; border-collapse:collapse; margin-bottom:22px; }
+.info-table td { padding:7px 10px; font-size:11px; border-bottom:1px solid #f1f5f9; }
+.info-table td:first-child { font-weight:600; color:#64748b; width:40%; }
+.info-table tr.highlight td { background:' . $cinBg . '; font-weight:700; color:' . $accentDark . '; font-size:13px; }
+
+/* SIGNATURES */
+.sig-table { width:100%; border-collapse:collapse; margin-top:30px; }
+.sig-table td { width:33%; vertical-align:top; text-align:center; padding:0 8px; }
+.sig-role { font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#64748b; margin-bottom:6px; }
+.sig-name { font-size:11px; font-weight:700; color:#0f172a; margin-bottom:3px; }
+.sig-cin { font-size:9px; color:#64748b; margin-bottom:36px; }
+.sig-line { border-top:1.5px solid ' . $accent . '; padding-top:6px; font-size:8px; color:#94a3b8; }
+
+/* FOOTER */
+.footer { margin-top:24px; padding:12px 36px; background:#f8fafc; border-top:1px solid #e2e8f0; text-align:center; font-size:9px; color:#94a3b8; }
+.footer strong { color:' . $accent . '; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="brand">IMMOR<span>ENT</span></div>
+    <div class="contract-type">' . $title . '</div>
+    <div class="header-meta">
+        <div class="header-meta-cell">Référence <strong>' . $contract->contract_number . '</strong></div>
+        <div class="header-meta-cell">Date d\'établissement <strong>' . $signedDate . '</strong></div>
+        <div class="header-meta-cell">Statut <strong><span class="badge">' . ucfirst($contract->status) . '</span></strong></div>
+    </div>
+</div>
+
+<div class="body">
+
+    <!-- Parties -->
+    <div style="margin-bottom:8px;" class="sep-title">1. Parties prenantes</div>
+    <div class="parties">
+        <div class="partie">
+            <div class="partie-role">' . ($isRent ? 'Locataire' : 'Acheteur') . '</div>
+            <div class="partie-name">' . ($tenant ? htmlspecialchars($tenant->name) : '—') . '</div>
+            <div class="partie-line"><b>Email :</b> ' . ($tenant ? htmlspecialchars($tenant->email) : '—') . '</div>
+            <div class="partie-line"><b>Tél. :</b> ' . ($tenant ? htmlspecialchars($tenant->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">CIN : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
+        </div>
+        <div class="partie" style="margin-left:10px;">
+            <div class="partie-role">' . ($isRent ? 'Bailleur / Propriétaire' : 'Vendeur') . '</div>
+            <div class="partie-name">' . ($owner ? htmlspecialchars($owner->name) : '—') . '</div>
+            <div class="partie-line"><b>Email :</b> ' . ($owner ? htmlspecialchars($owner->email) : '—') . '</div>
+            <div class="partie-line"><b>Tél. :</b> ' . ($owner ? htmlspecialchars($owner->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">CIN : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
+        </div>
+        <div class="partie" style="margin-left:10px;">
+            <div class="partie-role">Agent Immobilier</div>
+            <div class="partie-name">' . ($agent ? htmlspecialchars($agent->name) : '—') . '</div>
+            <div class="partie-line"><b>Email :</b> ' . ($agent ? htmlspecialchars($agent->email) : '—') . '</div>
+            <div class="partie-line"><b>Tél. :</b> ' . ($agent ? htmlspecialchars($agent->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">CIN : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
+        </div>
+    </div>
+
+    <!-- Bien -->
+    <div class="sep-title">2. Description du bien</div>
+    <table class="info-table">
+        <tr><td>Adresse</td><td>' . ($property ? htmlspecialchars($property->address . ', ' . $property->city . ' ' . ($property->postal_code ?? '')) : '—') . '</td></tr>
+        <tr><td>Type de bien</td><td>' . ($property ? ucfirst($property->type) : '—') . '</td></tr>
+        <tr><td>Surface</td><td>' . ($property ? $property->surface . ' m²' : '—') . '</td></tr>
+        <tr><td>Pièces</td><td>' . ($property ? $property->rooms . ' pièce(s)' : '—') . '</td></tr>
+    </table>';
+
+            if ($isRent) {
                 $html .= '
-                    <div class="info-row"><span class="label">Date de début:</span> <span class="value">' . $startDate . '</span></div>
-                    <div class="info-row"><span class="label">Date de fin:</span> <span class="value">' . $endDate . '</span></div>
-                    <div class="info-row"><span class="label">Loyer mensuel:</span> <span class="value">' . number_format((float)$contract->monthly_rent, 2, ',', ' ') . ' DH</span></div>
-                    <div class="info-row"><span class="label">Charges:</span> <span class="value">' . number_format((float)($contract->charges ?? 0), 2, ',', ' ') . ' DH</span></div>
-                    <div class="info-row"><span class="label">Dépôt de garantie:</span> <span class="value">' . number_format((float)$contract->security_deposit, 2, ',', ' ') . ' DH</span></div>';
+    <!-- Durée du bail -->
+    <div class="sep-title">3. Durée du bail</div>
+    <table class="info-table">
+        <tr><td>Date de début</td><td>' . $startDate . '</td></tr>
+        <tr><td>Date de fin</td><td>' . $endDate . '</td></tr>
+        <tr><td>Date de signature</td><td>' . $signedDate . '</td></tr>
+    </table>
+
+    <!-- Conditions financières -->
+    <div class="sep-title">4. Conditions financières</div>
+    <table class="info-table">
+        <tr><td>Loyer mensuel (hors charges)</td><td>' . $loyer . ' DH</td></tr>
+        <tr><td>Charges mensuelles</td><td>' . $charges . ' DH</td></tr>
+        <tr class="highlight"><td>Total mensuel</td><td>' . $total . ' DH</td></tr>
+        <tr><td>Dépôt de garantie</td><td>' . $depot . ' DH</td></tr>
+    </table>';
+            } else {
+                $html .= '
+    <!-- Conditions de vente -->
+    <div class="sep-title">3. Conditions de vente</div>
+    <table class="info-table">
+        <tr class="highlight"><td>Prix de vente</td><td>' . $prix . ' DH</td></tr>
+        <tr><td>Date de vente</td><td>' . $saleDate . '</td></tr>
+    </table>';
             }
 
             $html .= '
-                </div>
+    <!-- Signatures -->
+    <table class="sig-table">
+        <tr>
+            <td>
+                <div class="sig-role">' . ($isRent ? 'Locataire' : 'Acheteur') . '</div>
+                <div class="sig-name">' . ($tenant ? htmlspecialchars($tenant->name) : '—') . '</div>
+                <div class="sig-cin">CIN : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">Lu et approuvé</div>
+            </td>
+            <td>
+                <div class="sig-role">' . ($isRent ? 'Bailleur' : 'Vendeur') . '</div>
+                <div class="sig-name">' . ($owner ? htmlspecialchars($owner->name) : '—') . '</div>
+                <div class="sig-cin">CIN : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">Lu et approuvé</div>
+            </td>
+            <td>
+                <div class="sig-role">Agent Immobilier</div>
+                <div class="sig-name">' . ($agent ? htmlspecialchars($agent->name) : '—') . '</div>
+                <div class="sig-cin">CIN : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">Certifié conforme</div>
+            </td>
+        </tr>
+    </table>
 
-                <div class="signature-section">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="width: 45%; vertical-align: top;">
-                                <p style="font-weight: bold;">Signature du ' . $party1Label . '</p>
-                                <p style="font-size: 10px; color: #6b7280;">Lu et approuvé</p>
-                                <div class="signature-line"></div>
-                            </td>
-                            <td style="width: 10%;"></td>
-                            <td style="width: 45%; vertical-align: top; text-align: right;">
-                                <p style="font-weight: bold;">Signature du ' . $party2Label . '</p>
-                                <p style="font-size: 10px; color: #6b7280;">Lu et approuvé</p>
-                                <div class="signature-line"></div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+</div>
 
-                <footer>
-                    IMMORent - Plateforme SaaS Immobilière Premium - Document généré le ' . date('d/m/Y H:i') . '
-                </footer>
-            </body>
-            </html>';
-            
+<div class="footer">
+    <p>Ce contrat a été généré automatiquement par <strong>IMMORent</strong> &bull; www.immorent.ma &bull; Généré le ' . date('d/m/Y H:i') . '</p>
+</div>
+
+</body>
+</html>';
+
             $pdf = Pdf::loadHTML($html);
             $pdf->setPaper('A4', 'portrait');
-            $pdf->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+            $pdf->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true, 'defaultFont' => 'DejaVu Sans']);
             
             return $pdf->download('contrat_' . $contract->contract_number . '.pdf');
             

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { contractService } from '../services/contracts';
@@ -126,6 +127,19 @@ const ContractDetail = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
@@ -144,27 +158,32 @@ const ContractDetail = () => {
   const hasPaid = contract.payments?.some(p => p.status === 'paid');
 
   return (
-    <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-bg-soft transition-colors pt-[120px] pb-12 px-4 sm:px-6 lg:px-8 font-outfit">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="max-w-4xl mx-auto space-y-8"
+      >
         {/* Navigation */}
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-sub hover:text-primary transition-colors font-medium">
+        <motion.button variants={itemVariants} onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-sub hover:text-primary transition-colors font-black uppercase text-[10px] tracking-widest">
           <ArrowLeftIcon className="w-4 h-4" />
           {t('common.prev', 'Retour')}
-        </button>
+        </motion.button>
 
         {/* En-tête */}
-        <div className="mb-8">
+        <motion.div variants={itemVariants} className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight mb-2">{isRentContract ? t('ctr.rental_contract', 'Contrat de location') : t('ctr.sale_contract', 'Contrat de vente')}</h1>
-          <p className="text-text-sub font-medium mb-4">N° {contract.contract_number}</p>
+          <p className="text-text-sub font-bold uppercase tracking-widest text-xs mb-4">N° {contract.contract_number}</p>
           <div className="flex flex-wrap gap-3">
             {getContractTypeBadge(contract.contract_type)}
             {getStatusBadge(contract.status, contract.contract_type)}
           </div>
-        </div>
+        </motion.div>
 
         <div className="space-y-6">
           {/* Informations du bien */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <HomeIcon className="w-5 h-5 text-primary" />
               {t('ctr.property_info', 'Informations du bien')}
@@ -181,10 +200,10 @@ const ContractDetail = () => {
                 <span className="flex items-center gap-1.5"><HomeIcon className="w-4 h-4" /> {contract.property?.bedrooms} {t('prop.details.bedrooms', 'chambres')}</span>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Parties prenantes */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <UserIcon className="w-5 h-5 text-primary" />
               {t('ctr.stakeholders', 'Parties prenantes')}
@@ -228,10 +247,10 @@ const ContractDetail = () => {
                 <p className="text-xs text-text-sub">{contract.agent?.phone}</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Conditions financières */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <CurrencyEuroIcon className="w-5 h-5 text-primary" />
               {isRentContract ? t('ctr.financial_conditions', 'Conditions financières') : t('ctr.sale_conditions', 'Conditions de vente')}
@@ -273,10 +292,10 @@ const ContractDetail = () => {
                 )}
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Période/Dates */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main flex items-center gap-2 mb-6 pb-4 border-b border-border-main">
               <CalendarIcon className="w-5 h-5 text-primary" />
               {isRentContract ? t('ctr.rental_period', 'Période de location') : t('ctr.important_dates', 'Dates importantes')}
@@ -306,10 +325,10 @@ const ContractDetail = () => {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Actions */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main p-6 sm:p-8">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main p-6 sm:p-8">
             <h2 className="text-lg font-bold text-text-main mb-6">{t('admin.prop.actions', 'Actions')}</h2>
             <div className="flex flex-wrap gap-4">
               <button 
@@ -362,15 +381,15 @@ const ContractDetail = () => {
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Note */}
-          <p className="text-center text-xs font-medium text-text-muted p-4">
+          <motion.p variants={itemVariants} className="text-center text-xs font-medium text-text-muted p-4">
             {t('ctr.auto_generated', 'Ce contrat a été généré automatiquement par la plateforme IMMORent.')}
             {' '}{t('ctr.contact_agent', 'Pour toute question, veuillez contacter votre agent immobilier.')}
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     </div>
 
   );
