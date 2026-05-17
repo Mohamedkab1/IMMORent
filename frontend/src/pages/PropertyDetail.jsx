@@ -13,6 +13,7 @@ import {
   ChevronRightIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  HeartIcon as HeartIconOutline
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -237,6 +238,34 @@ const PropertyDetail = () => {
               alt={property.title} 
               className="pd-main-image"
             />
+            
+            {/* Favorite Button Overlay */}
+            <button 
+              className={`pd-favorite-btn ${isFavorite(property.id) ? 'active' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleFavorite(property);
+              }}
+              title={isFavorite(property.id) ? t('favorites.remove') : t('favorites.add')}
+            >
+              {isFavorite(property.id) ? (
+                <HeartIconSolid className="w-6 h-6 text-rose-500" />
+              ) : (
+                <HeartIconOutline className="w-6 h-6" />
+              )}
+            </button>
+
+            {/* Navigation Arrows for Gallery */}
+            {images.length > 1 && (
+              <>
+                <button className="pd-nav-arrow left" onClick={prevImage}>
+                  <ChevronLeftIcon className="w-6 h-6" />
+                </button>
+                <button className="pd-nav-arrow right" onClick={nextImage}>
+                  <ChevronRightIcon className="w-6 h-6" />
+                </button>
+              </>
+            )}
           </div>
           
           <div className="pd-thumbnails-wrapper">

@@ -102,4 +102,14 @@ class User extends Authenticatable
             ? asset('storage/' . $this->profile_photo)
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
+
+    /**
+     * Obtenir tous les administrateurs
+     */
+    public static function getAdmins()
+    {
+        return self::whereHas('role', function($q) {
+            $q->where('slug', 'admin');
+        })->get();
+    }
 }

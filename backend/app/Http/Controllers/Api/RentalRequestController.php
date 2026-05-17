@@ -147,16 +147,17 @@ class RentalRequestController extends Controller
                 'status' => 'pending'
             ]);
 
-            // Notifier l'agent/propriétaire
-            $owner = $property->user; // Le créateur du bien
+            $notifData = [
+                'title' => 'Nouvelle demande',
+                'message' => "{$request->user()->name} a envoyé une demande pour {$property->title}",
+                'type' => 'request',
+                'link' => '/dashboard/agent',
+                'icon' => 'document-text'
+            ];
+
+            // Notifier le propriétaire (agent)
+            $owner = $property->user;
             if ($owner) {
-                $notifData = [
-                    'title' => 'Nouvelle demande',
-                    'message' => "{$request->user()->name} a envoyé une demande pour {$property->title}",
-                    'type' => 'request',
-                    'link' => '/dashboard/agent',
-                    'icon' => 'document-text'
-                ];
                 $owner->notify(new GeneralNotification($notifData));
                 try {
                     event(new \App\Events\RealTimeNotification($owner->id, $notifData));
@@ -164,11 +165,25 @@ class RentalRequestController extends Controller
                     Log::warning('Erreur RealTimeNotification (store) dans RentalRequestController: ' . $e->getMessage());
                 }
                 
-                // Envoi de l'email (entouré de try-catch pour éviter un crash si le serveur mail est indisponible)
+                // Envoi de l'email
                 try {
                     Mail::to($owner->email)->send(new NewRentalRequestMail($rentalRequest->load(['property', 'user'])));
                 } catch (\Exception $mailEx) {
                     Log::warning('Impossible d\'envoyer l\'email de nouvelle demande: ' . $mailEx->getMessage());
+                }
+            }
+
+            // Notifier également les administrateurs
+            $admins = User::getAdmins();
+            foreach ($admins as $admin) {
+                // Éviter de notifier deux fois si l'admin est aussi le propriétaire
+                if (!$owner || $admin->id !== $owner->id) {
+                    $admin->notify(new GeneralNotification($notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($admin->id, $notifData));
+                    } catch (\Exception $e) {
+                        // Silencieux pour les admins
+                    }
                 }
             }
 
@@ -374,7 +389,7 @@ class RentalRequestController extends Controller
     public function cancel($id)
     {
         try {
-            $rentalRequest = RentalRequest::find($id);
+            $rentalRequest = RentalRequest::with('property')->find($id);
             
             if (!$rentalRequest) {
                 return response()->json([
@@ -402,21 +417,34 @@ class RentalRequestController extends Controller
             
             $rentalRequest->update(['status' => 'cancelled']);
             
-            // Notifier l'agent que la demande a été annulée
+            // Notifier l'agent et les admins que la demande a été annulée
             $agent = $rentalRequest->property->user;
+            $admins = User::getAdmins();
+
+            $notifData = [
+                'title' => 'Demande annulée',
+                'message' => "Le client {$rentalRequest->user->name} a annulé sa demande pour {$rentalRequest->property->title}.",
+                'type' => 'request_cancelled',
+                'link' => '/dashboard/agent',
+                'icon' => 'x-mark'
+            ];
+
             if ($agent) {
-                $notifData = [
-                    'title' => 'Demande annulée',
-                    'message' => "Le client {$rentalRequest->user->name} a annulé sa demande pour {$rentalRequest->property->title}.",
-                    'type' => 'request_cancelled',
-                    'link' => '/dashboard/agent',
-                    'icon' => 'x-mark'
-                ];
                 $agent->notify(new GeneralNotification($notifData));
                 try {
                     event(new \App\Events\RealTimeNotification($agent->id, $notifData));
                 } catch (\Exception $e) {
                     Log::warning('Erreur RealTimeNotification (cancel) dans RentalRequestController: ' . $e->getMessage());
+                }
+            }
+
+            // Notifier les admins
+            foreach ($admins as $admin) {
+                if (!$agent || $admin->id !== $agent->id) {
+                    $admin->notify(new GeneralNotification($notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($admin->id, $notifData));
+                    } catch (\Exception $e) {}
                 }
             }
 

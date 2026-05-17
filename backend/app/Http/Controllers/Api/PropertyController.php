@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Requests\StorePropertyRequest;
 use App\Http\Requests\UpdatePropertyRequest;
 use App\Notifications\GeneralNotification;
+use App\Models\User;
 
 class PropertyController extends Controller
 {
@@ -201,6 +202,25 @@ class PropertyController extends Controller
             }
 
             $property = Property::create($data);
+
+            // Notifier les admins de la nouvelle annonce (pour approbation)
+            $admins = User::getAdmins();
+            $notifData = [
+                'title' => 'Nouvelle annonce à approuver',
+                'message' => "Un nouveau bien a été créé : \"{$property->title}\" par {$request->user()->name}. Il est en attente d'approbation.",
+                'type' => 'property_created',
+                'link' => '/admin/properties',
+                'icon' => 'home'
+            ];
+
+            foreach ($admins as $admin) {
+                if ($admin->id !== $request->user()->id) {
+                    $admin->notify(new GeneralNotification($notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($admin->id, $notifData));
+                    } catch (\Exception $e) {}
+                }
+            }
 
             return response()->json([
                 'success' => true,

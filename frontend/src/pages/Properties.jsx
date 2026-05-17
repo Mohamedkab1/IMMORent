@@ -12,12 +12,16 @@ import {
   BuildingOfficeIcon,
   ArrowsRightLeftIcon,
   ChevronDownIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  HeartIcon as HeartIconOutline
 } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { useFavorites } from '../context/FavoritesContext';
 
 const Properties = () => {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [properties, setProperties] = useState([]);
@@ -292,6 +296,26 @@ const Properties = () => {
                             {property.transaction_type === 'sale' ? t('prop.card.sale') : t('prop.card.rent')}
                           </span>
                         </div>
+
+                        {/* Favorite Toggle Button */}
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleFavorite(property);
+                          }}
+                          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-lg ${
+                            isFavorite(property.id) 
+                              ? 'bg-rose-500 text-white scale-110' 
+                              : 'bg-white/20 text-white hover:bg-white/40 border border-white/20'
+                          }`}
+                        >
+                          {isFavorite(property.id) ? (
+                            <HeartIconSolid className="w-3.5 h-3.5" />
+                          ) : (
+                            <HeartIconOutline className="w-3.5 h-3.5" />
+                          )}
+                        </button>
                       </div>
 
                       {/* Content Area */}
