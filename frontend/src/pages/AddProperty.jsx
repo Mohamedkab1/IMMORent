@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { propertyService } from '../services/properties';
@@ -20,16 +20,17 @@ import {
   LockClosedIcon,
   InformationCircleIcon,
   StarIcon,
-  LinkIcon,
-  CheckIcon,
   ClipboardIcon,
   ChatBubbleBottomCenterTextIcon,
   ShareIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  CheckIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -39,11 +40,27 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to update map view
 const ChangeView = ({ center }) => {
   const map = useMap();
   map.setView(center, 13);
   return null;
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] }
+  }
 };
 
 const AddProperty = () => {
@@ -118,8 +135,8 @@ const AddProperty = () => {
   ];
 
   const transactionTypes = [
-    { value: 'rent', label: t('common.rent', 'Location'), icon: KeyIcon, description: t('prop.rent_desc', 'Location mensuelle') },
-    { value: 'sale', label: t('common.buy', 'Vente'), icon: TagIcon, description: t('prop.sale_desc', 'Vente définitive') }
+    { value: 'rent', label: t('common.rent', 'Location'), icon: KeyIcon },
+    { value: 'sale', label: t('common.buy', 'Vente'), icon: TagIcon }
   ];
 
   const handleChange = (e) => { 
@@ -138,9 +155,7 @@ const AddProperty = () => {
   const searchAddress = async (query) => {
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`, {
-        headers: {
-          'User-Agent': 'IMMORent-App'
-        }
+        headers: { 'User-Agent': 'IMMORent-App' }
       });
       const data = await res.json();
       setAddressSuggestions(data);
@@ -160,10 +175,6 @@ const AddProperty = () => {
       postal_code: suggestion.address.postcode || prev.postal_code,
     }));
     setShowSuggestions(false);
-  };
-
-  const handleTransactionTypeSelect = (type) => {
-    setFormData(prev => ({ ...prev, transaction_type: type }));
   };
 
   const handleImageChange = (e) => { 
@@ -194,235 +205,159 @@ const AddProperty = () => {
 
   const removeFeature = (index) => setFeaturesList(featuresList.filter((_, i) => i !== index));
 
-  const validateForm = () => {
-    const errors = {};
-    if (!formData.title.trim()) errors.title = t('admin.add.val.title', 'Le titre est requis');
-    if (!formData.description.trim()) errors.description = t('admin.add.val.description', 'La description est requise');
-    if (!formData.price || formData.price <= 0) errors.price = t('admin.add.val.price', 'Le prix doit être supérieur à zéro');
-    if (!formData.address.trim()) errors.address = t('admin.add.val.address', 'L\'adresse est requise');
-    if (!formData.city.trim()) errors.city = t('admin.add.val.city', 'La ville est requise');
-    if (!formData.postal_code.trim()) errors.postal_code = t('admin.add.val.postal', 'Le code postal est requis');
-    if (!formData.surface || formData.surface <= 0) errors.surface = t('admin.add.val.surface', 'La surface est requise');
-    if (formData.type !== 'land' && (!formData.rooms || formData.rooms <= 0)) errors.rooms = t('admin.add.val.rooms', 'Le nombre de pièces est requis');
-    if (!formData.type) errors.type = t('admin.add.val.type', 'Le type de bien est requis');
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) { 
-      toast.error(t('admin.add.val.form_errors', 'Veuillez corriger les erreurs dans le formulaire.'));
-      // Scroll to first error here optimally
-      return; 
-    }
-    
-    if (images.length === 0) {
-      toast.warning(t('admin.add.val.image_required', 'Veuillez ajouter au moins une photo.'));
-      return;
-    }
-
     setLoading(true);
     try {
       const data = new FormData();
-      data.append('title', formData.title);
-      data.append('description', formData.description);
-      data.append('price', parseFloat(formData.price));
-      data.append('transaction_type', formData.transaction_type);
-      data.append('address', formData.address);
-      data.append('city', formData.city);
-      data.append('postal_code', formData.postal_code);
-      data.append('surface', parseFloat(formData.surface));
-      data.append('rooms', parseInt(formData.rooms) || 1);
-      data.append('bedrooms', parseInt(formData.bedrooms) || 0);
-      data.append('bathrooms', parseInt(formData.bathrooms) || 0);
-      data.append('bathrooms', parseInt(formData.bathrooms) || 0);
-      data.append('type', formData.type);
-      data.append('category_id', parseInt(formData.category_id));
-      if (formData.latitude) data.append('latitude', formData.latitude);
-      if (formData.longitude) data.append('longitude', formData.longitude);
+      Object.keys(formData).forEach(key => data.append(key, formData[key]));
       data.append('features', JSON.stringify(featuresList));
       images.forEach(img => data.append('images[]', img));
       
       const res = await propertyService.create(data);
       if (res.success) { 
-        toast.success(t('admin.add.success_title', 'Bien immobilier ajouté avec succès !')); 
+        toast.success(t('admin.add.success_title', 'Bien ajouté !')); 
         setNewPropertyId(res.data.id);
         setShowSuccessModal(true);
-      } else {
-        toast.error(res.message || 'Une erreur est survenue.');
       }
     } catch (error) { 
-      if (error.response?.status === 422) {
-         Object.values(error.response.data.errors).forEach(e => toast.error(e[0])); 
-      } else {
-         toast.error(t('admin.add.val.server_error', 'Erreur de connexion au serveur.')); 
-      }
+      toast.error(t('admin.add.val.server_error', 'Erreur serveur'));
     } finally { setLoading(false); }
   };
 
-  if (!isAgent && !isAdmin) {
-    return (
-      <div className="min-h-screen bg-bg-soft flex justify-center items-center px-4">
-        <div className="bg-bg-card p-8 rounded-3xl shadow-xl text-center max-w-md w-full border border-border-main">
-          <LockClosedIcon className="w-20 h-20 text-rose-500 mx-auto mb-6 bg-rose-50 dark:bg-rose-900/30 p-4 rounded-full" />
-          <h2 className="text-2xl font-black text-text-main mb-2">{t('admin.add.restricted', 'Accès restreint')}</h2>
-          <p className="text-text-muted mb-8 font-medium">{t('admin.add.no_auth', "Vous n'avez pas les autorisations nécessaires pour accéder à cette interface de création.")}</p>
-          <button onClick={() => navigate('/dashboard')} className="w-full py-3.5 bg-primary text-white hover:bg-primary-hover rounded-xl font-bold transition-all shadow-md">
-            {t('admin.add.back_dash', 'Retourner au tableau de bord')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg-soft pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-outfit">
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border-main">
-          <button onClick={() => navigate(-1)} className="p-2 text-text-muted hover:text-primary bg-bg-card border border-border-main hover:bg-bg-soft rounded-full transition-colors shadow-sm">
-            <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
-          </button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">{t('admin.add.title', 'Ajouter un bien')}</h1>
-            <p className="text-sm text-text-muted mt-1 font-medium">{t('admin.add.subtitle', 'Remplissez les informations ci-dessous pour publier une nouvelle annonce.')}</p>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border-main pb-12"
+        >
+          <div className="space-y-4">
+            <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-text-sub hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
+              {t('common.prev', 'Retour')}
+            </button>
+            <h1 className="text-5xl md:text-6xl font-black text-text-main tracking-tighter uppercase leading-none">
+              {t('admin.add.title_p1', 'Ajouter un')} <span className="text-primary">{t('admin.add.title_p2', 'Bien')}</span>
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted opacity-60">
+              {t('admin.add.subtitle', 'Publiez votre annonce immobilière en quelques étapes.')}
+            </p>
           </div>
-        </div>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          
-          {/* Section: Informations générales */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
-            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                 <DocumentTextIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gen_info', 'Informations générales')}</h2>
+        <motion.form 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          onSubmit={handleSubmit} 
+          className="space-y-12"
+        >
+          {/* Section: General Info */}
+          <motion.div variants={sectionVariants} className="bg-bg-card border border-border-main rounded-xl overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-border-main bg-bg-soft flex items-center gap-4">
+              <DocumentTextIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-main">{t('admin.add.gen_info', 'Informations Générales')}</h2>
             </div>
             
-            <div className="p-6 md:p-8 space-y-6">
-              <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  {t('admin.add.ad_title', 'Titre de l\'annonce')} <span className="text-rose-500">*</span>
+            <div className="p-10 space-y-10">
+              <div className="space-y-3 group">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted group-focus-within:text-primary transition-colors">
+                  {t('admin.add.ad_title', 'Titre de l\'annonce')}
                 </label>
                 <input 
-                  type="text" name="title" value={formData.title} onChange={handleChange} 
-                  placeholder={t('admin.add.title_ph', "Ex: Superbe appartement lumineux en plein coeur de ville")} 
-                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.title ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                  type="text" name="title" value={formData.title} onChange={handleChange} required
+                  className="w-full bg-bg-soft/50 border border-border-main rounded-xl px-8 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
+                  placeholder={t('admin.add.title_ph', "Ex: Appartement de luxe...")}
                 />
-                {validationErrors.title && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.title}</p>}
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  {t('common.description', 'Description')} <span className="text-rose-500">*</span>
+              <div className="space-y-3 group">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted group-focus-within:text-primary transition-colors">
+                  {t('common.description', 'Description')}
                 </label>
                 <textarea 
-                  name="description" rows="5" value={formData.description} onChange={handleChange} 
-                  placeholder={t('admin.add.desc_ph', "Décrivez les atouts de votre bien en détail...")}
-                  className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all resize-y ${validationErrors.description ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                  name="description" rows="5" value={formData.description} onChange={handleChange} required
+                  className="w-full bg-bg-soft/50 border border-border-main rounded-xl px-8 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm resize-none"
+                  placeholder={t('admin.add.desc_ph', "Décrivez votre bien...")}
                 />
-                {validationErrors.description && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.description}</p>}
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  {t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span>
-                </label>
-                <select 
-                  name="type" value={formData.type} onChange={handleChange} 
-                  className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer ${validationErrors.type ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary hover:border-slate-400'}`}
-                >
-                  {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                {validationErrors.type && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.type}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    {t('admin.add.trans_type', 'Type de transaction')} <span className="text-rose-500">*</span>
-                  </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-3 group">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('admin.add.trans_type', 'Type de transaction')}</label>
                   <div className="flex gap-4">
                     {transactionTypes.map(type => (
                       <button
                         key={type.value}
                         type="button"
-                        onClick={() => handleTransactionTypeSelect(type.value)}
-                        className={`flex-1 flex flex-col justify-center items-center gap-2 p-4 rounded-xl border-2 transition-all ${formData.transaction_type === type.value ? 'border-primary bg-primary/5 dark:bg-primary/20 shadow-md shadow-primary/10' : 'border-border-main bg-bg-card hover:border-primary/50'}`}
+                        onClick={() => setFormData(prev => ({ ...prev, transaction_type: type.value }))}
+                        className={`flex-1 p-6 rounded-xl border transition-all flex flex-col items-center gap-2 ${formData.transaction_type === type.value ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-bg-soft border-border-main text-text-sub hover:border-primary/50'}`}
                       >
-                        <type.icon className={`w-6 h-6 ${formData.transaction_type === type.value ? 'text-primary' : 'text-text-muted'}`} />
-                        <span className={`font-bold text-sm ${formData.transaction_type === type.value ? 'text-primary dark:text-white' : 'text-text-sub'}`}>{type.label}</span>
+                        <type.icon className="w-6 h-6" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{type.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    <CurrencyDollarIcon className="w-4 h-4 text-text-muted" /> {t('admin.add.price', 'Prix')} <span className="text-rose-500">*</span>
-                  </label>
+                <div className="space-y-3 group">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-muted group-focus-within:text-primary transition-colors">{t('admin.add.price', 'Prix')}</label>
                   <div className="relative">
+                    <CurrencyDollarIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted opacity-40 group-focus-within:text-primary group-focus-within:opacity-100 transition-all" />
                     <input 
-                      type="number" name="price" value={formData.price} onChange={handleChange} 
-                      placeholder={t('admin.add.amount', "Montant")} 
-                      className={`w-full ps-4 pe-20 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.price ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
+                      type="number" name="price" value={formData.price} onChange={handleChange} required
+                      className="w-full bg-bg-soft/50 border border-border-main rounded-xl pl-16 pr-20 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
+                      placeholder="0.00"
                     />
-                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">
-                       {t('prop.currency')} {formData.transaction_type === 'rent' ? t('prop.per_month', '/ ms') : ''}
-                    </div>
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">DH</span>
                   </div>
-                  {validationErrors.price && <p className="text-rose-500 text-xs font-semibold mt-1">{validationErrors.price}</p>}
                 </div>
               </div>
-
             </div>
-          </div>
+          </motion.div>
 
-          {/* Section: Localisation */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
-            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
-              <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
-                 <MapPinIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-bold text-text-main">{t('admin.add.loc', 'Localisation')}</h2>
+          {/* Section: Location */}
+          <motion.div variants={sectionVariants} className="bg-bg-card border border-border-main rounded-xl overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-border-main bg-bg-soft flex items-center gap-4">
+              <MapPinIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-main">{t('admin.add.loc', 'Localisation')}</h2>
             </div>
             
-            <div className="p-6 md:p-8 space-y-6">
-              <div className="space-y-2 relative">
-                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                  {t('admin.add.full_address', 'Adresse complète')} <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <input 
-                    type="text" name="address" value={formData.address} onChange={handleChange} 
-                    placeholder={t('admin.add.addr_ph', "Numéro, rue, bâtiment...")}
-                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.address ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                    autoComplete="off"
-                  />
+            <div className="p-10 space-y-10">
+              <div className="space-y-3 group relative">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted group-focus-within:text-primary transition-colors">{t('admin.add.full_address', 'Adresse Complète')}</label>
+                <input 
+                  type="text" name="address" value={formData.address} onChange={handleChange} required
+                  className="w-full bg-bg-soft/50 border border-border-main rounded-xl px-8 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
+                  autoComplete="off"
+                />
+                <AnimatePresence>
                   {showSuggestions && addressSuggestions.length > 0 && (
-                    <div className="absolute z-50 w-full mt-2 bg-bg-card border border-border-main rounded-xl shadow-xl overflow-hidden animate-fade-in">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute z-50 w-full mt-4 bg-bg-card border border-border-main rounded-xl shadow-2xl overflow-hidden"
+                    >
                       {addressSuggestions.map((s, i) => (
                         <button
-                          key={i}
-                          type="button"
-                          onClick={() => selectSuggestion(s)}
-                          className="w-full text-left px-4 py-3 hover:bg-bg-soft text-sm text-text-main border-b border-border-main last:border-0 transition-colors"
+                          key={i} type="button" onClick={() => selectSuggestion(s)}
+                          className="w-full text-left px-8 py-4 hover:bg-bg-soft text-xs font-bold text-text-main border-b border-border-main last:border-0 transition-colors"
                         >
                           {s.display_name}
                         </button>
                       ))}
-                    </div>
+                    </motion.div>
                   )}
-                </div>
-                {validationErrors.address && <p className="text-rose-500 text-xs font-semibold">{validationErrors.address}</p>}
+                </AnimatePresence>
               </div>
 
               {formData.latitude && formData.longitude && (
-                <div className="rounded-xl overflow-hidden border border-border-main shadow-sm h-64 w-full relative z-0">
+                <div className="rounded-xl overflow-hidden border border-border-main shadow-xl h-80 w-full relative z-0">
                   <MapContainer center={[formData.latitude, formData.longitude]} zoom={13} style={{ height: '100%', width: '100%' }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <Marker position={[formData.latitude, formData.longitude]} />
@@ -430,283 +365,150 @@ const AddProperty = () => {
                   </MapContainer>
                 </div>
               )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    {t('admin.add.city', 'Ville')} <span className="text-rose-500">*</span>
-                  </label>
-                  <input 
-                    type="text" name="city" value={formData.city} onChange={handleChange} 
-                    placeholder={t('admin.add.city', 'Ville')}
-                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.city ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                  />
-                  {validationErrors.city && <p className="text-rose-500 text-xs font-semibold">{validationErrors.city}</p>}
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">
-                    {t('admin.add.postal', 'Code postal')} <span className="text-rose-500">*</span>
-                  </label>
-                  <input 
-                    type="text" name="postal_code" value={formData.postal_code} onChange={handleChange} 
-                    placeholder={t('admin.add.postal_ph', 'Ex: 20000')} 
-                    className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.postal_code ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                  />
-                  {validationErrors.postal_code && <p className="text-rose-500 text-xs font-semibold">{validationErrors.postal_code}</p>}
-                </div>
-              </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Section: Caractéristiques */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
-            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
-                 <HomeIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-bold text-text-main">{t('admin.add.features_title', 'Caractéristiques du bien')}</h2>
+          {/* Section: Features */}
+          <motion.div variants={sectionVariants} className="bg-bg-card border border-border-main rounded-xl overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-border-main bg-bg-soft flex items-center gap-4">
+              <HomeIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-main">{t('admin.add.features_title', 'Caractéristiques & Équipements')}</h2>
             </div>
             
-            <div className="p-6 md:p-8 space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                    {t('admin.add.surface', 'Surface')} <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type="number" name="surface" value={formData.surface} onChange={handleChange} 
-                      placeholder={t('admin.add.surface_ph', 'Ex: 80')} 
-                      className={`w-full ps-4 pe-10 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.surface ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                    />
-                    <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">m²</div>
+            <div className="p-10 space-y-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {[
+                  { name: 'surface', label: t('admin.add.surface', 'Surface'), unit: 'm²' },
+                  { name: 'rooms', label: t('admin.add.rooms', 'Pièces'), unit: 'p.' },
+                  { name: 'bedrooms', label: t('admin.add.bedrooms', 'Chambres'), unit: 'ch.' },
+                  { name: 'bathrooms', label: t('admin.add.bathrooms', 'Salles de bain'), unit: 'sdb' }
+                ].map(field => (
+                  <div key={field.name} className="space-y-3 group">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">{field.label}</label>
+                    <div className="relative">
+                      <input 
+                        type="number" name={field.name} value={formData[field.name]} onChange={handleChange} 
+                        className="w-full bg-bg-soft/50 border border-border-main rounded-xl px-6 py-4 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase text-text-muted opacity-40">{field.unit}</span>
+                    </div>
                   </div>
-                  {validationErrors.surface && <p className="text-rose-500 text-xs font-semibold">{validationErrors.surface}</p>}
+                ))}
+              </div>
+
+              <div className="space-y-6">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('admin.add.equipments', 'Prestations de Luxe')}</label>
+                <div className="flex gap-4">
+                  <input 
+                    type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                    className="flex-1 bg-bg-soft/50 border border-border-main rounded-xl px-8 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
+                    placeholder={t('admin.add.feat_ph', "Ex: Piscine, Spa...")}
+                  />
+                  <button type="button" onClick={addFeature} className="w-16 h-16 shrink-0 flex items-center justify-center bg-primary text-white rounded-xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                    <PlusIcon className="w-7 h-7" />
+                  </button>
                 </div>
-
-                {formData.type !== 'land' && (
-                  <>
-                    <div className="space-y-2">
-                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        {t('admin.add.rooms', 'Pièces')} <span className="text-rose-500">*</span>
-                      </label>
-                      <input 
-                        type="number" name="rooms" value={formData.rooms} onChange={handleChange} 
-                        className={`w-full px-4 py-3 bg-bg-soft border appearance-none outline-none rounded-xl text-text-main font-medium transition-all ${validationErrors.rooms ? 'border-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`}
-                      />
-                      {validationErrors.rooms && <p className="text-rose-500 text-xs font-semibold">{validationErrors.rooms}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        {t('admin.add.bedrooms', 'Chambres')}
-                      </label>
-                      <input 
-                        type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} 
-                        className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="flex items-center justify-between text-sm font-bold text-text-main">
-                        {t('admin.add.bathrooms', 'Salles de bain')}
-                      </label>
-                      <input 
-                        type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} 
-                        className="w-full px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
-                      />
-                    </div>
-                  </>
-                )}
+                <div className="flex flex-wrap gap-3">
+                  <AnimatePresence>
+                    {featuresList.map((f, i) => (
+                      <motion.span 
+                        key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                        className="inline-flex items-center gap-3 px-5 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                      >
+                        {f}
+                        <button type="button" onClick={() => removeFeature(i)} className="hover:text-rose-500 transition-colors">
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Section: Équipements (Features) */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
-            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
-                 <StarIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-bold text-text-main">{t('admin.add.equipments', 'Équipements & Prestations')}</h2>
-            </div>
-            
-            <div className="p-6 md:p-8 space-y-6">
-               <div className="flex flex-col sm:flex-row gap-3">
-                 <input 
-                   type="text" value={newFeature} onChange={e => setNewFeature(e.target.value)} onKeyPress={e => {if(e.key === 'Enter') { e.preventDefault(); addFeature(); }}} 
-                   placeholder={t('admin.add.feat_ph', "Ex: Climatisation, Garage, Piscine...")}
-                   className="flex-1 px-4 py-3 bg-bg-soft border border-border-main appearance-none outline-none rounded-xl text-text-main font-medium transition-all focus:border-primary focus:ring-1 focus:ring-primary"
-                 />
-                 <button 
-                   type="button" onClick={addFeature} 
-                   className="px-6 py-3 bg-primary !text-white !opacity-100 hover:bg-primary-hover rounded-xl font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm"
-                 >
-                   <PlusIcon className="w-5 h-5 !text-white"/> {t('admin.add.add_btn', 'Ajouter')}
-                 </button>
-               </div>
-               
-               {featuresList.length > 0 && (
-                 <div className="flex flex-wrap gap-3 mt-4">
-                   {featuresList.map((f, i) => (
-                     <span key={i} className="inline-flex items-center gap-2 px-4 py-2 bg-bg-soft text-primary rounded-lg text-sm font-bold border border-border-main shadow-sm animate-fade-in-up">
-                       {f}
-                       <button type="button" onClick={() => removeFeature(i)} className="text-primary/70 hover:text-rose-500 transition-colors bg-bg-card rounded-full p-0.5">
-                         <XMarkIcon className="w-4 h-4" />
-                       </button>
-                     </span>
-                   ))}
-                 </div>
-               )}
-            </div>
-          </div>
+          </motion.div>
 
           {/* Section: Photos */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
-            <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
-                 <PhotoIcon className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-bold text-text-main">{t('admin.add.gallery', 'Galerie Photos')} <span className="text-rose-500">*</span></h2>
+          <motion.div variants={sectionVariants} className="bg-bg-card border border-border-main rounded-xl overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-border-main bg-bg-soft flex items-center gap-4">
+              <PhotoIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-main">{t('admin.add.gallery', 'Galerie Multimédia')}</h2>
             </div>
             
-            <div className="p-6 md:p-8 space-y-6">
-               <div className="w-full">
-                 <input 
-                   type="file" multiple accept="image/*" id="images-upload" 
-                   onChange={handleImageChange} className="hidden" 
-                 />
-                 <label htmlFor="images-upload" className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed border-border-main hover:border-primary bg-bg-soft hover:bg-bg-card rounded-2xl cursor-pointer transition-all group">
-                   <div className="w-16 h-16 bg-bg-card shadow-sm rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                     <PhotoIcon className="w-8 h-8 text-primary" />
-                   </div>
-                   <span className="text-text-main font-bold text-lg mb-1">{t('admin.add.click_upload', 'Cliquer pour importer')}</span>
-                   <span className="text-text-sub text-sm font-medium px-4 text-center">{t('admin.add.upload_info', 'PNG, JPG ou WEBP. Max 10 photos.')}</span>
-                 </label>
-               </div>
+            <div className="p-10 space-y-10">
+              <input type="file" multiple accept="image/*" id="images-upload" onChange={handleImageChange} className="hidden" />
+              <label htmlFor="images-upload" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border-main hover:border-primary bg-bg-soft/30 hover:bg-bg-soft/50 rounded-xl cursor-pointer transition-all group">
+                <PhotoIcon className="w-12 h-12 text-primary mb-6 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-black uppercase tracking-[0.2em] text-text-main mb-2">{t('admin.add.click_upload', 'Importer des Photos')}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">{t('admin.add.upload_info', 'Max 10 photos • PNG, JPG, WEBP')}</span>
+              </label>
 
-               {imagePreviews.length > 0 && (
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                   {imagePreviews.map((preview, i) => (
-                     <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main shadow-sm group">
-                       <img src={preview} alt={t('common.preview', 'Prévisualisation')} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                       <button 
-                         type="button" onClick={() => removeImage(i)}
-                         className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
-                         title={t('common.delete', 'Supprimer')}
-                       >
-                         <XMarkIcon className="w-5 h-5"/>
-                       </button>
-                     </div>
-                   ))}
-                 </div>
-               )}
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                  {imagePreviews.map((preview, i) => (
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main group">
+                      <img src={preview} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                      <button 
+                        type="button" onClick={() => removeImage(i)}
+                        className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Floating Actions Line */}
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
-            <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card hover:bg-bg-soft text-text-main border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
+          {/* Actions */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-6 pt-12">
+            <button type="button" onClick={() => navigate(-1)} className="px-12 py-5 bg-bg-card border border-border-main text-text-sub rounded-xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-bg-soft transition-all">
               {t('common.cancel', 'Annuler')}
             </button>
-            <button type="submit" disabled={loading} className="px-10 py-4 bg-primary !text-white !opacity-100 hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl font-bold shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
-              {loading && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
-              <span className="!text-white !opacity-100">{loading ? t('admin.add.publishing', 'Publication en cours...') : t('admin.add.publish', 'Publier l\'annonce')}</span>
+            <button 
+              type="submit" disabled={loading}
+              className="px-12 py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+            >
+              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : t('admin.add.publish', 'Publier l\'annonce')}
             </button>
           </div>
-          
-        </form>
+        </motion.form>
       </div>
 
-      {/* Success Sharing Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-bg-card w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-border-main overflow-hidden animate-scale-up">
-            <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckIcon className="w-10 h-10 stroke-[3]" />
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-bg-card w-full max-w-lg rounded-xl shadow-huge border border-border-main p-12 text-center space-y-10"
+            >
+              <div className="w-24 h-24 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center mx-auto border border-emerald-500/20">
+                <CheckIcon className="w-12 h-12 stroke-[3]" />
               </div>
-              <h2 className="text-3xl font-black text-text-main mb-2">{t('admin.add.success_title', 'Bien ajouté !')}</h2>
-              <p className="text-text-muted font-medium mb-8">{t('admin.add.success_msg', 'Votre annonce est maintenant en ligne. Vous pouvez la partager dès maintenant.')}</p>
+              <div className="space-y-4">
+                <h2 className="text-4xl font-black text-text-main tracking-tighter uppercase">{t('admin.add.success_title', 'Succès !')}</h2>
+                <p className="text-sm font-bold text-text-sub opacity-60 leading-relaxed">{t('admin.add.success_msg', 'Votre bien a été publié avec succès. Partagez-le dès maintenant.')}</p>
+              </div>
 
               <div className="space-y-4">
                 <div className="relative group">
-                  <input 
-                    readOnly 
-                    value={`${window.location.origin}/properties/${newPropertyId}`}
-                    className="w-full px-4 py-4 bg-bg-soft border border-border-main rounded-2xl text-sm font-bold text-primary text-center pr-12 focus:outline-none"
-                  />
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/properties/${newPropertyId}`);
-                      toast.success(t('prop.detail.link_copied'));
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-text-muted hover:text-primary transition-colors"
-                  >
+                  <input readOnly value={`${window.location.origin}/properties/${newPropertyId}`} className="w-full bg-bg-soft border border-border-main rounded-xl px-6 py-4 text-[10px] font-black text-primary text-center focus:outline-none" />
+                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/properties/${newPropertyId}`); toast.success(t('prop.detail.link_copied')); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors">
                     <ClipboardIcon className="w-5 h-5" />
                   </button>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
-                  <a 
-                    href={`https://wa.me/?text=${encodeURIComponent(t('admin.add.share_msg', 'Découvrez ce bien : ') + window.location.origin + "/properties/" + newPropertyId)}`}
-                    target="_blank" rel="noreferrer"
-                    className="flex items-center justify-center gap-2 py-4 bg-[#25D366] text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg shadow-green-500/20"
-                  >
-                    <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> WhatsApp
-                  </a>
-                  <a 
-                    href={`mailto:?subject=${encodeURIComponent(t('admin.add.share_title', 'Bien immobilier'))}&body=${encodeURIComponent(t('admin.add.share_msg', 'Découvrez ce bien : ') + window.location.origin + "/properties/" + newPropertyId)}`}
-                    className="flex items-center justify-center gap-2 py-4 bg-bg-soft border border-border-main text-text-main rounded-2xl font-bold hover:bg-bg-card transition-all"
-                  >
-                    <EnvelopeIcon className="w-5 h-5" /> Email
-                  </a>
+                   <button onClick={() => { setShowSuccessModal(false); navigate(`/properties/${newPropertyId}`); }} className="py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all hover:bg-primary-dark">{t('common.view_details', 'Voir le bien')}</button>
+                   <button onClick={() => { setShowSuccessModal(false); navigate('/dashboard'); }} className="py-5 bg-bg-soft border border-border-main text-text-sub rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-bg-card">{t('admin.add.back_dash', 'Tableau de bord')}</button>
                 </div>
-
-                {navigator.share && (
-                  <button 
-                    onClick={() => navigator.share({ title: t('admin.add.share_title', 'Bien immobilier'), url: `${window.location.origin}/properties/${newPropertyId}` })}
-                    className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all shadow-xl shadow-primary/20"
-                  >
-                    <ShareIcon className="w-5 h-5" /> {t('admin.add.more_options', 'Plus d\'options')}
-                  </button>
-                )}
-
-                <button 
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setFormData({
-                      title: '',
-                      description: '',
-                      price: '',
-                      transaction_type: 'rent',
-                      address: '',
-                      city: '',
-                      postal_code: '',
-                      surface: '',
-                      rooms: '',
-                      bedrooms: '',
-                      bathrooms: '',
-                      type: 'apartment',
-                      category_id: categories.length ? categories[0].id : '',
-                      latitude: '',
-                      longitude: '',
-                    });
-                    setImages([]);
-                    setImagePreviews([]);
-                    setFeaturesList([]);
-                  }}
-                  className="w-full py-4 text-text-muted font-bold hover:text-text-main transition-colors"
-                >
-                  {t('admin.add.close_add_another', 'Fermer et ajouter un autre bien')}
-                </button>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };

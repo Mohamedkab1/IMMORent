@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { propertyService } from '../services/properties';
@@ -216,6 +217,19 @@ const EditProperty = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-soft flex flex-col justify-center items-center">
@@ -226,24 +240,34 @@ const EditProperty = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-soft transition-colors py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-bg-soft transition-colors pt-[120px] pb-12 px-4 sm:px-6 lg:px-8 font-outfit">
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border-main">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 mb-8 pb-6 border-b border-border-main"
+        >
           <button onClick={() => navigate(-1)} className="p-2 text-text-muted hover:text-primary bg-bg-card border border-border-main hover:bg-bg-soft rounded-full transition-colors shadow-sm">
             <ArrowLeftIcon className="w-6 h-6 rtl:rotate-180" />
           </button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">{t('admin.edit.title', 'Modifier le bien')}</h1>
-            <p className="text-sm text-text-muted mt-1 font-medium">{t('admin.edit.subtitle', 'Mettez à jour les informations de l\'annonce')} #{id}</p>
+            <p className="text-sm text-text-muted mt-1 font-bold uppercase tracking-widest">{t('admin.edit.subtitle', 'Mettez à jour les informations de l\'annonce')} #{id}</p>
           </div>
-        </div>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <motion.form 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          onSubmit={handleSubmit} 
+          className="space-y-8"
+        >
           
           {/* Section: Informations générales */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main overflow-hidden">
             <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                  <DocumentTextIcon className="w-6 h-6" />
@@ -337,10 +361,10 @@ const EditProperty = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Section: Localisation */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main overflow-hidden">
             <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                  <MapPinIcon className="w-6 h-6" />
@@ -368,10 +392,10 @@ const EditProperty = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Section: Caractéristiques */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main overflow-hidden">
             <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-lg">
                  <HomeIcon className="w-6 h-6" />
@@ -405,10 +429,10 @@ const EditProperty = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Section: Équipements */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main overflow-hidden">
             <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                  <StarIcon className="w-6 h-6" />
@@ -444,10 +468,10 @@ const EditProperty = () => {
                  </div>
                )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Section: Photos */}
-          <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-sm border border-border-main overflow-hidden">
+          <motion.div variants={itemVariants} className="bg-bg-card rounded-xl shadow-sm border border-border-main overflow-hidden">
             <div className="bg-bg-soft p-6 border-b border-border-main flex items-center gap-3">
               <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
                  <PhotoIcon className="w-6 h-6" />
@@ -511,10 +535,10 @@ const EditProperty = () => {
                  </div>
                )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Floating Actions Line */}
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
+          <motion.div variants={itemVariants} className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 pb-12">
             <button type="button" onClick={() => navigate(-1)} className="px-8 py-4 bg-bg-card text-text-main hover:bg-bg-soft border border-border-main rounded-xl font-bold shadow-sm transition-all text-center">
               {t('admin.edit.cancel_changes', 'Annuler les modifications')}
             </button>
@@ -522,9 +546,9 @@ const EditProperty = () => {
               {submitting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
               {submitting ? t('admin.edit.saving', 'Validation...') : t('admin.edit.save', 'Enregistrer les modifications')}
             </button>
-          </div>
+          </motion.div>
           
-        </form>
+        </motion.form>
       </div>
     </div>
   );

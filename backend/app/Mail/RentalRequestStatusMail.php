@@ -42,7 +42,7 @@ class RentalRequestStatusMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.rental_request_status',
+            markdown: 'emails.rental_request_status',
         );
     }
 

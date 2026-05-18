@@ -43,12 +43,13 @@ import 'react-toastify/dist/ReactToastify.css';
 const AppContent = () => {
   const { theme } = useTheme();
   const location = useLocation();
+  const isDashboardPage = location.pathname.startsWith('/dashboard/admin');
   const isAuthPage = ['/login', '/register', '/register/role'].includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-main text-text-main transition-colors duration-300">
       <Header />
-      <main className={`flex-1 w-full animate-fade-in ${isAuthPage ? 'flex flex-col' : ''}`}>
+      <main className={`flex-1 w-full animate-fade-in ${isAuthPage || isDashboardPage ? 'flex flex-col' : ''}`}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />

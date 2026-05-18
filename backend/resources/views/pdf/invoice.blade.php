@@ -80,7 +80,7 @@
                     <table>
                         <tr>
                             <td class="title">
-                                <span style="color: #2563eb;">IMMO</span><span style="color: #1e40af;">Rent</span>
+                                <span style="color: #2563eb;">IMMO</span><span style="color: #facc15;">Rent</span>
                             </td>
                             <td>
                                 Facture n° : <strong>{{ $invoice->invoice_number }}</strong><br>

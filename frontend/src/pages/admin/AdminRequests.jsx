@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { 
   EyeIcon, 
@@ -12,8 +13,31 @@ import {
   UserIcon, 
   HomeIcon, 
   CalendarIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  FunnelIcon,
+  ChevronRightIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import StatsCard from '../../components/Common/StatsCard';
+import { requestService } from '../../services/requests';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
 
 const AdminRequests = () => {
   const { user } = useAuth();
@@ -21,20 +45,25 @@ const AdminRequests = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchRequests();
   }, []);
 
   const fetchRequests = async () => {
-    setRequests([
-      { id: 1, request_number: 'REQ-001', user: { name: 'Pierre Durand', email: 'pierre@email.com' }, property: { title: 'Appartement Lyon Centre', city: 'Lyon', agent: { name: 'Jean Dupont' } }, start_date: '2024-04-01', end_date: '2024-06-30', status: 'pending', created_at: '2024-03-20', message: 'Intéressé par le bien' },
-      { id: 2, request_number: 'REQ-002', user: { name: 'Sophie Bernard', email: 'sophie@email.com' }, property: { title: 'Maison Caluire', city: 'Caluire', agent: { name: 'Jean Dupont' } }, start_date: '2024-05-01', end_date: '2024-08-31', status: 'pending', created_at: '2024-03-18', message: 'Disponible pour une visite' },
-      { id: 3, request_number: 'REQ-003', user: { name: 'Thomas Petit', email: 'thomas@email.com' }, property: { title: 'Studio Villeurbanne', city: 'Villeurbanne', agent: { name: 'Marie Martin' } }, start_date: '2024-04-15', end_date: '2024-07-15', status: 'approved', created_at: '2024-03-15', processed_at: '2024-03-16', processed_by: { name: 'Jean Dupont' } },
-      { id: 4, request_number: 'REQ-004', user: { name: 'Marie Lambert', email: 'marie@email.com' }, property: { title: 'Local commercial Part-Dieu', city: 'Lyon', agent: { name: 'Pierre Durand' } }, start_date: '2024-06-01', end_date: '2024-12-31', status: 'rejected', created_at: '2024-03-10', rejection_reason: 'Bien déjà réservé' },
-    ]);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const response = await requestService.getAll();
+      if (response.success) {
+        setRequests(response.data.data || response.data);
+      }
+    } catch (error) {
+      toast.error(t('dash.error_load', 'Erreur de chargement des demandes'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredRequests = requests.filter(r => {
@@ -47,328 +76,230 @@ const AdminRequests = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      pending: { bg: '#fef3c7', color: '#d97706', text: t('req.status.pending', 'En attente'), icon: ClockIcon },
-      approved: { bg: '#dcfce7', color: '#059669', text: t('req.status.approved', 'Approuvée'), icon: CheckCircleIcon },
-      rejected: { bg: '#fee2e2', color: '#dc2626', text: t('req.status.rejected', 'Refusée'), icon: XCircleIcon },
-      cancelled: { bg: '#f3f4f6', color: '#6b7280', text: t('req.status.cancelled', 'Annulée'), icon: XCircleIcon },
-      finalized: { bg: '#dbeafe', color: '#2563eb', text: t('common.status.finalized', 'Finalisée'), icon: CheckCircleIcon }
+      pending: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20', label: t('req.status.pending', 'En attente'), icon: ClockIcon },
+      approved: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20', label: t('req.status.approved', 'Approuvée'), icon: CheckCircleIcon },
+      rejected: { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/20', label: t('req.status.rejected', 'Refusée'), icon: XCircleIcon },
+      cancelled: { bg: 'bg-slate-500/10', text: 'text-slate-500', border: 'border-slate-500/20', label: t('req.status.cancelled', 'Annulée'), icon: XCircleIcon },
+      finalized: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20', label: t('common.status.finalized', 'Finalisée'), icon: CheckCircleIcon }
     };
     const c = config[status] || config.pending;
     const Icon = c.icon;
     return (
-      <span style={{ 
-        background: c.bg, 
-        color: c.color, 
-        padding: '0.25rem 0.5rem', 
-        borderRadius: '1rem', 
-        fontSize: '0.75rem', 
-        display: 'inline-flex', 
-        alignItems: 'center', 
-        gap: '0.25rem' 
-      }}>
-        <Icon style={{ width: '0.75rem', height: '0.75rem' }} /> {c.text}
+      <span className={`px-2 py-0.5 rounded-md border ${c.bg} ${c.text} ${c.border} text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5`}>
+        <Icon className="w-3 h-3" />
+        {c.label}
       </span>
     );
   };
 
-  const handleApprove = (id) => {
-    setRequests(requests.map(r => 
-      r.id === id ? { ...r, status: 'approved', processed_at: new Date().toISOString() } : r
-    ));
-    toast.success(t('admin.req.approved_success', 'Demande approuvée'));
+  const handleApprove = async (id) => {
+    try {
+      const response = await requestService.process(id, { status: 'approved' });
+      if (response.success) {
+        setRequests(requests.map(r => 
+          r.id === id ? { ...r, status: 'approved', processed_at: new Date().toISOString() } : r
+        ));
+        toast.success(t('admin.req.approved_success', 'Demande de location approuvée'));
+      }
+    } catch (error) {
+      toast.error(t('common.error', 'Une erreur est survenue'));
+    }
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (id) => {
     const reason = prompt(t('admin.req.reject_reason_prompt', 'Motif du refus :'));
     if (reason) {
-      setRequests(requests.map(r => 
-        r.id === id ? { ...r, status: 'rejected', rejection_reason: reason, processed_at: new Date().toISOString() } : r
-      ));
-      toast.success(t('admin.req.rejected_success', 'Demande refusée'));
+      try {
+        const response = await requestService.process(id, { status: 'rejected', rejection_reason: reason });
+        if (response.success) {
+          setRequests(requests.map(r => 
+            r.id === id ? { ...r, status: 'rejected', rejection_reason: reason, processed_at: new Date().toISOString() } : r
+          ));
+          toast.success(t('admin.req.rejected_success', 'Demande de location refusée'));
+        }
+      } catch (error) {
+        toast.error(t('common.error', 'Une erreur est survenue'));
+      }
     }
   };
 
   const stats = {
     total: requests.length,
     pending: requests.filter(r => r.status === 'pending').length,
-    approved: requests.filter(r => r.status === 'approved').length,
-    rejected: requests.filter(r => r.status === 'rejected').length
+    approved: requests.filter(r => r.status === 'approved').length
   };
 
-  if (loading) {
-    return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement des demandes...')}</p></div>;
-  }
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p className="text-xs font-black uppercase tracking-widest text-text-muted">{t('common.loading', 'Chargement des flux de demandes...')}</p>
+    </div>
+  );
 
   return (
-    <>
-      <div className="admin-requests">
-        <div className="header">
-          <h1>{t('admin.req.title', 'Gestion des demandes')}</h1>
-        </div>
-
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon"><DocumentTextIcon /></div>
-            <div><span>{t('admin.req.total', 'Total demandes')}</span><strong>{stats.total}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><ClockIcon /></div>
-            <div><span>{t('req.status.pending', 'En attente')}</span><strong>{stats.pending}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><CheckCircleIcon /></div>
-            <div><span>{t('req.status.approved', 'Approuvées')}</span><strong>{stats.approved}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><XCircleIcon /></div>
-            <div><span>{t('req.status.rejected', 'Refusées')}</span><strong>{stats.rejected}</strong></div>
-          </div>
-        </div>
-
-        <div className="filters-section">
-          <div className="search-wrapper">
-            <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder={t('admin.req.search_ph', 'Rechercher par n° demande, client ou bien...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          </div>
-          <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
-            <option value="pending">{t('req.status.pending', 'En attente')}</option>
-            <option value="approved">{t('req.status.approved', 'Approuvées')}</option>
-            <option value="rejected">{t('req.status.rejected', 'Refusées')}</option>
-          </select>
-        </div>
-
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t('admin.req.req_num', 'N° Demande')}</th>
-                <th>{t('admin.req.client', 'Client')}</th>
-                <th>{t('admin.req.property', 'Bien')}</th>
-                <th>{t('admin.prop.agent', 'Agent')}</th>
-                <th>{t('admin.req.period', 'Période')}</th>
-                <th>{t('admin.req.date', 'Date demande')}</th>
-                <th>{t('admin.edit.status', 'Statut')}</th>
-                <th>{t('admin.prop.actions', 'Actions')}</th>
-               </tr>
-            </thead>
-            <tbody>
-              {filteredRequests.map(r => (
-                <tr key={r.id}>
-                  <td>{r.request_number}</td>
-                  <td><strong>{r.user.name}</strong><br/>{r.user.email}</td>
-                  <td><strong>{r.property.title}</strong><br/>{r.property.city}</td>
-                  <td>{r.property.agent?.name || '-'}</td>
-                  <td><CalendarIcon className="inline-icon" /> {new Date(r.start_date).toLocaleDateString()} - {new Date(r.end_date).toLocaleDateString()}</td>
-                  <td>{new Date(r.created_at).toLocaleDateString()}</td>
-                  <td>{getStatusBadge(r.status)}</td>
-                  <td className="actions">
-                    <button className="btn-icon" title={t('common.view_details', 'Voir détails')}><EyeIcon /></button>
-                    {r.status === 'pending' && (
-                      <>
-                        <button className="btn-icon success" onClick={() => handleApprove(r.id)} title={t('admin.req.approve', 'Approuver')}><CheckCircleIcon /></button>
-                        <button className="btn-icon warning" onClick={() => handleReject(r.id)} title={t('admin.prop.reject', 'Refuser')}><XCircleIcon /></button>
-                      </>
-                    )}
-                   </td>
-                 </tr>
-              ))}
-            </tbody>
-           </table>
-        </div>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-12"
+    >
+      {/* Workflow Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatsCard title={t('admin.req.total', 'Flux de Demandes')} value={stats.total} icon={DocumentTextIcon} color="blue" delay={0} />
+        <StatsCard title={t('req.status.pending', 'En Attente')} value={stats.pending} icon={ClockIcon} color="amber" delay={100} />
+        <StatsCard title={t('req.status.approved', 'Traitées / OK')} value={stats.approved} icon={CheckCircleIcon} color="emerald" delay={200} />
       </div>
 
-      <style>{`
-        .admin-requests {
-          padding: 1.5rem;
-          background: #f8f9fa;
-          min-height: calc(100vh - 70px);
-        }
+      {/* Main Table Container */}
+      <motion.div variants={itemVariants} className="bg-bg-card border border-border-main rounded-lg shadow-2xl overflow-hidden">
+        <div className="p-8 border-b border-border-main flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-text-main uppercase tracking-widest">{t('admin.req.title', 'Centre de Candidatures')}</h2>
+            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest opacity-60">
+              {filteredRequests.length} {t('admin.req.count', 'Dossiers en cours de révision')}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input 
+                type="text" 
+                placeholder={t('admin.req.search_ph', 'Client, n° dossier...')}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-11 pr-4 py-3 bg-bg-soft border border-border-main rounded-lg text-xs focus:border-primary outline-none transition-all w-72 font-bold"
+              />
+            </div>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-hover:text-primary transition-colors">
+                <FunnelIcon className="w-4 h-4" />
+              </div>
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                className="pl-11 pr-8 py-3 bg-bg-soft border border-border-main rounded-lg text-xs font-black uppercase tracking-widest outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+              >
+                <option value="all">{t('common.all_status', 'Tous les dossiers')}</option>
+                <option value="pending">{t('req.status.pending', 'En attente')}</option>
+                <option value="approved">{t('req.status.approved', 'Approuvées')}</option>
+                <option value="rejected">{t('req.status.rejected', 'Refusées')}</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-        .header {
-          margin-bottom: 1.5rem;
-        }
-
-        .header h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-        }
-
-        .stats-cards {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 1rem;
-          border-radius: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-icon {
-          width: 2.5rem;
-          height: 2.5rem;
-          background: #f3f4f6;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #d4af37;
-        }
-
-        .stat-card span {
-          display: block;
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .stat-card strong {
-          font-size: 1.25rem;
-          color: #0f2b4d;
-        }
-
-        .filters-section {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .search-wrapper {
-          position: relative;
-          flex: 1;
-          max-width: 350px;
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 0.75rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 1rem;
-          height: 1rem;
-          color: #9ca3af;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 0.5rem 0.5rem 0.5rem 2rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-        }
-
-        .status-filter {
-          padding: 0.5rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          background: white;
-        }
-
-        .table-container {
-          background: white;
-          border-radius: 0.75rem;
-          overflow-x: auto;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table th {
-          text-align: left;
-          padding: 1rem;
-          background: #f8f9fa;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: #6b7280;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .data-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #e5e7eb;
-          font-size: 0.75rem;
-        }
-
-        .inline-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-          display: inline;
-          vertical-align: middle;
-          margin-right: 0.25rem;
-        }
-
-        .actions {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-        }
-
-        .btn-icon {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #6b7280;
-          padding: 0.25rem;
-          border-radius: 0.25rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 2rem;
-          height: 2rem;
-          transition: all 0.3s;
-        }
-
-        .btn-icon svg {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .btn-icon:hover {
-          background: #f3f4f6;
-        }
-
-        .btn-icon.success:hover {
-          color: #059669;
-        }
-
-        .btn-icon.warning:hover {
-          color: #d97706;
-        }
-
-        .loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-    </>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-bg-soft/50">
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.req.req_num', 'Référence Dossier')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.req.client', 'Candidat')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.req.property', 'Bien Visé')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.req.date', 'Chronologie')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.edit.status', 'État')}</th>
+                <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.actions', 'Actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-main/50">
+              <AnimatePresence>
+                {filteredRequests.map((r, idx) => (
+                  <motion.tr 
+                    key={r.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="group hover:bg-bg-soft/30 transition-colors"
+                  >
+                  <td className="px-8 py-6">
+                    <div className="text-xs font-black text-text-main">{r.request_number}</div>
+                    <div className="text-[9px] font-bold text-text-muted mt-0.5">{t('admin.req.type_rental', 'Demande de location')}</div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-[10px] font-black">
+                        {r.user.name[0]}
+                      </div>
+                      <div>
+                        <div className="text-sm font-black text-text-main group-hover:text-primary transition-colors">{r.user.name}</div>
+                        <div className="text-[9px] font-bold text-text-muted lowercase tracking-tighter">{r.user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-black text-text-main">{r.property.title}</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted mt-0.5">
+                      <UserIcon className="w-3 h-3" />
+                      Agent: {r.property.agent?.name || '-'}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted w-14">Soumis:</span>
+                        <span className="text-[10px] font-bold text-text-main">{new Date(r.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted w-14">Période:</span>
+                        <span className="text-[10px] font-bold text-text-muted">
+                          {new Date(r.start_date).toLocaleDateString()} - {new Date(r.end_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">{getStatusBadge(r.status)}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary transition-all shadow-sm"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </motion.button>
+                      {r.status === 'pending' && (
+                        <>
+                          <motion.button 
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleApprove(r.id)} 
+                            className="p-2.5 rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all"
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button 
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleReject(r.id)} 
+                            className="p-2.5 rounded-lg bg-rose-500 text-white shadow-lg shadow-rose-500/20 transition-all"
+                          >
+                            <XCircleIcon className="w-4 h-4" />
+                          </motion.button>
+                        </>
+                      )}
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary transition-all shadow-sm"
+                      >
+                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+          </table>
+          {filteredRequests.length === 0 && (
+            <div className="py-20 text-center">
+              <DocumentTextIcon className="w-16 h-16 text-text-muted opacity-10 mx-auto mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-text-muted opacity-40">{t('admin.req.no_match', 'Aucun dossier de candidature trouvé')}</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

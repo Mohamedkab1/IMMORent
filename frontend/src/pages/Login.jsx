@@ -212,6 +212,31 @@ const Login = () => {
             <div className={`mt-12 text-center border-t pt-8 ${
               theme === 'light' ? 'border-slate-50' : 'border-white/5'
             }`}>
+              {/* Quick Demo Access */}
+              <div className="mb-8">
+                <p className={`text-[10px] font-black uppercase tracking-[0.3em] mb-4 ${
+                  theme === 'light' ? 'text-slate-400' : 'text-white/20'
+                }`}>
+                  {t('auth.login.demo_title', 'Accès Démo Rapide')}
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    { label: t('auth.role.admin_short', 'Admin'), email: 'admin@immorent.ma', color: 'bg-rose-500' },
+                    { label: t('auth.role.agent_short', 'Agent'), email: 'agent@immorent.ma', color: 'bg-amber-500' },
+                    { label: t('auth.role.client_short', 'Client'), email: 'client@immorent.ma', color: 'bg-emerald-500' }
+                  ].map((demo) => (
+                    <button
+                      key={demo.email}
+                      type="button"
+                      onClick={() => { setEmail(demo.email); setPassword('password'); }}
+                      className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-105 active:scale-95 ${demo.color}`}
+                    >
+                      {demo.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <p className={`text-xs font-light tracking-wide ${
                 theme === 'light' ? 'text-slate-500' : 'text-white/40'
               }`}>

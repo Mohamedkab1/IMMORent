@@ -8,12 +8,26 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-
+import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-bg-card border border-border-main p-4 rounded-xl shadow-2xl backdrop-blur-md">
+        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-base font-black text-primary">
+          {new Intl.NumberFormat('fr-FR').format(payload[0].value)} <span className="text-[9px] opacity-60">DH</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const RevenueChart = ({ data, title }) => {
-  const { t } = useLanguage();
-  // Mapper les mois numériques en noms
+  const { t, language } = useLanguage();
+  
   const monthNames = [
     t('common.months.jan'), t('common.months.feb'), t('common.months.mar'), t('common.months.apr'), 
     t('common.months.may'), t('common.months.jun'), t('common.months.jul'), t('common.months.aug'), 
@@ -26,60 +40,49 @@ const RevenueChart = ({ data, title }) => {
   }));
 
   return (
-    <div className="bg-bg-card p-6 rounded-3xl border border-border-main shadow-main h-full">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-lg font-bold text-text-main tracking-tight">{title}</h3>
-        <select className="text-xs font-semibold bg-bg-soft border-none rounded-lg focus:ring-0 text-text-sub">
-          <option value="12m">{t('admin.overview.last_12_months', 'Derniers 12 mois')}</option>
-          <option value="2024">2024</option>
-        </select>
-      </div>
-      
-      <div className="h-64 w-full" style={{ minHeight: '250px' }}>
-        <ResponsiveContainer width="99%" height="100%" minWidth={0}>
-          <AreaChart data={formattedData}>
-            <defs>
-              <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border-main)" />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{fill: 'var(--color-text-sub)', fontSize: 12}}
-              dy={10}
-            />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{fill: 'var(--color-text-sub)', fontSize: 12}}
-              tickFormatter={(value) => `${value} DH`}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                borderRadius: '16px', 
-                border: '1px solid var(--color-border-main)', 
-                boxShadow: 'var(--shadow-large)', 
-                backgroundColor: 'var(--color-bg-card)',
-                color: 'var(--color-text-main)'
-              }}
-              itemStyle={{ color: 'var(--color-primary)' }}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="total" 
-              stroke="var(--color-primary)" 
-              strokeWidth={4}
-              fillOpacity={1} 
-              fill="url(#colorTotal)" 
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full h-full min-h-[300px]"
+    >
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 700}}
+            dy={15}
+          />
+          <YAxis 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 700}}
+            tickFormatter={(value) => `${value > 999 ? (value/1000) + 'k' : value}`}
+            dx={-10}
+          />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '5 5' }} />
+          <Area 
+            type="monotone" 
+            dataKey="total" 
+            stroke="#2563eb" 
+            strokeWidth={4}
+            fillOpacity={1} 
+            fill="url(#colorTotal)"
+            animationDuration={2000}
+            dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+            activeDot={{ r: 8, fill: '#2563eb', strokeWidth: 0, shadow: '0 0 20px rgba(37,99,235,0.8)' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </motion.div>
   );
 };
 

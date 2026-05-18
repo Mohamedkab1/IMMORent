@@ -17,6 +17,8 @@ import {
   MapPinIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -56,8 +58,33 @@ const Home = () => {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { isAuthenticated, user, isAdmin, isAgent } = useAuth();
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    company: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/contact`, formData);
+      if (response.data.success) {
+        toast.success(response.data.message || t('home.contact.success', 'Votre message a été envoyé avec succès.'));
+        setFormData({ first_name: '', last_name: '', company: '', email: '', message: '' });
+      }
+    } catch (error) {
+      console.error('Erreur contact:', error);
+      toast.error(error.response?.data?.message || t('home.contact.error', 'Une erreur est survenue lors de l\'envoi du message.'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
-  const getStartedPath = !isAuthenticated 
+  const getStartedPath = !isAuthenticated  
     ? '/login' 
     : isAdmin 
       ? '/dashboard/admin' 
@@ -206,33 +233,37 @@ const Home = () => {
               </RevealOnScroll>
 
               <RevealOnScroll delay={200}>
-                <form className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <form onSubmit={handleContactSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('home.contact.first_name')}</label>
-                    <input type="text" className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
+                    <input required type="text" value={formData.first_name} onChange={(e) => setFormData({...formData, first_name: e.target.value})} className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('home.contact.last_name')}</label>
-                    <input type="text" className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
+                    <input required type="text" value={formData.last_name} onChange={(e) => setFormData({...formData, last_name: e.target.value})} className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('home.contact.company')}</label>
-                    <input type="text" className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
+                    <input type="text" value={formData.company} onChange={(e) => setFormData({...formData, company: e.target.value})} className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('home.contact.email')}</label>
-                    <input type="email" className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
+                    <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors font-light" />
                   </div>
                   <div className="sm:col-span-2 space-y-2">
                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{t('home.contact.message')}</label>
-                    <textarea rows="3" className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors resize-none font-light"></textarea>
+                    <textarea required rows="3" value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full bg-transparent border-b border-gray-300 dark:border-white/20 py-3 focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors resize-none font-light"></textarea>
                   </div>
                   <div className="sm:col-span-2">
                     <p className="text-[10px] opacity-30 mb-8 font-light italic">
                       {t('home.contact.privacy_notice')}
                     </p>
-                    <button type="submit" className={`px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 ${theme === 'light' ? '!text-white' : 'text-white'} font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-lg`}>
-                      {t('home.contact.submit')}
+                    <button disabled={isSubmitting} type="submit" className={`px-12 py-5 bg-gradient-to-r from-blue-600 to-blue-500 ${theme === 'light' ? '!text-white' : 'text-white'} font-black uppercase tracking-[0.2em] text-xs hover:from-blue-500 hover:to-blue-400 transition-all active:scale-[0.98] shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-lg disabled:opacity-50 flex items-center justify-center`}>
+                      {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        t('home.contact.submit')
+                      )}
                     </button>
                   </div>
                 </form>

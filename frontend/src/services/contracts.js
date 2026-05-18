@@ -41,6 +41,16 @@ export const contractService = {
         }
     },
 
+    async delete(id) {
+        try {
+            const response = await api.delete(`/contracts/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Erreur contractService.delete:', error);
+            throw error;
+        }
+    },
+
     async getMyContracts() {
         try {
             const response = await api.get('/my/contracts');

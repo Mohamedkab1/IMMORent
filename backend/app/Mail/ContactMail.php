@@ -2,27 +2,24 @@
 
 namespace App\Mail;
 
-use App\Models\RentalRequest;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewRentalRequestMail extends Mailable
+class ContactMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $rentalRequest;
+    public $contactData;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(RentalRequest $rentalRequest)
+    public function __construct($contactData)
     {
-        $this->rentalRequest = $rentalRequest;
+        $this->contactData = $contactData;
     }
 
     /**
@@ -30,8 +27,9 @@ class NewRentalRequestMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = isset($this->contactData['subject']) ? $this->contactData['subject'] : 'Général';
         return new Envelope(
-            subject: '🔔 Nouvelle demande pour : ' . $this->rentalRequest->property->title,
+            subject: 'Nouveau message de contact : ' . $subject,
         );
     }
 
@@ -41,14 +39,14 @@ class NewRentalRequestMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.new_rental_request',
+            view: 'emails.contact',
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, Attachment>
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {

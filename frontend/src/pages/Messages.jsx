@@ -73,7 +73,7 @@ const Messages = () => {
   
   const navigate = useNavigate();
   const optionsRef = useRef(null);
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const getLocale = () => {
     if (language === 'ar') return arMA;
@@ -99,7 +99,12 @@ const Messages = () => {
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(() => {
@@ -446,7 +451,7 @@ const Messages = () => {
               )}
 
               {/* Messages List */}
-              <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
                 <AnimatePresence initial={false}>
                   {messages.map((msg, i) => {
                     const isMine = msg.sender_id === user.id;
@@ -484,7 +489,6 @@ const Messages = () => {
                     );
                   })}
                 </AnimatePresence>
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input Bar */}

@@ -59,5 +59,37 @@ export const paymentService = {
             console.error('Erreur paymentService.confirm:', error);
             throw error;
         }
+    },
+
+    async downloadInvoice(id) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${api.defaults.baseURL}/invoices/${id}/download`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/pdf',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur lors du téléchargement');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `facture_${id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Erreur paymentService.downloadInvoice:', error);
+            throw error;
+        }
     }
 };

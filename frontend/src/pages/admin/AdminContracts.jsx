@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { 
   EyeIcon, 
@@ -14,9 +15,32 @@ import {
   CalendarIcon, 
   UserIcon, 
   HomeIcon, 
-  CurrencyEuroIcon,
-  ClockIcon
+  CurrencyDollarIcon,
+  ClockIcon,
+  FunnelIcon,
+  MapPinIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import StatsCard from '../../components/Common/StatsCard';
+import { contractService } from '../../services/contracts';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
 
 const AdminContracts = () => {
   const { user } = useAuth();
@@ -26,19 +50,25 @@ const AdminContracts = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [contractToDelete, setContractToDelete] = useState(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchContracts();
   }, []);
 
   const fetchContracts = async () => {
-    setContracts([
-      { id: 1, contract_number: 'CTR-2024-0001', property: { title: 'Appartement Lyon Centre', city: 'Lyon' }, tenant: { name: 'Pierre Durand', email: 'pierre@email.com' }, owner: { name: 'Jean Dupont' }, monthly_rent: 850, start_date: '2024-01-01', end_date: '2024-12-31', status: 'active', created_at: '2024-01-01' },
-      { id: 2, contract_number: 'CTR-2024-0002', property: { title: 'Maison Caluire', city: 'Caluire' }, tenant: { name: 'Sophie Bernard', email: 'sophie@email.com' }, owner: { name: 'Marie Martin' }, monthly_rent: 1500, start_date: '2024-02-01', end_date: '2025-01-31', status: 'active', created_at: '2024-02-01' },
-      { id: 3, contract_number: 'CTR-2024-0003', property: { title: 'Studio Villeurbanne', city: 'Villeurbanne' }, tenant: { name: 'Thomas Petit', email: 'thomas@email.com' }, owner: { name: 'Jean Dupont' }, monthly_rent: 450, start_date: '2023-09-01', end_date: '2024-08-31', status: 'expired', created_at: '2023-09-01' },
-    ]);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const response = await contractService.getAll();
+      if (response.success) {
+        setContracts(response.data.data || response.data);
+      }
+    } catch (error) {
+      toast.error(t('dash.error_load', 'Erreur de chargement des contrats'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredContracts = contracts.filter(c => {
@@ -51,12 +81,16 @@ const AdminContracts = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      active: { bg: '#dcfce7', color: '#059669', text: t('contract.status.active', 'Actif') },
-      terminated: { bg: '#fee2e2', color: '#dc2626', text: t('contract.status.terminated', 'Résilié') },
-      expired: { bg: '#f3f4f6', color: '#6b7280', text: t('contract.status.expired', 'Expiré') }
+      active: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20', label: t('contract.status.active', 'Actif') },
+      terminated: { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/20', label: t('contract.status.terminated', 'Résilié') },
+      expired: { bg: 'bg-slate-500/10', text: 'text-slate-500', border: 'border-slate-500/20', label: t('contract.status.expired', 'Expiré') }
     };
     const c = config[status] || config.active;
-    return <span style={{ background: c.bg, color: c.color, padding: '0.25rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>{c.text}</span>;
+    return (
+      <span className={`px-2 py-0.5 rounded-md border ${c.bg} ${c.text} ${c.border} text-[10px] font-black uppercase tracking-widest`}>
+        {c.label}
+      </span>
+    );
   };
 
   const confirmDelete = (contract) => {
@@ -64,382 +98,229 @@ const AdminContracts = () => {
     setShowDeleteConfirm(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (contractToDelete) {
-      setContracts(contracts.filter(c => c.id !== contractToDelete.id));
-      toast.success(t('admin.contracts.deleted_success', 'Contrat supprimé'));
-      setShowDeleteConfirm(false);
-      setContractToDelete(null);
+      try {
+        await contractService.delete(contractToDelete.id);
+        setContracts(contracts.filter(c => c.id !== contractToDelete.id));
+        toast.success(t('admin.contracts.deleted_success', 'Contrat supprimé avec succès'));
+      } catch (error) {
+        toast.error(t('common.error', 'Une erreur est survenue'));
+      } finally {
+        setShowDeleteConfirm(false);
+        setContractToDelete(null);
+      }
     }
   };
 
-  const handleDownload = (contract) => {
-    toast.info(t('admin.contracts.downloading', 'Téléchargement du contrat {{num}}...', { num: contract.contract_number }).replace('{{num}}', contract.contract_number));
+  const handleDownload = async (contract) => {
+    toast.info(t('admin.contracts.downloading', 'Génération du PDF pour le contrat {{num}}...', { num: contract.contract_number }).replace('{{num}}', contract.contract_number));
+    try {
+      await contractService.download(contract.id);
+    } catch (error) {
+      toast.error(t('common.error', 'Erreur lors du téléchargement'));
+    }
   };
 
   const stats = {
     total: contracts.length,
     active: contracts.filter(c => c.status === 'active').length,
-    expired: contracts.filter(c => c.status === 'expired').length,
-    terminated: contracts.filter(c => c.status === 'terminated').length
+    revenue: contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0)
   };
 
-  if (loading) {
-    return <div className="loading"><div className="spinner"></div><p>{t('common.loading', 'Chargement des contrats...')}</p></div>;
-  }
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p className="text-xs font-black uppercase tracking-widest text-text-muted">{t('common.loading', 'Chargement des contrats...')}</p>
+    </div>
+  );
 
   return (
-    <>
-      <div className="admin-contracts">
-        <div className="header">
-          <h1>{t('admin.contracts.title', 'Gestion des contrats')}</h1>
-        </div>
-
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon"><DocumentTextIcon /></div>
-            <div><span>{t('admin.contracts.total', 'Total contrats')}</span><strong>{stats.total}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><CheckCircleIcon /></div>
-            <div><span>{t('admin.contracts.active', 'Contrats actifs')}</span><strong>{stats.active}</strong></div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon"><CurrencyEuroIcon /></div>
-            <div><span>{t('admin.contracts.monthly_rev', 'CA mensuel')}</span><strong>{contracts.filter(c => c.status === 'active').reduce((s, c) => s + c.monthly_rent, 0).toLocaleString()}DH</strong></div>
-          </div>
-        </div>
-
-        <div className="filters-section">
-          <div className="search-wrapper">
-            <MagnifyingGlassIcon className="search-icon" />
-            <input type="text" className="search-input" placeholder={t('admin.contracts.search_ph', 'Rechercher par n° contrat, bien ou locataire...')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          </div>
-          <select className="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
-            <option value="active">{t('contract.status.active', 'Actifs')}</option>
-            <option value="expired">{t('contract.status.expired', 'Expirés')}</option>
-            <option value="terminated">{t('contract.status.terminated', 'Résiliés')}</option>
-          </select>
-        </div>
-
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t('admin.contracts.contract_num', 'N° Contrat')}</th>
-                <th>{t('admin.req.property', 'Bien')}</th>
-                <th>{t('admin.contracts.tenant', 'Locataire')}</th>
-                <th>{t('admin.contracts.owner', 'Propriétaire')}</th>
-                <th>{t('admin.contracts.rent', 'Loyer')}</th>
-                <th>{t('admin.req.period', 'Période')}</th>
-                <th>{t('admin.edit.status', 'Statut')}</th>
-                <th>{t('admin.prop.actions', 'Actions')}</th>
-               </tr>
-            </thead>
-            <tbody>
-              {filteredContracts.map(c => (
-                <tr key={c.id}>
-                  <td><Link to={`/contracts/${c.id}`} className="link">{c.contract_number}</Link></td>
-                  <td><strong>{c.property.title}</strong><br/>{c.property.city}</td>
-                  <td><strong>{c.tenant.name}</strong><br/>{c.tenant.email}</td>
-                  <td>{c.owner.name}</td>
-                  <td><CurrencyEuroIcon className="inline-icon" /> {c.monthly_rent}DH / {t('prop.month_short', 'mois')}</td>
-                  <td><CalendarIcon className="inline-icon" /> {new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}</td>
-                  <td>{getStatusBadge(c.status)}</td>
-                  <td className="actions">
-                    <Link to={`/contracts/${c.id}`} className="btn-icon" title={t('common.view', 'Voir')}><EyeIcon /></Link>
-                    <button className="btn-icon" onClick={() => handleDownload(c)} title={t('common.download_pdf', 'Télécharger PDF')}><ArrowDownTrayIcon /></button>
-                    <button className="btn-icon delete" onClick={() => confirmDelete(c)} title={t('common.delete', 'Supprimer')}><TrashIcon /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-12"
+    >
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatsCard title={t('admin.contracts.total', 'Total Contrats')} value={stats.total} icon={DocumentTextIcon} color="blue" delay={0} />
+        <StatsCard title={t('admin.contracts.active', 'Contrats Actifs')} value={stats.active} icon={CheckCircleIcon} color="emerald" delay={100} />
+        <StatsCard title={t('admin.contracts.monthly_rev', 'Volume d\'Affaires')} value={`${stats.revenue.toLocaleString()} DH`} icon={CurrencyDollarIcon} color="amber" delay={200} />
       </div>
 
-      {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="modal-content confirm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t('admin.prop.del_confirm_title', 'Confirmer la suppression')}</h2>
+      {/* Main Table Container */}
+      <motion.div variants={itemVariants} className="bg-bg-card border border-border-main rounded-lg shadow-2xl overflow-hidden">
+        <div className="p-8 border-b border-border-main flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-text-main uppercase tracking-widest">{t('admin.contracts.title', 'Registre des Contrats')}</h2>
+            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest opacity-60">
+              {filteredContracts.length} {t('admin.contracts.count', 'Baux actifs ou archivés')}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input 
+                type="text" 
+                placeholder={t('admin.contracts.search_ph', 'N° Contrat, bien, locataire...')}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-11 pr-4 py-3 bg-bg-soft border border-border-main rounded-lg text-xs focus:border-primary outline-none transition-all w-72 font-bold"
+              />
             </div>
-            <div className="modal-body">
-              <p>{t('admin.contracts.del_confirm_msg', 'Êtes-vous sûr de vouloir supprimer le contrat')} <strong>{contractToDelete?.contract_number}</strong> ?</p>
-              <p className="warning">{t('admin.prop.del_warning', 'Cette action est irréversible.')}</p>
-            </div>
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(false)}>{t('common.cancel', 'Annuler')}</button>
-              <button className="btn-delete" onClick={handleDelete}>{t('common.delete', 'Supprimer')}</button>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-hover:text-primary transition-colors">
+                <FunnelIcon className="w-4 h-4" />
+              </div>
+              <select 
+                value={statusFilter} 
+                onChange={e => setStatusFilter(e.target.value)}
+                className="pl-11 pr-8 py-3 bg-bg-soft border border-border-main rounded-lg text-xs font-black uppercase tracking-widest outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+              >
+                <option value="all">{t('common.all_status', 'Tous les statuts')}</option>
+                <option value="active">{t('contract.status.active', 'Actifs')}</option>
+                <option value="expired">{t('contract.status.expired', 'Expirés')}</option>
+                <option value="terminated">{t('contract.status.terminated', 'Résiliés')}</option>
+              </select>
             </div>
           </div>
         </div>
-      )}
 
-      <style>{`
-        .admin-contracts {
-          padding: 1.5rem;
-          background: #f8f9fa;
-          min-height: calc(100vh - 70px);
-        }
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-bg-soft/50">
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.contracts.contract_num', 'N° Référence')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.req.property', 'Bien Immobilier')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.contracts.parties', 'Parties Contractantes')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.contracts.rent', 'Loyer / Période')}</th>
+                <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.edit.status', 'État')}</th>
+                <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{t('admin.prop.actions', 'Actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-main/50">
+              <AnimatePresence>
+                {filteredContracts.map((c, idx) => (
+                  <motion.tr 
+                    key={c.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="group hover:bg-bg-soft/30 transition-colors"
+                  >
+                  <td className="px-8 py-6">
+                    <Link to={`/contracts/${c.id}`} className="text-xs font-black text-primary hover:underline underline-offset-4">
+                      {c.contract_number}
+                    </Link>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-black text-text-main">{c.property.title}</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted mt-0.5">
+                      <MapPinIcon className="w-3 h-3" />
+                      {c.property.city}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted w-16">Locataire:</span>
+                        <span className="text-xs font-bold text-text-main">{c.tenant.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted w-16">Bailleur:</span>
+                        <span className="text-xs font-bold text-text-main">{c.owner.name}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="text-sm font-black text-text-main">{c.monthly_rent.toLocaleString()} DH</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted mt-0.5">
+                      <CalendarIcon className="w-3 h-3" />
+                      {new Date(c.start_date).toLocaleDateString()} - {new Date(c.end_date).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">{getStatusBadge(c.status)}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Link to={`/contracts/${c.id}`} className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm block">
+                          <EyeIcon className="w-4 h-4" />
+                        </Link>
+                      </motion.div>
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleDownload(c)} 
+                        className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm"
+                      >
+                        <ArrowDownTrayIcon className="w-4 h-4" />
+                      </motion.button>
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => confirmDelete(c)} 
+                        className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-rose-500 hover:border-rose-500 transition-all shadow-sm"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+          </table>
+          {filteredContracts.length === 0 && (
+            <div className="py-20 text-center">
+              <DocumentTextIcon className="w-16 h-16 text-text-muted opacity-10 mx-auto mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-text-muted opacity-40">{t('admin.contracts.no_match', 'Aucun contrat ne correspond à votre recherche')}</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
-        .header {
-          margin-bottom: 1.5rem;
-        }
-
-        .header h1 {
-          font-size: 1.5rem;
-          color: #0f2b4d;
-        }
-
-        .stats-cards {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-          background: white;
-          padding: 1rem;
-          border-radius: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-icon {
-          width: 2.5rem;
-          height: 2.5rem;
-          background: #f3f4f6;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #d4af37;
-        }
-
-        .stat-card span {
-          display: block;
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .stat-card strong {
-          font-size: 1.25rem;
-          color: #0f2b4d;
-        }
-
-        .filters-section {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .search-wrapper {
-          position: relative;
-          flex: 1;
-          max-width: 350px;
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 0.75rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 1rem;
-          height: 1rem;
-          color: #9ca3af;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 0.5rem 0.5rem 0.5rem 2rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-        }
-
-        .status-filter {
-          padding: 0.5rem;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.5rem;
-          background: white;
-        }
-
-        .table-container {
-          background: white;
-          border-radius: 0.75rem;
-          overflow-x: auto;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table th {
-          text-align: left;
-          padding: 1rem;
-          background: #f8f9fa;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: #6b7280;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .data-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #e5e7eb;
-          font-size: 0.75rem;
-        }
-
-        .link {
-          color: #d4af37;
-          text-decoration: none;
-        }
-
-        .link:hover {
-          text-decoration: underline;
-        }
-
-        .inline-icon {
-          width: 0.875rem;
-          height: 0.875rem;
-          display: inline;
-          vertical-align: middle;
-          margin-right: 0.25rem;
-        }
-
-        .actions {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-        }
-
-        .btn-icon {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #6b7280;
-          padding: 0.25rem;
-          border-radius: 0.25rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 2rem;
-          height: 2rem;
-          transition: all 0.3s;
-        }
-
-        .btn-icon svg {
-          width: 1rem;
-          height: 1rem;
-        }
-
-        .btn-icon:hover {
-          background: #f3f4f6;
-          color: #d4af37;
-        }
-
-        .btn-icon.delete:hover {
-          color: #dc2626;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-
-        .modal-content {
-          background: white;
-          border-radius: 0.75rem;
-          width: 90%;
-          max-width: 400px;
-        }
-
-        .modal-header {
-          padding: 1rem 1.5rem;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .modal-header h2 {
-          font-size: 1.125rem;
-          color: #0f2b4d;
-        }
-
-        .modal-body {
-          padding: 1.5rem;
-        }
-
-        .warning {
-          color: #dc2626;
-          font-size: 0.75rem;
-          margin-top: 0.5rem;
-        }
-
-        .modal-actions {
-          display: flex;
-          gap: 1rem;
-          padding: 1rem 1.5rem;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .btn-cancel {
-          flex: 1;
-          padding: 0.5rem;
-          background: #f3f4f6;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-        }
-
-        .btn-delete {
-          flex: 1;
-          padding: 0.5rem;
-          background: #dc2626;
-          color: white;
-          border: none;
-          border-radius: 0.5rem;
-          cursor: pointer;
-        }
-
-        .loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 50vh;
-        }
-
-        .spinner {
-          width: 2rem;
-          height: 2rem;
-          border: 2px solid #e5e7eb;
-          border-top-color: #d4af37;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-    </>
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(false)}
+              className="absolute inset-0 bg-bg-main/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-bg-card border border-border-main rounded-lg p-8 shadow-huge text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mx-auto mb-6">
+                <TrashIcon className="w-10 h-10" />
+              </div>
+              <h3 className="text-xl font-black text-text-main uppercase tracking-widest mb-4">{t('admin.prop.del_confirm_title', 'Archiver le Contrat')}</h3>
+              <p className="text-sm font-bold text-text-sub opacity-60 mb-8 leading-relaxed">
+                {t('admin.contracts.del_confirm_msg', 'Souhaitez-vous définitivement supprimer le contrat n°')} <br />
+                <span className="text-text-main font-black underline">{contractToDelete?.contract_number}</span> ?
+                <br />
+                <span className="text-[10px] text-rose-500 font-black uppercase tracking-widest mt-4 block">{t('admin.prop.del_warning', 'Cette action est irréversible et effacera les données associées.')}</span>
+              </p>
+              <div className="flex gap-4">
+                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 bg-bg-soft border border-border-main rounded-lg text-[10px] font-black uppercase tracking-widest text-text-sub transition-all">
+                  {t('common.cancel', 'Annuler')}
+                </button>
+                <button onClick={handleDelete} className="flex-1 py-3 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20 transition-all">
+                  {t('common.delete', 'Supprimer')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
