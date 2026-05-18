@@ -324,7 +324,11 @@ class RentalRequestController extends Controller
                     ];
                     
                     $rentalRequest->user->notify(new \App\Notifications\GeneralNotification($notifData));
-                    event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
+                    try {
+                        event(new \App\Events\RealTimeNotification($rentalRequest->user->id, $notifData));
+                    } catch (\Exception $e) {
+                        Log::warning('Erreur RealTimeNotification (contrat) dans RentalRequestController: ' . $e->getMessage());
+                    }
                 }
             }
 
