@@ -30,10 +30,15 @@ const ChatWidget = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(() => {
@@ -122,7 +127,9 @@ const ChatWidget = () => {
           </div>
 
           {/* Messages Area */}
-          <div className={`flex-1 overflow-y-auto p-4 space-y-4 transition-colors duration-300 ${
+          <div 
+            ref={messagesContainerRef}
+            className={`flex-1 overflow-y-auto p-4 space-y-4 transition-colors duration-300 ${
             isLight ? 'bg-slate-50' : 'bg-bg-soft'
           }`}>
             {messages.map((msg) => (
@@ -155,7 +162,6 @@ const ChatWidget = () => {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Suggestions */}

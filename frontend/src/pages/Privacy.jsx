@@ -1,20 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
 import { 
-  LockClosedIcon, 
-  BuildingOfficeIcon, 
-  CalendarIcon, 
-  EnvelopeIcon,
-  PhoneIcon,
-  MapPinIcon,
-  ShieldCheckIcon,
+  ArrowLeftIcon,
+  InformationCircleIcon,
+  UserIcon,
+  DocumentDuplicateIcon,
   ScaleIcon,
-  DocumentTextIcon,
-  ServerIcon,
   ClockIcon,
-  CheckBadgeIcon,
-  ArrowLeftIcon
+  ShieldCheckIcon,
+  CogIcon,
+  ChartBarIcon,
+  SparklesIcon,
+  LockClosedIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+  NoSymbolIcon,
+  ArchiveBoxIcon,
+  PauseIcon,
+  EnvelopeIcon,
+  DocumentTextIcon,
+  PhoneIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
@@ -36,8 +43,6 @@ const sectionVariants = {
 };
 
 const Privacy = () => {
-  const { t, language } = useLanguage();
-
   return (
     <div className="min-h-screen bg-bg-soft pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-outfit">
       <div className="max-w-4xl mx-auto">
@@ -52,14 +57,11 @@ const Privacy = () => {
             className="inline-flex items-center gap-2 text-text-sub hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4"
           >
             <ArrowLeftIcon className="w-3 h-3" />
-            {t('common.prev', 'Retour')}
+            Retour
           </Link>
           <h1 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
-            {t('legal.privacy.title_p1', 'Politique de')} <span className="text-primary">{t('legal.privacy.title_p2', 'Confidentialité')}</span>
+            Politique de <span className="text-primary">Confidentialité</span>
           </h1>
-          <p className="text-xs text-text-sub font-bold uppercase tracking-[0.3em] opacity-60">
-            {t('legal.privacy.subtitle', 'Comment nous protégeons vos données personnelles')}
-          </p>
         </motion.div>
 
         {/* Content Area */}
@@ -67,149 +69,316 @@ const Privacy = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="bg-bg-card border border-border-main rounded-xl shadow-xl overflow-hidden backdrop-blur-sm"
+          className="bg-bg-card border border-border-main rounded-xl shadow-xl overflow-hidden backdrop-blur-sm text-text-main"
         >
-          <div className="p-8 md:p-12 space-y-16">
-            
-            {/* Introduction */}
-            <motion.section variants={sectionVariants} className="group">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <LockClosedIcon className="w-6 h-6" />
+          <div className="p-8 md:p-12 space-y-12">
+
+            {/* 1. Introduction */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <InformationCircleIcon className="w-6 h-6" />
                 </div>
-                <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  {t('legal.privacy.intro_title', '1. Introduction')}
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  1. Introduction
                 </h2>
               </div>
-              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed max-w-2xl">
-                <p>{t('legal.privacy.intro_desc_1', 'IMMORent Maroc SARL accorde une importance primordiale à la protection de vos données personnelles.')}</p>
-                <p className="font-bold text-text-main">{t('legal.privacy.intro_desc_2', 'Engagement conforme à la Loi n° 09-08.')}</p>
+              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
+                <p>IMMORent Maroc SARL (ci-après "IMMORent", "nous", "notre") accorde une importance primordiale à la protection de vos données personnelles. La présente politique de confidentialité a pour objectif de vous informer sur la manière dont nous collectons, utilisons, stockons et protégeons vos informations lorsque vous utilisez notre plateforme immobilière IMMORent.ma.</p>
+                <p>Nous nous engageons à respecter la Loi n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à garantir la confidentialité de vos informations.</p>
               </div>
             </motion.section>
 
-            {/* Données collectées */}
-            <motion.section variants={sectionVariants} className="group">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <DocumentTextIcon className="w-6 h-6" />
+            {/* 2. Responsable du traitement */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <UserIcon className="w-6 h-6" />
                 </div>
-                <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  {t('legal.privacy.data_title', '2. Données collectées')}
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  2. Responsable du traitement
+                </h2>
+              </div>
+              <div className="pl-16 space-y-2 text-sm text-text-sub">
+                <p className="font-bold text-text-main">IMMORent Maroc SARL</p>
+                <p>Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000, Maroc</p>
+                <p>Téléphone : +212 5 24 12 34 56</p>
+                <p>Email : <a href="mailto:contact@immorent.ma" className="text-primary hover:underline">contact@immorent.ma</a></p>
+              </div>
+            </motion.section>
+
+            {/* 3. Données collectées */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <DocumentDuplicateIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  3. Données collectées
+                </h2>
+              </div>
+              <div className="pl-16">
+                <p className="text-sm text-text-sub mb-4">Nous collectons les catégories de données suivantes :</p>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-text-sub">
+                  <li><strong>Données d'identification :</strong> nom, prénom, email, téléphone</li>
+                  <li><strong>Données de connexion :</strong> adresse IP, logs, navigateur</li>
+                  <li><strong>Données de transaction :</strong> historique des recherches, annonces consultées</li>
+                  <li><strong>Données de paiement :</strong> (uniquement si nécessaire via des prestataires sécurisés)</li>
+                </ul>
+              </div>
+            </motion.section>
+
+            {/* 4. Base légale du traitement */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ScaleIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  4. Base légale du traitement
                 </h2>
               </div>
               <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { key: 'data_ident', icon: CheckBadgeIcon },
-                  { key: 'data_conn', icon: ServerIcon },
-                  { key: 'data_trans', icon: ClockIcon },
-                  { key: 'data_pay', icon: ShieldCheckIcon }
-                ].map((item) => (
-                  <div key={item.key} className="p-5 rounded-lg bg-bg-soft border border-border-main flex items-start gap-4 hover:border-primary/30 transition-colors">
-                    <item.icon className="w-5 h-5 text-primary flex-shrink-0" />
-                    <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-text-main mb-1">
-                        {t(`legal.privacy.${item.key}_title`, item.key.split('_')[1])}
-                      </h4>
-                      <p className="text-xs text-text-muted leading-relaxed">
-                        {t(`legal.privacy.${item.key}`)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.section>
-
-            {/* Base légale */}
-            <motion.section variants={sectionVariants} className="group">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <ScaleIcon className="w-6 h-6" />
+                <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Consentement</h4>
+                  <p className="text-xs text-text-muted">Pour l'envoi de newsletters et communications marketing</p>
                 </div>
-                <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  {t('legal.privacy.legal_base_title', '3. Base légale')}
-                </h2>
-              </div>
-              <div className="pl-16 grid grid-cols-2 md:grid-cols-4 gap-3">
-                {['consent', 'contract', 'legal_oblig', 'legit_interest'].map((key) => (
-                  <div key={key} className="p-4 rounded-lg bg-bg-soft border border-border-main text-center group/card hover:bg-primary transition-all duration-300">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-text-main group-hover/card:text-white">
-                      {t(`legal.privacy.${key}`)}
-                    </h4>
-                  </div>
-                ))}
+                <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Contrat</h4>
+                  <p className="text-xs text-text-muted">Pour l'exécution de nos services immobiliers</p>
+                </div>
+                <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Obligation légale</h4>
+                  <p className="text-xs text-text-muted">Pour répondre aux exigences réglementaires</p>
+                </div>
+                <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Intérêt légitime</h4>
+                  <p className="text-xs text-text-muted">Pour améliorer nos services et la sécurité</p>
+                </div>
               </div>
             </motion.section>
 
-            {/* Durée de conservation */}
-            <motion.section variants={sectionVariants} className="group">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+            {/* 5. Durée de conservation */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                   <ClockIcon className="w-6 h-6" />
                 </div>
-                <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  {t('legal.privacy.retention_title', '4. Durée de conservation')}
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  5. Durée de conservation
                 </h2>
               </div>
-              <div className="pl-16 space-y-3 max-w-xl">
-                {[
-                  { key: 'retention_inactive', val: '3 ans' },
-                  { key: 'retention_nav', val: '13 mois' },
-                  { key: 'retention_legal', val: '10 ans' }
-                ].map((item) => (
-                  <div key={item.key} className="flex justify-between items-center py-3 border-b border-border-main group/row">
-                    <span className="text-sm font-medium text-text-sub group-hover/row:text-text-main transition-colors">{t(`legal.privacy.${item.key}`)}</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-primary">{item.val}</span>
-                  </div>
-                ))}
+              <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
+                  <span className="text-sm font-medium text-text-sub">Comptes inactifs</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">3 ans</span>
+                </div>
+                <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
+                  <span className="text-sm font-medium text-text-sub">Données de navigation</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">13 mois</span>
+                </div>
+                <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
+                  <span className="text-sm font-medium text-text-sub">Factures et documents légaux</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">10 ans</span>
+                </div>
+                <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
+                  <span className="text-sm font-medium text-text-sub">Demandes de contact</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">1 an</span>
+                </div>
               </div>
             </motion.section>
 
-            {/* Cookies */}
-            <motion.section variants={sectionVariants} className="group">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <CheckBadgeIcon className="w-6 h-6" />
+            {/* 6. Sécurité des données */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ShieldCheckIcon className="w-6 h-6" />
                 </div>
-                <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  {t('legal.privacy.cookies_title', '5. Cookies & Tracking')}
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  6. Sécurité des données
                 </h2>
               </div>
-              <div className="pl-16 flex flex-wrap gap-3">
-                {['operation', 'stats', 'personalize', 'security'].map((key) => (
-                  <div key={key} className="px-5 py-3 rounded-md bg-bg-soft border border-border-main text-[10px] font-black uppercase tracking-widest text-text-sub hover:text-primary hover:border-primary/30 transition-all">
-                    {t(`legal.privacy.cookies_${key}`)}
-                  </div>
-                ))}
+              <div className="pl-16">
+                <p className="text-sm text-text-sub mb-4">Nous mettons en œuvre les mesures techniques et organisationnelles suivantes :</p>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-text-sub">
+                  <li>Chiffrement SSL/TLS pour toutes les transmissions de données</li>
+                  <li>Hébergement sécurisé avec accès restreint</li>
+                  <li>Sauvegardes quotidiennes et monitoring 24/7</li>
+                </ul>
               </div>
             </motion.section>
 
-            {/* Footer Contact */}
-            <motion.div variants={sectionVariants} className="pt-16 border-t border-border-main grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="space-y-4">
-                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-text-main">{t('legal.privacy.contact_title', 'Support DPO')}</h4>
-                <a href="mailto:dpo@immorent.ma" className="block p-4 rounded-lg bg-primary/5 border border-primary/10 text-primary text-sm font-bold hover:bg-primary/10 transition-all">
-                  dpo@immorent.ma
-                </a>
-              </div>
-              <div className="md:col-span-2 flex flex-col justify-end text-right">
-                <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  {t('legal.mentions.last_update', 'Dernière mise à jour')} : {new Date().toLocaleDateString(language === 'ar' ? 'ar-MA' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {/* 7. Cookies */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <CogIcon className="w-6 h-6" />
                 </div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-40">
-                  © {new Date().getFullYear()} IMMORent Maroc — Tous droits réservés
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  7. Cookies
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4">
+                <p className="text-sm text-text-sub">Nous utilisons des cookies pour :</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
+                    <CogIcon className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-text-sub">Fonctionnement du site</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
+                    <ChartBarIcon className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-text-sub">Analyses statistiques</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
+                    <SparklesIcon className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-text-sub">Personnalisation des annonces</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
+                    <LockClosedIcon className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-text-sub">Sécurité et authentification</span>
+                  </div>
+                </div>
+                <p className="text-sm text-text-sub mt-4">Vous pouvez gérer vos préférences de cookies à tout moment via notre gestionnaire de cookies. Médias.</p>
+              </div>
+            </motion.section>
+
+            {/* 8. Vos droits */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ScaleIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  8. Vos droits
+                </h2>
+              </div>
+              <div className="pl-16 space-y-6">
+                <p className="text-sm text-text-sub">Conformément à la Loi n° 09-08 et au RGPD, vous disposez des droits suivants :</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MagnifyingGlassIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit d'accès</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">Obtenir la confirmation que vos données sont traitées et y accéder.</p>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <PencilIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit de rectification</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">Faire rectifier vos données si elles sont inexactes.</p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrashIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit à l'effacement</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">Demander la suppression de vos données.</p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <NoSymbolIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit d'opposition</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">S'opposer au traitement pour des motifs légitimes.</p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ArchiveBoxIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit à la portabilité</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">Recevoir vos données dans un format structuré.</p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <div className="flex items-center gap-2 mb-2">
+                      <PauseIcon className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-text-main">Droit à la limitation</h4>
+                    </div>
+                    <p className="text-xs text-text-muted">Suspendre le traitement de vos données.</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3">
+                  <EnvelopeIcon className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div>
+                    <h4 className="font-bold text-text-main mb-1">Pour exercer vos droits :</h4>
+                    <p className="text-sm text-text-sub">Contactez notre DPO à <a href="mailto:dpo@immorent.ma" className="text-primary hover:underline">dpo@immorent.ma</a> ou par courrier à l'adresse du siège social.</p>
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* 9. Modifications de la politique */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <DocumentTextIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  9. Modifications de la politique
+                </h2>
+              </div>
+              <div className="pl-16">
+                <p className="text-sm text-text-sub leading-relaxed">
+                  Nous nous réservons le droit de modifier la présente politique de confidentialité à tout moment. La version la plus récente est toujours disponible sur cette page. En cas de modification substantielle, nous vous en informerons par email ou via une notification sur notre plateforme.
                 </p>
               </div>
-            </motion.div>
+            </motion.section>
+
+            {/* 10. Nous contacter */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <PhoneIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  10. Nous contacter
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4">
+                <p className="text-sm text-text-sub">Pour toute question relative à cette politique :</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <EnvelopeIcon className="w-5 h-5 text-primary" />
+                    <div className="text-sm">
+                      <p className="text-text-muted text-xs mb-1">Email</p>
+                      <a href="mailto:confidentialite@immorent.ma" className="text-text-main font-medium hover:text-primary">confidentialite@immorent.ma</a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <PhoneIcon className="w-5 h-5 text-primary" />
+                    <div className="text-sm">
+                      <p className="text-text-muted text-xs mb-1">Téléphone</p>
+                      <span className="text-text-main font-medium">+212 5 24 12 34 56</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <MapPinIcon className="w-8 h-8 text-primary flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="text-text-muted text-xs mb-1">Adresse</p>
+                      <span className="text-text-main font-medium">Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+
           </div>
         </motion.div>
 
-        {/* Navigation */}
+        {/* Footer links */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="mt-12 flex items-center justify-center gap-8"
+          transition={{ delay: 0.5 }}
+          className="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-8"
         >
           <Link to="/legal-mentions" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
             Mentions Légales
