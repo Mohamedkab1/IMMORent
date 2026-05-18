@@ -51,7 +51,7 @@ class AuthController extends Controller
             $agentStatus = null;
 
             if ($request->role === 'agent') {
-                $isActive = false;
+                $isActive = true; // Agents are active but their agent_status is pending
                 $agentStatus = 'pending';
             }
             // Créer l'utilisateur

@@ -116,6 +116,19 @@ const AdminPayments = () => {
     }
   };
 
+  const handleDownloadInvoice = async (payment) => {
+    if (!payment.invoice) {
+      toast.info(t('admin.payments.no_invoice', 'Aucune facture générée pour ce paiement'));
+      return;
+    }
+    toast.info(t('admin.payments.downloading', 'Téléchargement de la facture...'));
+    try {
+      await paymentService.downloadInvoice(payment.invoice.id);
+    } catch (error) {
+      toast.error(t('common.error', 'Erreur lors du téléchargement'));
+    }
+  };
+
   const stats = {
     paid: payments.filter(p => p.status === 'paid').reduce((s, p) => s + p.amount, 0),
     pending: payments.filter(p => p.status === 'pending').reduce((s, p) => s + p.amount, 0),
@@ -256,7 +269,9 @@ const AdminPayments = () => {
                         <motion.button 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2.5 rounded-lg bg-bg-soft border border-border-main text-text-muted hover:text-primary transition-all"
+                          onClick={() => handleDownloadInvoice(p)}
+                          title={t('admin.payments.download_invoice', 'Télécharger la facture')}
+                          className={`p-2.5 rounded-lg border transition-all ${p.invoice ? 'bg-bg-soft border-border-main text-text-muted hover:text-primary' : 'bg-bg-soft/50 border-border-main/50 text-text-muted/30 cursor-not-allowed'}`}
                         >
                           <DocumentTextIcon className="w-4 h-4" />
                         </motion.button>

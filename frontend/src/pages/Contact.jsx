@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import axios from 'axios';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -58,16 +59,35 @@ const Contact = () => {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const parts = formData.name.trim().split(' ');
+      const first_name = parts[0] || '';
+      const last_name = parts.slice(1).join(' ') || '.'; // '.' to avoid validation error if no last name is provided
+      
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/contact`, {
+        first_name,
+        last_name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message,
+      });
+
+      if (response.data.success) {
+        setSubmitted(true);
+        toast.success(response.data.message || t('contact.success'));
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setTimeout(() => setSubmitted(false), 5000);
+      }
+    } catch (error) {
+      console.error('Erreur contact:', error);
+      toast.error(error.response?.data?.message || 'Une erreur est survenue lors de l\'envoi du message.');
+    } finally {
       setSubmitting(false);
-      setSubmitted(true);
-      toast.success(t('contact.success'));
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      setTimeout(() => setSubmitted(false), 5000);
-    }, 1000);
+    }
   };
 
   return (

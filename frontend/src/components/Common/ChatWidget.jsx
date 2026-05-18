@@ -10,8 +10,11 @@ import {
   PaperAirplaneIcon,
   HomeIcon,
   UserIcon,
-  UserPlusIcon
+  UserPlusIcon,
+  ChatBubbleOvalLeftEllipsisIcon
 } from '@heroicons/react/24/outline';
+import { ChatBubbleOvalLeftEllipsisIcon as ChatBubbleOvalLeftEllipsisIconSolid } from '@heroicons/react/24/solid';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatWidget = () => {
   const { user } = useAuth();
@@ -87,28 +90,34 @@ const ChatWidget = () => {
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
       {/* Chat Window */}
+      <AnimatePresence>
       {isOpen && (
-        <div className={`absolute bottom-16 right-0 w-[350px] sm:w-[380px] h-[500px] rounded-2xl shadow-huge flex flex-col overflow-hidden animate-scale-up origin-bottom-right transition-colors duration-300 ${
+        <motion.div 
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className={`absolute bottom-20 right-0 w-[350px] sm:w-[380px] h-[500px] rounded-lg shadow-huge flex flex-col overflow-hidden origin-bottom-right transition-colors duration-300 ${
           isLight 
             ? 'bg-white border border-slate-200' 
             : 'bg-bg-card border border-border-main'
         }`}>
           {/* Header */}
-          <div className="bg-blue-600 p-4 flex items-center justify-between">
+          <div className="bg-blue-600 p-4 flex items-center justify-between border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <ChatBubbleLeftRightIcon className="w-5 h-5 !text-white" />
+              <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center backdrop-blur-sm border border-white/30">
+                <ChatBubbleOvalLeftEllipsisIconSolid className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-sm !text-white">Assistant IMMORent</h3>
-                <p className="text-[10px] text-white/80">Propulsé par l'IA</p>
+                <h3 className="font-bold text-sm text-white tracking-wide">Assistant IMMORent</h3>
+                <p className="text-[10px] text-white/80 uppercase tracking-widest font-black">Intelligence Artificielle</p>
               </div>
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
             >
-              <XMarkIcon className="w-5 h-5 !text-white" />
+              <XMarkIcon className="w-5 h-5 text-white/80" />
             </button>
           </div>
 
@@ -122,7 +131,7 @@ const ChatWidget = () => {
                 className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[85%] p-3 rounded-2xl text-sm ${
+                  className={`max-w-[85%] p-3 rounded-lg text-sm ${
                     msg.sender === 'user' 
                       ? 'bg-blue-600 !text-white rounded-br-none' 
                       : isLight
@@ -137,7 +146,7 @@ const ChatWidget = () => {
             
             {isTyping && (
               <div className="flex justify-start">
-                <div className={`rounded-2xl rounded-bl-none p-4 flex gap-1.5 items-center shadow-sm ${
+                <div className={`rounded-lg rounded-bl-none p-4 flex gap-1.5 items-center shadow-sm ${
                   isLight ? 'bg-white border border-slate-200' : 'bg-bg-card border border-border-main'
                 }`}>
                   <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -206,22 +215,29 @@ const ChatWidget = () => {
               </button>
             </form>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Floating Button */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-huge hover:scale-105 transition-all duration-300 border-4 ${
-          isLight ? 'border-white' : 'border-bg-card'
-        }`}
+        className={`w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center shadow-huge transition-all duration-300 border border-blue-500`}
       >
+        <AnimatePresence mode="wait">
         {isOpen ? (
-          <XMarkIcon className="w-6 h-6 animate-fade-in !text-white" />
+          <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <XMarkIcon className="w-6 h-6 text-white" />
+          </motion.div>
         ) : (
-          <ChatBubbleLeftRightIcon className="w-6 h-6 animate-fade-in !text-white" />
+          <motion.div key="chat" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6 text-white" />
+          </motion.div>
         )}
-      </button>
+        </AnimatePresence>
+      </motion.button>
     </div>
   );
 };

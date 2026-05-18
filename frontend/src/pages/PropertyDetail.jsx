@@ -13,7 +13,14 @@ import {
   ChevronRightIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  HeartIcon as HeartIconOutline
+  HeartIcon as HeartIconOutline,
+  HomeIcon,
+  ArrowsPointingOutIcon,
+  HashtagIcon,
+  KeyIcon,
+  BanknotesIcon,
+  BuildingOfficeIcon,
+  HomeModernIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -299,12 +306,21 @@ const PropertyDetail = () => {
             
             {/* Top Badges */}
             <div className="pd-top-badges">
-              <div className="pd-badge">{t(`property.type.${property.type?.toLowerCase()}`)}</div>
+              <div className="pd-badge flex items-center gap-2">
+                <HomeIcon className="w-5 h-5 text-primary" />
+                <span>{t(`property.type.${property.type?.toLowerCase()}`)}</span>
+              </div>
               {property.bedrooms && (
-                <div className="pd-badge">{t('prop.detail.nb_bedrooms', 'Nb.chambres')} : {property.bedrooms}</div>
+                <div className="pd-badge flex items-center gap-2">
+                  <HomeModernIcon className="w-5 h-5 text-primary" />
+                  <span>{property.bedrooms} {t('prop.detail.bedrooms', 'chambres')}</span>
+                </div>
               )}
               {property.surface && (
-                <div className="pd-badge">{t('prop.detail.surface_terrain', 'Surface terrain')} : {property.surface} m²</div>
+                <div className="pd-badge flex items-center gap-2">
+                  <ArrowsPointingOutIcon className="w-5 h-5 text-primary" />
+                  <span>{property.surface} m²</span>
+                </div>
               )}
             </div>
 
@@ -342,26 +358,50 @@ const PropertyDetail = () => {
               
               <div className="pd-details-grid">
                 <div className="pd-detail-row">
-                  <div className="pd-detail-label">{t('prop.detail.reference', 'Référence')} :</div>
+                  <div className="pd-detail-label flex items-center gap-2">
+                    <HashtagIcon className="w-5 h-5 text-slate-400" />
+                    {t('prop.detail.reference', 'Référence')} :
+                  </div>
                   <div className="pd-detail-value">{t('prop.detail.ref_prefix', 'Ref')}{property.id}</div>
                 </div>
                 <div className="pd-detail-row">
-                  <div className="pd-detail-label">{t('prop.detail.info.type', 'Type')} :</div>
+                  <div className="pd-detail-label flex items-center gap-2">
+                    <BuildingOfficeIcon className="w-5 h-5 text-slate-400" />
+                    {t('prop.detail.info.type', 'Type')} :
+                  </div>
                   <div className="pd-detail-value">{t(`property.type.${property.type?.toLowerCase()}`)}</div>
                 </div>
                 <div className="pd-detail-row">
-                  <div className="pd-detail-label">{t('prop.detail.info.vocation', 'Vocation')} :</div>
+                  <div className="pd-detail-label flex items-center gap-2">
+                    <KeyIcon className="w-5 h-5 text-slate-400" />
+                    {t('prop.detail.info.vocation', 'Vocation')} :
+                  </div>
                   <div className="pd-detail-value">{t(`prop.transaction.${property.transaction_type?.toLowerCase()}`)}</div>
                 </div>
+                {property.bedrooms && (
+                  <div className="pd-detail-row">
+                    <div className="pd-detail-label flex items-center gap-2">
+                      <HomeModernIcon className="w-5 h-5 text-slate-400" />
+                      {t('prop.detail.nb_bedrooms', 'Chambres')} :
+                    </div>
+                    <div className="pd-detail-value">{property.bedrooms}</div>
+                  </div>
+                )}
                 {property.surface && (
                   <div className="pd-detail-row">
-                    <div className="pd-detail-label">{t('prop.detail.info.surface_habitable', 'Surface habitable')} :</div>
+                    <div className="pd-detail-label flex items-center gap-2">
+                      <ArrowsPointingOutIcon className="w-5 h-5 text-slate-400" />
+                      {t('prop.detail.info.surface_habitable', 'Surface')} :
+                    </div>
                     <div className="pd-detail-value">{property.surface} m²</div>
                   </div>
                 )}
                 {property.price && (
                   <div className="pd-detail-row">
-                    <div className="pd-detail-label">{t('prop.detail.info.price', 'Prix')} :</div>
+                    <div className="pd-detail-label flex items-center gap-2">
+                      <BanknotesIcon className="w-5 h-5 text-slate-400" />
+                      {t('prop.detail.info.price', 'Prix')} :
+                    </div>
                     <div className="pd-detail-value">{property.price.toLocaleString()} {t('prop.currency', 'DH')}</div>
                   </div>
                 )}

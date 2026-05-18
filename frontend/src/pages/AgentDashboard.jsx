@@ -411,6 +411,15 @@ const AgentDashboard = () => {
             <p className="text-sm text-text-sub mt-1">{t('agent.dashboard.subtitle')}</p>
           </div>
           
+          {user?.agent_status === 'pending' && (
+            <div className="w-full sm:w-auto p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30 rounded-xl flex items-center gap-3">
+              <ClockIcon className="w-6 h-6 text-amber-500 shrink-0" />
+              <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                {t('agent.dashboard.pending_approval', 'Votre compte agent est en cours de validation par un administrateur. Certaines fonctionnalités sont limitées.')}
+              </p>
+            </div>
+          )}
+          
           <div className="flex items-center gap-3">
             <button 
               onClick={refreshData} 

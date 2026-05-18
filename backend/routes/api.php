@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TestPdfController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Api\AIController;
+use App\Http\Controllers\Api\ContactController;
 
 
 /*
@@ -49,6 +50,8 @@ Route::get('/properties/{id}/reviews', [ReviewController::class, 'index']);
 // AI Assistant
 Route::post('/ai/chat', [AIController::class, 'chat']);
 
+// Formulaire de contact
+Route::post('/contact', [ContactController::class, 'send']);
 
 // Catégories de biens
 Route::get('/categories', [CategoryController::class, 'index']);
