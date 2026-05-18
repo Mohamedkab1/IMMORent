@@ -28,8 +28,12 @@ class ContactMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = isset($this->contactData['subject']) ? $this->contactData['subject'] : 'Général';
+        $visitorName = ($this->contactData['first_name'] ?? '') . ' ' . ($this->contactData['last_name'] ?? '');
         return new Envelope(
             subject: 'Nouveau message de contact : ' . $subject,
+            replyTo: [
+                new \Illuminate\Mail\Mailables\Address($this->contactData['email'], trim($visitorName))
+            ]
         );
     }
 
@@ -39,7 +43,7 @@ class ContactMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contact',
+            markdown: 'emails.contact',
         );
     }
 

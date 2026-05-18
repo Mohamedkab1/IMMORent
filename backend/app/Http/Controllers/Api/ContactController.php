@@ -36,8 +36,9 @@ class ContactController extends Controller
         try {
             $contactData = $request->all();
             
-            // Envoyer l'email à l'adresse de l'agence
-            Mail::to('info@immorent.com')->send(new ContactMail($contactData));
+            // Envoyer l'email à l'adresse de l'agence (configurée dans .env)
+            $agencyEmail = config('mail.from.address') ?: 'seeanas836@gmail.com';
+            Mail::to($agencyEmail)->send(new ContactMail($contactData));
             
             return response()->json([
                 'success' => true,

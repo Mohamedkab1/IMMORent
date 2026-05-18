@@ -288,11 +288,10 @@ const Properties = () => {
                         
                         {/* Transaction Badge */}
                         <div className="absolute top-3 left-3">
-                          <span className={`px-2.5 py-1 rounded text-[8px] font-black uppercase tracking-widest backdrop-blur-md border ${
-                            property.transaction_type === 'sale' 
-                              ? 'bg-rose-500/20 text-rose-500 border-rose-500/20' 
-                              : 'bg-emerald-500/20 text-emerald-500 border-emerald-500/20'
-                          }`}>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 text-white backdrop-blur-md border border-white/10 shadow-lg select-none">
+                            <span className={`w-2 h-2 rounded-full ${
+                              property.transaction_type === 'sale' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                            }`} />
                             {property.transaction_type === 'sale' ? t('prop.card.sale') : t('prop.card.rent')}
                           </span>
                         </div>

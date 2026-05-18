@@ -117,9 +117,10 @@ const Favorites = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                       
                       <div className="absolute top-4 left-4">
-                        <span className={`px-3 py-1.5 rounded text-[9px] font-black uppercase tracking-widest backdrop-blur-md border ${
-                          property.transaction_type === 'sale' ? 'bg-rose-500/20 text-rose-500 border-rose-500/30' : 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30'
-                        }`}>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 text-white backdrop-blur-md border border-white/10 shadow-lg select-none">
+                          <span className={`w-2 h-2 rounded-full ${
+                            property.transaction_type === 'sale' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                          }`} />
                           {property.transaction_type === 'sale' ? t('prop.card.sale') : t('prop.card.rent')}
                         </span>
                       </div>
