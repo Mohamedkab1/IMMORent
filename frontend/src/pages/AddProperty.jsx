@@ -196,6 +196,22 @@ const AddProperty = () => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index)); 
   };
 
+  const setMainImage = (index) => {
+    if (index === 0) return;
+    setImages(prev => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      updated.unshift(selected);
+      return updated;
+    });
+    setImagePreviews(prev => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      updated.unshift(selected);
+      return updated;
+    });
+  };
+
   const addFeature = () => { 
     if (newFeature.trim() && !featuresList.includes(newFeature.trim())) { 
       setFeaturesList([...featuresList, newFeature.trim()]); 
@@ -221,7 +237,14 @@ const AddProperty = () => {
         setShowSuccessModal(true);
       }
     } catch (error) { 
-      toast.error(t('admin.add.val.server_error', 'Erreur serveur'));
+      if (error.response && error.response.status === 422 && error.response.data.errors) {
+        const validationMsgs = error.response.data.errors;
+        Object.keys(validationMsgs).forEach(key => {
+          toast.error(`${key}: ${validationMsgs[key].join(', ')}`);
+        });
+      } else {
+        toast.error(error.response?.data?.message || t('admin.add.val.server_error', 'Erreur serveur'));
+      }
     } finally { setLoading(false); }
   };
 
@@ -446,11 +469,30 @@ const AddProperty = () => {
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                   {imagePreviews.map((preview, i) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main group">
-                      <img src={preview} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                    <div key={i} className={`relative aspect-square rounded-xl overflow-hidden border transition-all ${
+                      i === 0 ? 'border-primary ring-2 ring-primary/30 shadow-xl' : 'border-border-main group'
+                    }`}>
+                      <img src={preview} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                      
+                      {/* Main Image Badge / Selector */}
+                      {i === 0 ? (
+                        <div className="absolute top-2 left-2 px-2.5 py-1 rounded bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1 select-none">
+                          <StarIcon className="w-3 h-3 fill-current" />
+                          {t('admin.add.main_image', 'Principale')}
+                        </div>
+                      ) : (
+                        <button
+                          type="button" onClick={() => setMainImage(i)}
+                          className="absolute top-2 left-2 p-2 bg-slate-950/70 hover:bg-primary text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl text-[8px] font-black uppercase tracking-wider flex items-center gap-1"
+                          title={t('admin.add.set_main', 'Définir comme principale')}
+                        >
+                          <StarIcon className="w-3.5 h-3.5 text-white" />
+                        </button>
+                      )}
+
                       <button 
                         type="button" onClick={() => removeImage(i)}
-                        className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        className="absolute top-2 right-2 p-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-all shadow-xl z-10"
                       >
                         <XMarkIcon className="w-4 h-4" />
                       </button>

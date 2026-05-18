@@ -432,6 +432,15 @@ class PropertyController extends Controller
                     ? $data['existing_images'] 
                     : json_decode($data['existing_images'], true);
                 
+                // Normaliser les URLs complètes en chemins relatifs
+                $imagesToKeep = array_map(function($path) {
+                    if (str_contains($path, '/storage/')) {
+                        $parts = explode('/storage/', $path);
+                        return end($parts);
+                    }
+                    return $path;
+                }, $imagesToKeep);
+
                 // Supprimer physiquement les images retirées
                 $removedImages = array_diff($currentImages, $imagesToKeep);
                 foreach ($removedImages as $removed) {
@@ -540,7 +549,7 @@ class PropertyController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'images' => 'required|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
             ]);
 
             if ($validator->fails()) {

@@ -138,6 +138,16 @@ const EditProperty = () => {
 
   const removeExistingImage = (index) => setExistingImages(prev => prev.filter((_, i) => i !== index));
   
+  const setMainExistingImage = (index) => {
+    if (index === 0) return;
+    setExistingImages(prev => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      updated.unshift(selected);
+      return updated;
+    });
+  };
+  
   const removeNewImage = (index) => { 
     setImages(prev => prev.filter((_, i) => i !== index)); 
     setImagePreviews(prev => prev.filter((_, i) => i !== index)); 
@@ -211,7 +221,14 @@ const EditProperty = () => {
         toast.error(res.message || 'Erreur lors de la modification');
       }
     } catch (error) { 
-      toast.error('Erreur lors de la communication aver le serveur'); 
+      if (error.response && error.response.status === 422 && error.response.data.errors) {
+        const validationMsgs = error.response.data.errors;
+        Object.keys(validationMsgs).forEach(key => {
+          toast.error(`${key}: ${validationMsgs[key].join(', ')}`);
+        });
+      } else {
+        toast.error(error.response?.data?.message || 'Erreur lors de la communication avec le serveur'); 
+      }
     } finally { 
       setSubmitting(false); 
     }
@@ -487,12 +504,31 @@ const EditProperty = () => {
                    <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4">{t('admin.edit.current_photos', 'Photos actuelles')}</h3>
                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      {existingImages.map((img, i) => (
-                       <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border-main shadow-sm group">
-                         <img src={img.startsWith('http') ? img : `/storage/${img}`} alt="Existant" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                       <div key={i} className={`relative aspect-square rounded-xl overflow-hidden border transition-all ${
+                          i === 0 ? 'border-primary ring-2 ring-primary/30 shadow-xl' : 'border-border-main group'
+                        }`}>
+                         <img src={img.startsWith('http') ? img : `/storage/${img}`} alt="Existant" className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-40 transition-opacity"></div>
+                         
+                         {/* Main Image Badge / Selector */}
+                         {i === 0 ? (
+                           <div className="absolute top-2 left-2 px-2.5 py-1 rounded bg-primary text-white text-[8px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1 select-none">
+                             <StarIcon className="w-3 h-3 fill-current" />
+                             {t('admin.add.main_image', 'Principale')}
+                           </div>
+                         ) : (
+                           <button
+                             type="button" onClick={() => setMainExistingImage(i)}
+                             className="absolute top-2 left-2 p-2 bg-slate-950/70 hover:bg-primary text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-xl text-[8px] font-black uppercase tracking-wider flex items-center gap-1"
+                             title={t('admin.add.set_main', 'Définir comme principale')}
+                           >
+                             <StarIcon className="w-3.5 h-3.5 text-white" />
+                           </button>
+                         )}
+
                          <button 
                            type="button" onClick={() => removeExistingImage(i)}
-                           className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
+                           className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md z-10 transition-all"
                          >
                            <TrashIcon className="w-4 h-4"/>
                          </button>
@@ -526,7 +562,7 @@ const EditProperty = () => {
                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                        <button 
                          type="button" onClick={() => removeNewImage(i)}
-                         className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md scale-0 group-hover:scale-100 transition-transform"
+                         className="absolute top-2 right-2 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md z-10 transition-all"
                        >
                          <XMarkIcon className="w-5 h-5"/>
                        </button>

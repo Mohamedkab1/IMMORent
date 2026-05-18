@@ -47,6 +47,7 @@ api.interceptors.response.use(
       // Erreur 422 - Validation
       if (error.response.status === 422) {
         console.error('Erreur de validation:', error.response.data.errors || error.response.data.message);
+        console.error('Erreur de validation (stringified):', JSON.stringify(error.response.data.errors || error.response.data.message));
       }
       
       // Erreur 500 - Serveur

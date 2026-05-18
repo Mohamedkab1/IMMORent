@@ -40,7 +40,7 @@ class UpdatePropertyRequest extends FormRequest
             'bathrooms' => 'nullable|integer|min:0',
             'features' => 'nullable',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:3072',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
             'existing_images' => 'nullable|array',
             'existing_images.*' => 'string',
         ];
