@@ -25,28 +25,33 @@ import {
 
 const getPropertyTypeFromCategory = (categoryId, categoriesList) => {
   const catId = parseInt(categoryId);
+  
+  if (categoriesList && categoriesList.length > 0) {
+    const foundCat = categoriesList.find(c => parseInt(c.id) === catId);
+    if (foundCat) {
+      if (foundCat.slug) return foundCat.slug;
+      
+      const name = foundCat.name.toLowerCase();
+      if (name.includes('apart') || name.includes('app') || name.includes('flat')) return 'apartment';
+      if (name.includes('mais') || name.includes('hous')) return 'house';
+      if (name.includes('villa')) return 'villa';
+      if (name.includes('stud')) return 'studio';
+      if (name.includes('bur') || name.includes('offic')) return 'office';
+      if (name.includes('commer') || name.includes('loca')) return 'commercial';
+      if (name.includes('terr') || name.includes('land')) return 'land';
+    }
+  }
+
   const map = {
     1: 'apartment',
     2: 'house',
-    3: 'commercial',
-    4: 'land',
-    5: 'studio',
-    6: 'villa',
-    7: 'office'
+    3: 'office',
+    4: 'commercial',
+    5: 'land',
+    6: 'studio'
   };
-  if (map[catId]) return map[catId];
   
-  const cat = categoriesList.find(c => c.id === catId);
-  if (!cat) return 'apartment';
-  const name = cat.name.toLowerCase();
-  if (name.includes('apart') || name.includes('app') || name.includes('flat')) return 'apartment';
-  if (name.includes('mais') || name.includes('hous')) return 'house';
-  if (name.includes('villa')) return 'villa';
-  if (name.includes('stud')) return 'studio';
-  if (name.includes('bur') || name.includes('offic')) return 'office';
-  if (name.includes('commer') || name.includes('loca')) return 'commercial';
-  if (name.includes('terr') || name.includes('land')) return 'land';
-  return 'apartment';
+  return map[catId] || 'apartment';
 };
 
 const EditProperty = () => {
@@ -204,7 +209,12 @@ const EditProperty = () => {
     if (!formData.city.trim()) errors.city = 'La ville est requise';
     if (!formData.postal_code.trim()) errors.postal_code = 'Le code postal est requis';
     if (!formData.surface || formData.surface <= 0) errors.surface = 'La surface est requise';
-    if (!formData.rooms || formData.rooms <= 0) errors.rooms = 'Le nombre de pièces est requis';
+    
+    // Do not validate rooms if category is terrain (land)
+    if (formData.type !== 'land') {
+      if (!formData.rooms || formData.rooms <= 0) errors.rooms = 'Le nombre de pièces est requis';
+    }
+    
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -222,9 +232,9 @@ const EditProperty = () => {
         ...formData, 
         price: parseFloat(formData.price), 
         surface: parseFloat(formData.surface), 
-        rooms: parseInt(formData.rooms), 
-        bedrooms: parseInt(formData.bedrooms) || 0, 
-        bathrooms: parseInt(formData.bathrooms) || 0, 
+        rooms: formData.type === 'land' ? 0 : parseInt(formData.rooms), 
+        bedrooms: (formData.type === 'land' || formData.type === 'office') ? 0 : (parseInt(formData.bedrooms) || 0), 
+        bathrooms: formData.type === 'land' ? 0 : (parseInt(formData.bathrooms) || 0), 
         category_id: parseInt(formData.category_id), 
         features: JSON.stringify(featuresList), 
         existing_images: existingImages,
@@ -445,28 +455,36 @@ const EditProperty = () => {
             
             <div className="p-6 md:p-8 space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div className="space-y-2">
+                <div className={`space-y-2 ${formData.type === 'land' ? 'col-span-full' : ''}`}>
                   <label className="text-sm font-bold text-text-main">{t('admin.add.surface', 'Surface')} <span className="text-rose-500">*</span></label>
                   <div className="relative">
-                    <input type="number" name="surface" value={formData.surface} onChange={handleChange} className="w-full ps-4 pe-10 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
+                    <input type="number" name="surface" value={formData.surface} onChange={handleChange} className={`w-full ps-4 pe-10 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium ${validationErrors.surface ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`} />
                     <div className="absolute inset-y-0 end-0 flex items-center pe-4 pointer-events-none text-text-muted font-bold text-sm">m²</div>
                   </div>
+                  {validationErrors.surface && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.surface}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">{t('admin.add.rooms', 'Pièces')} <span className="text-rose-500">*</span></label>
-                  <input type="number" name="rooms" value={formData.rooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
-                </div>
+                {formData.type !== 'land' && (
+                  <div className={`space-y-2 ${formData.type === 'office' ? 'col-span-1' : ''}`}>
+                    <label className="text-sm font-bold text-text-main">{t('admin.add.rooms', 'Pièces')} <span className="text-rose-500">*</span></label>
+                    <input type="number" name="rooms" value={formData.rooms} onChange={handleChange} className={`w-full px-4 py-3 bg-bg-soft border outline-none rounded-xl text-text-main font-medium ${validationErrors.rooms ? 'border-rose-500 focus:ring-rose-500' : 'border-border-main focus:border-primary focus:ring-1 focus:ring-primary'}`} />
+                    {validationErrors.rooms && <p className="text-rose-500 text-xs font-semibold mt-1 flex items-center gap-1"><InformationCircleIcon className="w-3.5 h-3.5"/> {validationErrors.rooms}</p>}
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">{t('admin.add.bedrooms', 'Chambres')}</label>
-                  <input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
-                </div>
+                {formData.type !== 'land' && formData.type !== 'office' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-text-main">{t('admin.add.bedrooms', 'Chambres')}</label>
+                    <input type="number" name="bedrooms" value={formData.bedrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary" />
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-main">{t('admin.add.bathrooms', 'Salles de bain')}</label>
-                  <input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary" />
-                </div>
+                {formData.type !== 'land' && (
+                  <div className={`space-y-2 ${formData.type === 'office' ? 'col-span-1' : ''}`}>
+                    <label className="text-sm font-bold text-text-main">{t('admin.add.bathrooms', 'Salles de bain')}</label>
+                    <input type="number" name="bathrooms" value={formData.bathrooms} onChange={handleChange} className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium focus:border-primary focus:ring-1 focus:ring-primary" />
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
