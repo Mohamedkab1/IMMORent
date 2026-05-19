@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { propertyService } from '../services/properties';
 import { toast } from 'react-toastify';
 import { 
@@ -67,6 +68,7 @@ const AddProperty = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAgent, isAdmin } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -321,7 +323,7 @@ const AddProperty = () => {
                         className={`flex-1 p-6 rounded-xl border transition-all flex flex-col items-center gap-2 ${formData.transaction_type === type.value ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-bg-soft border-border-main text-text-sub hover:border-primary/50'}`}
                       >
                         <type.icon className="w-6 h-6" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{type.label}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${formData.transaction_type === type.value && theme === 'light' ? '!text-white' : ''}`}>{type.label}</span>
                       </button>
                     ))}
                   </div>
@@ -428,8 +430,8 @@ const AddProperty = () => {
                     className="flex-1 bg-bg-soft/50 border border-border-main rounded-xl px-8 py-5 font-bold text-text-main outline-none focus:border-primary transition-all shadow-sm"
                     placeholder={t('admin.add.feat_ph', "Ex: Piscine, Spa...")}
                   />
-                  <button type="button" onClick={addFeature} className="w-16 h-16 shrink-0 flex items-center justify-center bg-primary text-white rounded-xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
-                    <PlusIcon className="w-7 h-7" />
+                  <button type="button" onClick={addFeature} className={`w-16 h-16 shrink-0 flex items-center justify-center bg-primary text-white rounded-xl shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all ${theme === 'light' ? '!text-white' : ''}`}>
+                    <PlusIcon className={`w-7 h-7 ${theme === 'light' ? '!text-white' : ''}`} />
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -510,7 +512,7 @@ const AddProperty = () => {
             </button>
             <button 
               type="submit" disabled={loading}
-              className="px-12 py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+              className={`px-12 py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-3 ${theme === 'light' ? '!text-white' : ''}`}
             >
               {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : t('admin.add.publish', 'Publier l\'annonce')}
             </button>

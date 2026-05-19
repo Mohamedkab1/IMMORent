@@ -230,7 +230,7 @@ const Properties = () => {
             {/* Search Action */}
             <button 
               onClick={fetchProperties}
-              className="w-full bg-primary hover:bg-primary/90 rounded-xl py-3.5 flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-primary/20 active:scale-95 text-white"
+              className={`w-full bg-primary hover:bg-primary/90 rounded-xl py-3.5 flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-primary/20 active:scale-95 text-white ${theme === 'light' ? '!text-white' : ''}`}
             >
               <MagnifyingGlassIcon className="w-4 h-4" />
               {t('prop.filter.submit')}
@@ -288,7 +288,7 @@ const Properties = () => {
                         
                         {/* Transaction Badge */}
                         <div className="absolute top-3 left-3">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 text-white backdrop-blur-md border border-white/10 shadow-lg select-none">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 text-white backdrop-blur-md border border-white/10 shadow-lg select-none ${theme === 'light' ? '!text-white' : ''}`}>
                             <span className={`w-2 h-2 rounded-full ${
                               property.transaction_type === 'sale' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
                             }`} />
