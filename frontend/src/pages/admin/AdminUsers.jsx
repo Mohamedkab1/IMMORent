@@ -130,15 +130,21 @@ const AdminUsers = () => {
     if (!editingUser && formData.password !== formData.password_confirmation) { toast.error(t('admin.users.pwd_mismatch', 'Mots de passe différents')); return; }
     
     try {
+      const dataToSubmit = { ...formData };
+      const selectedRole = roles.find(r => r.id.toString() === formData.role_id.toString());
+      if (selectedRole) {
+        dataToSubmit.role = selectedRole.slug;
+      }
+
       if (editingUser) {
-        const response = await userService.update(editingUser.id, formData);
+        const response = await userService.update(editingUser.id, dataToSubmit);
         if (response.success) {
           setUsers(users.map(u => u.id === editingUser.id ? response.data : u));
           toast.success(t('admin.users.updated', 'Utilisateur modifié'));
           closeModal();
         }
       } else {
-        const response = await userService.create(formData);
+        const response = await userService.create(dataToSubmit);
         if (response.success) {
           setUsers([response.data, ...users]);
           toast.success(t('admin.users.added', 'Utilisateur ajouté'));
@@ -147,7 +153,13 @@ const AdminUsers = () => {
       }
     } catch (error) {
       const message = error.response?.data?.message || t('common.error', 'Une erreur est survenue');
-      toast.error(message);
+      if (error.response?.data?.errors) {
+        Object.values(error.response.data.errors).forEach(err => {
+          toast.error(err[0]);
+        });
+      } else {
+        toast.error(message);
+      }
     }
   };
 
