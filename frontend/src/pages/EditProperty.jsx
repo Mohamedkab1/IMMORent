@@ -23,6 +23,32 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 
+const getPropertyTypeFromCategory = (categoryId, categoriesList) => {
+  const catId = parseInt(categoryId);
+  const map = {
+    1: 'apartment',
+    2: 'house',
+    3: 'commercial',
+    4: 'land',
+    5: 'studio',
+    6: 'villa',
+    7: 'office'
+  };
+  if (map[catId]) return map[catId];
+  
+  const cat = categoriesList.find(c => c.id === catId);
+  if (!cat) return 'apartment';
+  const name = cat.name.toLowerCase();
+  if (name.includes('apart') || name.includes('app') || name.includes('flat')) return 'apartment';
+  if (name.includes('mais') || name.includes('hous')) return 'house';
+  if (name.includes('villa')) return 'villa';
+  if (name.includes('stud')) return 'studio';
+  if (name.includes('bur') || name.includes('offic')) return 'office';
+  if (name.includes('commer') || name.includes('loca')) return 'commercial';
+  if (name.includes('terr') || name.includes('land')) return 'land';
+  return 'apartment';
+};
+
 const EditProperty = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -114,8 +140,15 @@ const EditProperty = () => {
   ];
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    if (validationErrors[e.target.name]) setValidationErrors(prev => ({ ...prev, [e.target.name]: null }));
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'category_id') {
+        updated.type = getPropertyTypeFromCategory(value, categories);
+      }
+      return updated;
+    });
+    if (validationErrors[name]) setValidationErrors(prev => ({ ...prev, [name]: null }));
   };
 
   const handleTransactionTypeSelect = (type) => {
@@ -314,17 +347,7 @@ const EditProperty = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.prop_type', 'Type de bien')} <span className="text-rose-500">*</span></label>
-                  <select 
-                    name="type" value={formData.type} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
-                  >
-                    {propertyTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                </div>
-                
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span></label>
                   <select 
