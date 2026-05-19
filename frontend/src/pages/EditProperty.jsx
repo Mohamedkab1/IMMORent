@@ -357,26 +357,14 @@ const EditProperty = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span></label>
-                  <select 
-                    name="category_id" value={formData.category_id} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
-                  >
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.edit.status', 'Statut')} <span className="text-rose-500">*</span></label>
-                  <select 
-                    name="status" value={formData.status} onChange={handleChange} 
-                    className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
-                  >
-                    {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-1.5 text-sm font-bold text-text-main">{t('admin.add.category', 'Catégorie')} <span className="text-rose-500">*</span></label>
+                <select 
+                  name="category_id" value={formData.category_id} onChange={handleChange} 
+                  className="w-full px-4 py-3 bg-bg-soft border border-border-main outline-none rounded-xl text-text-main font-medium transition-all appearance-none cursor-pointer focus:border-primary hover:border-slate-400"
+                >
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
