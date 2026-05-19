@@ -21,6 +21,10 @@ const PropertyCard = ({ property }) => {
         <img
           src={property.images?.[0] ? (property.images[0].startsWith('http') ? property.images[0] : `/storage/${property.images[0]}`) : defaultImage}
           alt={property.title}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = defaultImage;
+          }}
         />
         <span className="property-type">{property.type_label || property.type}</span>
       </div>

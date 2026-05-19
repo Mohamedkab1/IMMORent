@@ -244,6 +244,10 @@ const PropertyDetail = () => {
               src={getImageUrl(images[currentImageIndex])} 
               alt={property.title} 
               className="pd-main-image"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = defaultImage;
+              }}
             />
             
             {/* Favorite Button Overlay */}
@@ -287,7 +291,14 @@ const PropertyDetail = () => {
                   className={`pd-thumbnail ${currentImageIndex === idx ? 'active' : ''}`}
                   onClick={() => setCurrentImageIndex(idx)}
                 >
-                  <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} />
+                  <img 
+                    src={getImageUrl(img)} 
+                    alt={`Thumbnail ${idx}`} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultImage;
+                    }}
+                  />
                 </div>
               ))}
             </div>
