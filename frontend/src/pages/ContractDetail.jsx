@@ -26,7 +26,7 @@ const ContractDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin, isAgent } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -57,7 +57,7 @@ const ContractDetail = () => {
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await contractService.download(id);
+      await contractService.download(id, language);
       toast.success(t('admin.contracts.downloading', 'Téléchargement du contrat en cours...'));
     } catch (error) {
       toast.error(t('ctr.download_error', 'Erreur lors du téléchargement'));

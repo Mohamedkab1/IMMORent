@@ -133,6 +133,19 @@ const Notifications = () => {
        return t('notif.msg.contract_created', 'Un nouveau contrat a été créé pour le bien : {{title}}').replace('{{title}}', title);
     }
 
+    if (msg.includes('Un contrat a été généré pour votre demande sur : ')) {
+       const title = msg.split('Un contrat a été généré pour votre demande sur : ')[1].split('.')[0];
+       return t('notif.msg.contract_generated_for_req', 'Un contrat a été généré pour votre demande sur : {{title}}').replace('{{title}}', title);
+    }
+
+    if (msg.includes('Félicitations ! Vous êtes maintenant agent sur IMMORent.')) {
+       return t('notif.msg.agent_req_approved_welcome', 'Félicitations ! Vous êtes maintenant agent sur IMMORent.');
+    }
+
+    if (msg.includes('Désolé, votre demande pour devenir agent a été refusée.')) {
+       return t('notif.msg.agent_req_rejected_sorry', 'Désolé, votre demande pour devenir agent a été refusée.');
+    }
+
     if (msg.includes(' a envoyé une demande pour ')) {
        const parts = msg.split(' a envoyé une demande pour ');
        const name = parts[0];

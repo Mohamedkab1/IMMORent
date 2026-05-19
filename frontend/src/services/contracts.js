@@ -72,11 +72,11 @@ export const contractService = {
     },
 
     // Nouvelle méthode pour télécharger le PDF
-    async download(id) {
+    async download(id, lang) {
         try {
             // Pour télécharger un fichier, on utilise une approche différente
             const token = localStorage.getItem('token');
-            const response = await fetch(`${api.defaults.baseURL}/contracts/${id}/download`, {
+            const response = await fetch(`${api.defaults.baseURL}/contracts/${id}/download?lang=${lang}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

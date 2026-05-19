@@ -3364,6 +3364,20 @@ const translations = {
   ar: {
     // Navigation
     unknown: 'غير معروف',
+    
+    // AI Chat
+    'ai.welcome': 'مرحبًا! أنا مساعدك الافتراضي في IMMORent. كيف يمكنني مساعدتك اليوم؟',
+    'ai.error': 'عذرًا، الخدمة غير متوفرة حاليًا. يرجى المحاولة لاحقًا.',
+    'ai.title': 'مساعد IMMORent',
+    'ai.subtitle': 'الذكاء الاصطناعي',
+    'ai.view_properties': 'عرض العقارات',
+    'ai.login': 'تسجيل الدخول',
+    'ai.ask_agent': 'كيف يمكنني الاتصال بوكيل؟',
+    'ai.agent': 'وكيل',
+    'ai.placeholder': 'اطرح سؤالك هنا...',
+    'notif.msg.contract_generated_for_req': 'تم إنشاء عقد لطلبك على: {{title}}',
+    'notif.msg.agent_req_approved_welcome': 'تهانينا! أنت الآن وكيل على IMMORent.',
+    'notif.msg.agent_req_rejected_sorry': 'عذرًا، تم رفض طلبك لتصبح وكيلاً.',
     no_phone: 'لا يوجد هاتف',
     approve: 'موافقة',
     reject: 'رفض',
@@ -3582,6 +3596,7 @@ const translations = {
     'prop.transaction.rent': 'إيجار',
     'prop.transaction.sale': 'بيع',
     'prop.card.price_unit': 'درهم',
+    'ctr.proceed_payment': 'المتابعة إلى الدفع',
     'prop.add.title': 'إضافة عقار جديد',
     'prop.edit.title': 'تعديل العقار',
     'prop.price': 'السعر',
