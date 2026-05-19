@@ -17,9 +17,11 @@ import { notificationService } from '../services/notifications';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from '../components/Common/LoadingSkeleton';
 
 const Notifications = () => {
+  const { user } = useAuth();
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -111,9 +113,18 @@ const Notifications = () => {
     }
   };
 
+  // Filter notifications if user is admin
+  let displayNotifications = notifications;
+  if (user?.role?.slug === 'admin') {
+    displayNotifications = notifications.filter(notif => {
+      const type = notif.data?.type_notif || notif.data?.type;
+      return type === 'agent_request';
+    });
+  }
+
   const filteredNotifications = filter === 'all' 
-    ? notifications 
-    : notifications.filter(n => !n.read_at);
+    ? displayNotifications 
+    : displayNotifications.filter(n => !n.read_at);
 
   const translateNotification = (msg) => {
     if (!msg) return '';
