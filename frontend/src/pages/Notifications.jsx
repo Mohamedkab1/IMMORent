@@ -133,6 +133,19 @@ const Notifications = () => {
        return t('notif.msg.contract_created', 'Un nouveau contrat a été créé pour le bien : {{title}}').replace('{{title}}', title);
     }
 
+    if (msg.includes('Un contrat a été généré pour votre demande sur : ')) {
+       const title = msg.split('Un contrat a été généré pour votre demande sur : ')[1].split('.')[0];
+       return t('notif.msg.contract_generated_for_req', 'Un contrat a été généré pour votre demande sur : {{title}}').replace('{{title}}', title);
+    }
+
+    if (msg.includes('Félicitations ! Vous êtes maintenant agent sur IMMORent.')) {
+       return t('notif.msg.agent_req_approved_welcome', 'Félicitations ! Vous êtes maintenant agent sur IMMORent.');
+    }
+
+    if (msg.includes('Désolé, votre demande pour devenir agent a été refusée.')) {
+       return t('notif.msg.agent_req_rejected_sorry', 'Désolé, votre demande pour devenir agent a été refusée.');
+    }
+
     if (msg.includes(' a envoyé une demande pour ')) {
        const parts = msg.split(' a envoyé une demande pour ');
        const name = parts[0];
@@ -269,13 +282,13 @@ const Notifications = () => {
           <div className="p-4 sm:p-6 border-b border-border-main flex gap-2 overflow-x-auto no-scrollbar">
             <button 
               onClick={() => setFilter('all')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'all' ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
             >
               {t('notif.all', 'Toutes')}
             </button>
             <button 
               onClick={() => setFilter('unread')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'unread' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'unread' ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
             >
               {t('notif.unread', 'Non lues')}
               {notifications.filter(n => !n.read_at).length > 0 && (

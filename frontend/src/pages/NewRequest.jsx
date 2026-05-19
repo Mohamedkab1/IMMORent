@@ -383,7 +383,7 @@ const NewRequest = () => {
                     type="submit" 
                     disabled={submitting || !!blockedInfo}
                     title={blockedInfo ? blockedInfo.msg : ''}
-                    className="flex-[2] py-4 px-6 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex-[2] py-4 px-6 bg-primary !text-white rounded-xl font-bold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                         <>

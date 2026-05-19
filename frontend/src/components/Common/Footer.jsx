@@ -83,7 +83,7 @@ const Footer = () => {
 
           {/* Navigation */}
           <div className="space-y-8">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('nav.navigation', 'Navigation')}</h4>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">{t('nav.navigation', 'Navigation')}</h4>
             <ul className="space-y-4">
               {['home', 'properties', 'about', 'contact'].map((item) => (
                 <li key={item}>
@@ -112,7 +112,7 @@ const Footer = () => {
 
           {/* Services / Categories */}
           <div className="space-y-8">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('footer.services')}</h4>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">{t('footer.services')}</h4>
             <ul className="space-y-4 text-sm text-gray-400">
               <li><Link to="/properties?type=apartment" className="hover:text-yellow-400 transition-colors uppercase tracking-widest text-[11px]">{t('home.apartments')}</Link></li>
               <li><Link to="/properties?type=house" className="hover:text-yellow-400 transition-colors uppercase tracking-widest text-[11px]">{t('home.houses')}</Link></li>
@@ -123,19 +123,19 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div className="space-y-8">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">{t('nav.contact')}</h4>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-400">{t('nav.contact')}</h4>
             <ul className="space-y-6">
               <li className="flex items-start gap-4 group">
                 <MapPinIcon className="w-5 h-5 text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                <span className="text-sm text-gray-400 leading-relaxed font-light group-hover:text-white transition-colors">{t('footer.address')}</span>
+                <span className={`text-sm text-gray-400 leading-relaxed font-light transition-colors ${theme === 'light' ? 'group-hover:text-yellow-400' : 'group-hover:text-white'}`}>{t('footer.address')}</span>
               </li>
               <li className="flex items-center gap-4 group">
                 <PhoneIcon className="w-5 h-5 text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                <span className="text-sm text-gray-400 font-light group-hover:text-white transition-colors">{t('footer.phone')}</span>
+                <span className={`text-sm text-gray-400 font-light transition-colors ${theme === 'light' ? 'group-hover:text-yellow-400' : 'group-hover:text-white'}`}>{t('footer.phone')}</span>
               </li>
               <li className="flex items-center gap-4 group">
                 <EnvelopeIcon className="w-5 h-5 text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                <span className="text-sm text-gray-400 font-light group-hover:text-white transition-colors">{t('footer.email')}</span>
+                <span className={`text-sm text-gray-400 font-light transition-colors ${theme === 'light' ? 'group-hover:text-yellow-400' : 'group-hover:text-white'}`}>{t('footer.email')}</span>
               </li>
             </ul>
           </div>

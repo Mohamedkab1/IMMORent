@@ -114,8 +114,8 @@ const ChatWidget = () => {
                 <ChatBubbleOvalLeftEllipsisIconSolid className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-white tracking-wide">Assistant IMMORent</h3>
-                <p className="text-[10px] text-white/80 uppercase tracking-widest font-black">Intelligence Artificielle</p>
+                <h3 className="font-bold text-sm text-white tracking-wide">{t('ai.title', 'Assistant IMMORent')}</h3>
+                <p className="text-[10px] text-white/80 uppercase tracking-widest font-black">{t('ai.subtitle', 'Intelligence Artificielle')}</p>
               </div>
             </div>
             <button 
@@ -146,7 +146,7 @@ const ChatWidget = () => {
                         : 'bg-bg-card text-text-main border border-border-main shadow-sm rounded-bl-none'
                   }`}
                 >
-                  <p className="whitespace-pre-line leading-relaxed">{msg.text}</p>
+                  <p className="whitespace-pre-line leading-relaxed">{msg.id === 1 ? t('ai.welcome', 'Bonjour ! Je suis votre assistant IMMORent. Comment puis-je vous aider aujourd\'hui ?') : msg.text}</p>
                 </div>
               </div>
             ))}
@@ -174,7 +174,7 @@ const ChatWidget = () => {
                   ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
                   : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
               }`}>
-                <HomeIcon className="w-3.5 h-3.5" /> Voir les biens
+                <HomeIcon className="w-3.5 h-3.5" /> {t('ai.view_properties', 'Voir les biens')}
               </Link>
               {!user && (
                 <Link to="/login" onClick={() => setIsOpen(false)} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
@@ -182,15 +182,15 @@ const ChatWidget = () => {
                     ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
                     : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
                 }`}>
-                  <UserPlusIcon className="w-3.5 h-3.5" /> Se connecter
+                  <UserPlusIcon className="w-3.5 h-3.5" /> {t('ai.login', 'Se connecter')}
                 </Link>
               )}
-              <button onClick={() => handleSuggestionClick("Comment contacter un agent ?")} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
+              <button onClick={() => handleSuggestionClick(t('ai.ask_agent', 'Comment contacter un agent ?'))} className={`shrink-0 flex items-center gap-1 px-3 py-1.5 border rounded-full text-xs font-medium transition-colors ${
                 isLight 
                   ? 'bg-white border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-600' 
                   : 'bg-bg-card border-border-main text-text-sub hover:text-primary hover:border-primary'
               }`}>
-                <UserIcon className="w-3.5 h-3.5" /> Agent
+                <UserIcon className="w-3.5 h-3.5" /> {t('ai.agent', 'Agent')}
               </button>
             </div>
           )}
@@ -204,7 +204,7 @@ const ChatWidget = () => {
                 type="text" 
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Posez votre question..."
+                placeholder={t('ai.placeholder', 'Posez votre question...')}
                 className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
                   isLight 
                     ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400' 

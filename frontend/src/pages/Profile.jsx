@@ -222,7 +222,7 @@ const Profile = () => {
         <RevealOnScroll>
           <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-12">
               <div className="relative">
-                  <span className="inline-block px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-lg mb-4">
+                  <span className="inline-block px-3 py-1 bg-blue-600 !text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-lg mb-4">
                     {t('profile.title')}
                   </span>
                   <h1 className={`text-6xl font-black tracking-tighter ${
@@ -330,7 +330,7 @@ const Profile = () => {
                   <RevealOnScroll delay={200}>
                     <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-10 text-white shadow-2xl relative overflow-hidden group">
                         <BriefcaseIcon className="absolute -right-8 -bottom-8 w-40 h-40 text-white/5 group-hover:scale-110 transition-transform duration-1000" />
-                        <h3 className="text-2xl font-black tracking-tight mb-4">{t('profile.become_agent')}</h3>
+                        <h3 className="text-2xl font-black tracking-tight mb-4 text-amber-400 dark:text-white">{t('profile.become_agent')}</h3>
                         <p className="text-sm text-white/70 mb-10 font-medium leading-relaxed">{t('profile.become_agent_desc')}</p>
                         
                         {!user.agent_status ? (
@@ -344,7 +344,7 @@ const Profile = () => {
                         ) : (
                             <div className="p-6 bg-white/10 border border-white/20 rounded-lg backdrop-blur-md">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">{t('profile.status_req')}</p>
-                                <p className="text-xl font-black text-white">
+                                <p className="text-xl font-black text-amber-400 dark:text-white">
                                     {user.agent_status === 'pending' ? t('profile.pending') : user.agent_status}
                                 </p>
                             </div>

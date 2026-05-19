@@ -312,7 +312,7 @@ public function store(StoreContractRequest $request)
     /**
      * Télécharger le contrat au format PDF
      */
-    public function download($id)
+    public function download(Request $request, $id)
     {
         try {
             $contract = Contract::with(['property', 'tenant', 'owner', 'agent'])->find($id);
@@ -323,9 +323,124 @@ public function store(StoreContractRequest $request)
 
             $this->authorize('view', $contract);
 
+            $lang = $request->query('lang', 'fr');
+
+            $translations = [
+                'fr' => [
+                    'title_sale' => 'CONTRAT DE VENTE IMMOBILIÈRE',
+                    'title_rent' => 'CONTRAT DE LOCATION IMMOBILIÈRE',
+                    'ref' => 'Référence',
+                    'date_est' => 'Date d\'établissement',
+                    'status' => 'Statut',
+                    'parties' => '1. Parties prenantes',
+                    'tenant' => 'Locataire',
+                    'buyer' => 'Acheteur',
+                    'owner' => 'Bailleur / Propriétaire',
+                    'seller' => 'Vendeur',
+                    'agent' => 'Agent Immobilier',
+                    'email' => 'Email',
+                    'phone' => 'Tél.',
+                    'cin' => 'CIN',
+                    'prop_desc' => '2. Description du bien',
+                    'address' => 'Adresse',
+                    'type' => 'Type de bien',
+                    'surface' => 'Surface',
+                    'rooms' => 'Pièces',
+                    'period' => '3. Durée du bail',
+                    'start_date' => 'Date de début',
+                    'end_date' => 'Date de fin',
+                    'sign_date' => 'Date de signature',
+                    'financial' => '4. Conditions financières',
+                    'rent' => 'Loyer mensuel (hors charges)',
+                    'charges' => 'Charges mensuelles',
+                    'total' => 'Total mensuel',
+                    'deposit' => 'Dépôt de garantie',
+                    'sale_cond' => '3. Conditions de vente',
+                    'price' => 'Prix de vente',
+                    'sale_date' => 'Date de vente',
+                    'approved' => 'Lu et approuvé',
+                    'certified' => 'Certifié conforme',
+                    'footer' => 'Ce contrat a été généré automatiquement par IMMORent &bull; www.immorent.ma &bull; Généré le '
+                ],
+                'ar' => [
+                    'title_sale' => 'عقد بيع عقاري',
+                    'title_rent' => 'عقد كراء عقاري',
+                    'ref' => 'المرجع',
+                    'date_est' => 'تاريخ التحرير',
+                    'status' => 'الحالة',
+                    'parties' => '1. الأطراف المتعاقدة',
+                    'tenant' => 'المكتري',
+                    'buyer' => 'المشتري',
+                    'owner' => 'المكري / المالك',
+                    'seller' => 'البائع',
+                    'agent' => 'الوكيل العقاري',
+                    'email' => 'البريد الإلكتروني',
+                    'phone' => 'الهاتف',
+                    'cin' => 'ب.و.ت',
+                    'prop_desc' => '2. وصف العقار',
+                    'address' => 'العنوان',
+                    'type' => 'نوع العقار',
+                    'surface' => 'المساحة',
+                    'rooms' => 'الغرف',
+                    'period' => '3. مدة العقد',
+                    'start_date' => 'تاريخ البدء',
+                    'end_date' => 'تاريخ الانتهاء',
+                    'sign_date' => 'تاريخ التوقيع',
+                    'financial' => '4. الشروط المالية',
+                    'rent' => 'السومة الكرائية (بدون تكاليف)',
+                    'charges' => 'التكاليف الشهرية',
+                    'total' => 'المجموع الشهري',
+                    'deposit' => 'الضمانة',
+                    'sale_cond' => '3. شروط البيع',
+                    'price' => 'ثمن البيع',
+                    'sale_date' => 'تاريخ البيع',
+                    'approved' => 'قرئ وصودق عليه',
+                    'certified' => 'إشهاد بالمطابقة',
+                    'footer' => 'تم إنشاء هذا العقد تلقائيًا بواسطة IMMORent &bull; www.immorent.ma &bull; تم الإنشاء في '
+                ],
+                'en' => [
+                    'title_sale' => 'REAL ESTATE SALE CONTRACT',
+                    'title_rent' => 'REAL ESTATE RENTAL CONTRACT',
+                    'ref' => 'Reference',
+                    'date_est' => 'Date of establishment',
+                    'status' => 'Status',
+                    'parties' => '1. Stakeholders',
+                    'tenant' => 'Tenant',
+                    'buyer' => 'Buyer',
+                    'owner' => 'Landlord / Owner',
+                    'seller' => 'Seller',
+                    'agent' => 'Real Estate Agent',
+                    'email' => 'Email',
+                    'phone' => 'Phone',
+                    'cin' => 'ID',
+                    'prop_desc' => '2. Property Description',
+                    'address' => 'Address',
+                    'type' => 'Property Type',
+                    'surface' => 'Surface',
+                    'rooms' => 'Rooms',
+                    'period' => '3. Rental Period',
+                    'start_date' => 'Start Date',
+                    'end_date' => 'End Date',
+                    'sign_date' => 'Signature Date',
+                    'financial' => '4. Financial Conditions',
+                    'rent' => 'Monthly Rent (excl. charges)',
+                    'charges' => 'Monthly Charges',
+                    'total' => 'Monthly Total',
+                    'deposit' => 'Security Deposit',
+                    'sale_cond' => '3. Sale Conditions',
+                    'price' => 'Sale Price',
+                    'sale_date' => 'Sale Date',
+                    'approved' => 'Read and approved',
+                    'certified' => 'Certified correct',
+                    'footer' => 'This contract was automatically generated by IMMORent &bull; www.immorent.ma &bull; Generated on '
+                ]
+            ];
+
+            $t = $translations[$lang] ?? $translations['fr'];
+
             $isSale     = $contract->contract_type === 'sale';
             $isRent     = !$isSale;
-            $title      = $isSale ? 'CONTRAT DE VENTE IMMOBILIÈRE' : 'CONTRAT DE LOCATION IMMOBILIÈRE';
+            $title      = $isSale ? $t['title_sale'] : $t['title_rent'];
 
             // Couleurs monochromes (Noir/Blanc/Gris)
             $accent     = '#0f172a'; // Noir (slate-900)
@@ -357,7 +472,7 @@ public function store(StoreContractRequest $request)
             }
 
             $html = '<!DOCTYPE html>
-<html>
+<html dir="' . ($lang === 'ar' ? 'rtl' : 'ltr') . '">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>' . $title . '</title>
@@ -421,74 +536,74 @@ body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:11px; color:#1e293b
     <div class="brand">IMMOR<span>ENT</span></div>
     <div class="contract-type">' . $title . '</div>
     <div class="header-meta">
-        <div class="header-meta-cell">Référence <strong>' . $contract->contract_number . '</strong></div>
-        <div class="header-meta-cell">Date d\'établissement <strong>' . $signedDate . '</strong></div>
-        <div class="header-meta-cell">Statut <strong><span class="badge">' . ucfirst($contract->status) . '</span></strong></div>
+        <div class="header-meta-cell">' . $t['ref'] . ' <strong>' . $contract->contract_number . '</strong></div>
+        <div class="header-meta-cell">' . $t['date_est'] . ' <strong>' . $signedDate . '</strong></div>
+        <div class="header-meta-cell">' . $t['status'] . ' <strong><span class="badge">' . ucfirst($contract->status) . '</span></strong></div>
     </div>
 </div>
 
 <div class="body">
 
     <!-- Parties -->
-    <div style="margin-bottom:8px;" class="sep-title">1. Parties prenantes</div>
+    <div style="margin-bottom:8px;" class="sep-title">' . $t['parties'] . '</div>
     <div class="parties">
         <div class="partie">
-            <div class="partie-role">' . ($isRent ? 'Locataire' : 'Acheteur') . '</div>
+            <div class="partie-role">' . ($isRent ? $t['tenant'] : $t['buyer']) . '</div>
             <div class="partie-name">' . ($tenant ? htmlspecialchars($tenant->name) : '—') . '</div>
-            <div class="partie-line"><b>Email :</b> ' . ($tenant ? htmlspecialchars($tenant->email) : '—') . '</div>
-            <div class="partie-line"><b>Tél. :</b> ' . ($tenant ? htmlspecialchars($tenant->phone ?? '—') : '—') . '</div>
-            <div class="cin-badge">CIN : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
+            <div class="partie-line"><b>' . $t['email'] . ' :</b> ' . ($tenant ? htmlspecialchars($tenant->email) : '—') . '</div>
+            <div class="partie-line"><b>' . $t['phone'] . ' :</b> ' . ($tenant ? htmlspecialchars($tenant->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">' . $t['cin'] . ' : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
         </div>
         <div class="partie" style="margin-left:10px;">
-            <div class="partie-role">' . ($isRent ? 'Bailleur / Propriétaire' : 'Vendeur') . '</div>
+            <div class="partie-role">' . ($isRent ? $t['owner'] : $t['seller']) . '</div>
             <div class="partie-name">' . ($owner ? htmlspecialchars($owner->name) : '—') . '</div>
-            <div class="partie-line"><b>Email :</b> ' . ($owner ? htmlspecialchars($owner->email) : '—') . '</div>
-            <div class="partie-line"><b>Tél. :</b> ' . ($owner ? htmlspecialchars($owner->phone ?? '—') : '—') . '</div>
-            <div class="cin-badge">CIN : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
+            <div class="partie-line"><b>' . $t['email'] . ' :</b> ' . ($owner ? htmlspecialchars($owner->email) : '—') . '</div>
+            <div class="partie-line"><b>' . $t['phone'] . ' :</b> ' . ($owner ? htmlspecialchars($owner->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">' . $t['cin'] . ' : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
         </div>
         <div class="partie" style="margin-left:10px;">
-            <div class="partie-role">Agent Immobilier</div>
+            <div class="partie-role">' . $t['agent'] . '</div>
             <div class="partie-name">' . ($agent ? htmlspecialchars($agent->name) : '—') . '</div>
-            <div class="partie-line"><b>Email :</b> ' . ($agent ? htmlspecialchars($agent->email) : '—') . '</div>
-            <div class="partie-line"><b>Tél. :</b> ' . ($agent ? htmlspecialchars($agent->phone ?? '—') : '—') . '</div>
-            <div class="cin-badge">CIN : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
+            <div class="partie-line"><b>' . $t['email'] . ' :</b> ' . ($agent ? htmlspecialchars($agent->email) : '—') . '</div>
+            <div class="partie-line"><b>' . $t['phone'] . ' :</b> ' . ($agent ? htmlspecialchars($agent->phone ?? '—') : '—') . '</div>
+            <div class="cin-badge">' . $t['cin'] . ' : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
         </div>
     </div>
 
     <!-- Bien -->
-    <div class="sep-title">2. Description du bien</div>
+    <div class="sep-title">' . $t['prop_desc'] . '</div>
     <table class="info-table">
-        <tr><td>Adresse</td><td>' . ($property ? htmlspecialchars($property->address . ', ' . $property->city . ' ' . ($property->postal_code ?? '')) : '—') . '</td></tr>
-        <tr><td>Type de bien</td><td>' . ($property ? ucfirst($property->type) : '—') . '</td></tr>
-        <tr><td>Surface</td><td>' . ($property ? $property->surface . ' m²' : '—') . '</td></tr>
-        <tr><td>Pièces</td><td>' . ($property ? $property->rooms . ' pièce(s)' : '—') . '</td></tr>
+        <tr><td>' . $t['address'] . '</td><td>' . ($property ? htmlspecialchars($property->address . ', ' . $property->city . ' ' . ($property->postal_code ?? '')) : '—') . '</td></tr>
+        <tr><td>' . $t['type'] . '</td><td>' . ($property ? ucfirst($property->type) : '—') . '</td></tr>
+        <tr><td>' . $t['surface'] . '</td><td>' . ($property ? $property->surface . ' m²' : '—') . '</td></tr>
+        <tr><td>' . $t['rooms'] . '</td><td>' . ($property ? $property->rooms . ' pièce(s)' : '—') . '</td></tr>
     </table>';
 
             if ($isRent) {
                 $html .= '
     <!-- Durée du bail -->
-    <div class="sep-title">3. Durée du bail</div>
+    <div class="sep-title">' . $t['period'] . '</div>
     <table class="info-table">
-        <tr><td>Date de début</td><td>' . $startDate . '</td></tr>
-        <tr><td>Date de fin</td><td>' . $endDate . '</td></tr>
-        <tr><td>Date de signature</td><td>' . $signedDate . '</td></tr>
+        <tr><td>' . $t['start_date'] . '</td><td>' . $startDate . '</td></tr>
+        <tr><td>' . $t['end_date'] . '</td><td>' . $endDate . '</td></tr>
+        <tr><td>' . $t['sign_date'] . '</td><td>' . $signedDate . '</td></tr>
     </table>
 
     <!-- Conditions financières -->
-    <div class="sep-title">4. Conditions financières</div>
+    <div class="sep-title">' . $t['financial'] . '</div>
     <table class="info-table">
-        <tr><td>Loyer mensuel (hors charges)</td><td>' . $loyer . ' DH</td></tr>
-        <tr><td>Charges mensuelles</td><td>' . $charges . ' DH</td></tr>
-        <tr class="highlight"><td>Total mensuel</td><td>' . $total . ' DH</td></tr>
-        <tr><td>Dépôt de garantie</td><td>' . $depot . ' DH</td></tr>
+        <tr><td>' . $t['rent'] . '</td><td>' . $loyer . ' DH</td></tr>
+        <tr><td>' . $t['charges'] . '</td><td>' . $charges . ' DH</td></tr>
+        <tr class="highlight"><td>' . $t['total'] . '</td><td>' . $total . ' DH</td></tr>
+        <tr><td>' . $t['deposit'] . '</td><td>' . $depot . ' DH</td></tr>
     </table>';
             } else {
                 $html .= '
     <!-- Conditions de vente -->
-    <div class="sep-title">3. Conditions de vente</div>
+    <div class="sep-title">' . $t['sale_cond'] . '</div>
     <table class="info-table">
-        <tr class="highlight"><td>Prix de vente</td><td>' . $prix . ' DH</td></tr>
-        <tr><td>Date de vente</td><td>' . $saleDate . '</td></tr>
+        <tr class="highlight"><td>' . $t['price'] . '</td><td>' . $prix . ' DH</td></tr>
+        <tr><td>' . $t['sale_date'] . '</td><td>' . $saleDate . '</td></tr>
     </table>';
             }
 
@@ -497,22 +612,22 @@ body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:11px; color:#1e293b
     <table class="sig-table">
         <tr>
             <td>
-                <div class="sig-role">' . ($isRent ? 'Locataire' : 'Acheteur') . '</div>
+                <div class="sig-role">' . ($isRent ? $t['tenant'] : $t['buyer']) . '</div>
                 <div class="sig-name">' . ($tenant ? htmlspecialchars($tenant->name) : '—') . '</div>
-                <div class="sig-cin">CIN : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
-                <div class="sig-line">Lu et approuvé</div>
+                <div class="sig-cin">' . $t['cin'] . ' : ' . ($tenant ? htmlspecialchars($tenant->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">' . $t['approved'] . '</div>
             </td>
             <td>
-                <div class="sig-role">' . ($isRent ? 'Bailleur' : 'Vendeur') . '</div>
+                <div class="sig-role">' . ($isRent ? $t['owner'] : $t['seller']) . '</div>
                 <div class="sig-name">' . ($owner ? htmlspecialchars($owner->name) : '—') . '</div>
-                <div class="sig-cin">CIN : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
-                <div class="sig-line">Lu et approuvé</div>
+                <div class="sig-cin">' . $t['cin'] . ' : ' . ($owner ? htmlspecialchars($owner->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">' . $t['approved'] . '</div>
             </td>
             <td>
-                <div class="sig-role">Agent Immobilier</div>
+                <div class="sig-role">' . $t['agent'] . '</div>
                 <div class="sig-name">' . ($agent ? htmlspecialchars($agent->name) : '—') . '</div>
-                <div class="sig-cin">CIN : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
-                <div class="sig-line">Certifié conforme</div>
+                <div class="sig-cin">' . $t['cin'] . ' : ' . ($agent ? htmlspecialchars($agent->cin ?? 'N/A') : 'N/A') . '</div>
+                <div class="sig-line">' . $t['certified'] . '</div>
             </td>
         </tr>
     </table>
@@ -520,7 +635,7 @@ body { font-family:"DejaVu Sans",Arial,sans-serif; font-size:11px; color:#1e293b
 </div>
 
 <div class="footer">
-    <p>Ce contrat a été généré automatiquement par <strong>IMMORent</strong> &bull; www.immorent.ma &bull; Généré le ' . date('d/m/Y H:i') . '</p>
+    <p>' . $t['footer'] . date('d/m/Y H:i') . '</p>
 </div>
 
 </body>

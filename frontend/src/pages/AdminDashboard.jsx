@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { 
   ChartBarIcon, 
@@ -59,6 +60,7 @@ const AdminDashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
 
   const getActiveTab = () => {
     const path = location.pathname;
@@ -138,7 +140,7 @@ const AdminDashboard = () => {
     } catch (error) {
       if (error.name !== 'CanceledError' && error.name !== 'AbortError') {
         console.error('Erreur loadUsers:', error);
-        toast.error('Erreur chargement utilisateurs');
+        toast.error(t('admin.err.load_users', 'Erreur chargement utilisateurs'));
       }
     } finally {
       setLoadingUsers(false);
@@ -154,7 +156,7 @@ const AdminDashboard = () => {
       });
       if (res.success) setProperties(res.data.data);
     } catch (error) {
-      toast.error('Erreur chargement biens');
+      toast.error(t('admin.err.load_props', 'Erreur chargement biens'));
     } finally {
       setLoadingProperties(false);
     }
@@ -168,7 +170,7 @@ const AdminDashboard = () => {
       });
       if (res.success) setContracts(res.data.data);
     } catch (error) {
-      toast.error('Erreur chargement contrats');
+      toast.error(t('admin.err.load_contracts', 'Erreur chargement contrats'));
     } finally {
       setLoadingContracts(false);
     }
@@ -180,7 +182,7 @@ const AdminDashboard = () => {
       const res = await paymentService.getAll();
       if (res.success) setPayments(res.data.data);
     } catch (error) {
-      toast.error('Erreur chargement paiements');
+      toast.error(t('admin.err.load_payments', 'Erreur chargement paiements'));
     } finally {
       setLoadingPayments(false);
     }
@@ -192,7 +194,7 @@ const AdminDashboard = () => {
       const res = await settingService.getAll();
       if (res.success) setSettings(res.data);
     } catch (error) {
-      toast.error('Erreur chargement paramètres');
+      toast.error(t('admin.err.load_settings', 'Erreur chargement paramètres'));
     } finally {
       setLoadingSettings(false);
     }
@@ -272,7 +274,7 @@ const AdminDashboard = () => {
         loadUsers();
       }
     } catch (error) {
-      toast.error('Erreur lors du changement de statut');
+      toast.error(t('admin.err.toggle_status', 'Erreur lors du changement de statut'));
     }
   };
 
@@ -285,7 +287,7 @@ const AdminDashboard = () => {
           loadUsers();
         }
       } catch (error) {
-        toast.error('Erreur lors de la suppression');
+        toast.error(t('admin.err.delete', 'Erreur lors de la suppression'));
       }
     }
   };
@@ -298,7 +300,7 @@ const AdminDashboard = () => {
         loadProperties();
       }
     } catch (error) {
-      toast.error('Erreur approbation');
+      toast.error(t('admin.err.approve', 'Erreur approbation'));
     }
   };
 
@@ -311,7 +313,7 @@ const AdminDashboard = () => {
           loadProperties();
         }
       } catch (error) {
-        toast.error('Erreur lors de la suppression');
+        toast.error(t('admin.err.delete', 'Erreur lors de la suppression'));
       }
     }
   };
@@ -324,7 +326,7 @@ const AdminDashboard = () => {
         loadProperties();
       }
     } catch (error) {
-      toast.error('Erreur archivage');
+      toast.error(t('admin.err.archive', 'Erreur archivage'));
     }
   };
 
@@ -336,7 +338,7 @@ const AdminDashboard = () => {
         loadProperties();
       }
     } catch (error) {
-      toast.error('Erreur mise en avant');
+      toast.error(t('admin.err.featured', 'Erreur mise en avant'));
     }
   };
 
@@ -350,7 +352,7 @@ const AdminDashboard = () => {
           loadDashboardStats();
         }
       } catch (error) {
-        toast.error('Erreur lors du traitement');
+        toast.error(t('admin.err.process', 'Erreur lors du traitement'));
       }
     }
   };
@@ -368,7 +370,7 @@ const AdminDashboard = () => {
         loadSettings();
       }
     } catch (error) {
-      toast.error('Erreur sauvegarde paramètres');
+      toast.error(t('admin.err.save_settings', 'Erreur sauvegarde paramètres'));
     } finally {
       setSavingSettings(false);
     }
@@ -382,13 +384,13 @@ const AdminDashboard = () => {
         loadPayments();
       }
     } catch (error) {
-      toast.error('Erreur mise à jour statut paiement');
+      toast.error(t('admin.err.update_payment_status', 'Erreur mise à jour statut paiement'));
     }
   };
 
   const handleDownloadContract = async (id) => {
     try {
-      await contractService.download(id);
+      await contractService.download(id, language);
       toast.success(t('admin.contracts.downloading'));
     } catch (error) {
       toast.error('Erreur téléchargement');
@@ -452,19 +454,19 @@ const AdminDashboard = () => {
             <div className="space-y-1">
               <Link 
                 to="/dashboard/admin" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'dashboard' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <ChartBarIcon className="w-4 h-4" /> {t('admin.tabs.overview')}
               </Link>
               <Link 
                 to="/dashboard/admin/users" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'users' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <UserGroupIcon className="w-4 h-4" /> {t('admin.tabs.users')}
               </Link>
               <Link 
                 to="/dashboard/admin/properties" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'properties' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'properties' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <HomeIcon className="w-4 h-4" /> {t('admin.tabs.properties')}
               </Link>
@@ -476,13 +478,13 @@ const AdminDashboard = () => {
             <div className="space-y-1">
               <Link 
                 to="/dashboard/admin/contracts" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'contracts' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'contracts' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <DocumentTextIcon className="w-4 h-4" /> {t('admin.tabs.contracts')}
               </Link>
               <Link 
                 to="/dashboard/admin/payments" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'payments' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'payments' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <CurrencyDollarIcon className="w-4 h-4" /> {t('admin.tabs.payments')}
               </Link>
@@ -494,7 +496,7 @@ const AdminDashboard = () => {
             <div className="space-y-1">
               <Link 
                 to="/dashboard/admin/agent-requests" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs relative ${activeTab === 'agent-requests' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs relative ${activeTab === 'agent-requests' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <UserIcon className="w-4 h-4" /> {t('admin.tabs.agent_requests')}
                 {stats?.requests?.pending > 0 && (
@@ -511,7 +513,7 @@ const AdminDashboard = () => {
               </Link>
               <Link 
                 to="/dashboard/admin/settings" 
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'settings' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs ${activeTab === 'settings' ? 'bg-primary shadow-lg shadow-primary/20 ' + (theme === 'light' ? '!text-white' : 'text-white') : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
               >
                 <Cog6ToothIcon className="w-4 h-4" /> {t('admin.tabs.settings')}
               </Link>
@@ -1001,7 +1003,7 @@ const AdminDashboard = () => {
                          <td className="px-4 py-5 text-right">
                             <div className="flex justify-end gap-2 transition-opacity">
                                <button 
-                                 onClick={() => toast.info('Show contract not yet implemented')}
+                                 onClick={() => toast.info(t('admin.contracts.view_not_implemented', 'Affichage du contrat non encore implémenté'))}
                                  className="p-2.5 bg-bg-soft text-text-sub rounded-xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
                                  title="Voir"
                                >
@@ -1082,7 +1084,7 @@ const AdminDashboard = () => {
                           <td className="px-4 py-5 text-right">
                             <div className="flex justify-end transition-opacity">
                                <button 
-                                 onClick={() => toast.info('Download invoice not yet implemented')}
+                                 onClick={() => toast.info(t('admin.payments.download_invoice_not_implemented', 'Téléchargement de la facture non encore implémenté'))}
                                  className="p-2.5 bg-bg-soft text-text-sub rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
                                  title="Télécharger Facture"
                                >

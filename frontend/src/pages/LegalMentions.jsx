@@ -63,13 +63,13 @@ const LegalMentions = () => {
             className="inline-flex items-center gap-2 text-text-sub hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4"
           >
             <ArrowLeftIcon className="w-3 h-3" />
-            Retour
+            {t('common.prev', 'Retour')}
           </Link>
           <h1 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
-            Mentions Légales <span className="text-primary">& Confidentialité</span>
+            {t('legal.title')}
           </h1>
           <p className="text-xs text-text-sub font-bold uppercase tracking-[0.3em] opacity-60">
-            Protection de vos données personnelles et informations légales
+            {t('legal.subtitle')}
           </p>
         </motion.div>
 
@@ -89,12 +89,12 @@ const LegalMentions = () => {
                   <InformationCircleIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  1. Introduction
+                  {t('privacy.intro_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
-                <p>IMMORent Maroc SARL (ci-après "IMMORent", "nous", "notre") accorde une importance primordiale à la protection de vos données personnelles. La présente politique de confidentialité a pour objectif de vous informer sur la manière dont nous collectons, utilisons, stockons et protégeons vos informations lorsque vous utilisez notre plateforme immobilière IMMORent.ma.</p>
-                <p>Nous nous engageons à respecter la Loi n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à garantir la confidentialité de vos informations.</p>
+                <p>{t('privacy.intro_p1')}</p>
+                <p>{t('privacy.intro_p2')}</p>
               </div>
             </motion.section>
 
@@ -105,7 +105,7 @@ const LegalMentions = () => {
                   <BuildingOfficeIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  2. Responsable du traitement
+                  {t('privacy.resp_title')}
                 </h2>
               </div>
               <div className="pl-16 p-6 rounded-lg bg-bg-soft border border-border-main space-y-4 text-sm text-text-sub">
@@ -123,21 +123,21 @@ const LegalMentions = () => {
                   <FingerPrintIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  3. Données collectées
+                  {t('privacy.data_title')}
                 </h2>
               </div>
               <div className="pl-16">
-                <p className="text-sm text-text-sub mb-4">Nous collectons les catégories de données suivantes :</p>
+                <p className="text-sm text-text-sub mb-4">{t('privacy.data_desc')}</p>
                 <ul className="space-y-3">
                   {[
-                    ['Données d\'identification', 'nom, prénom, email, téléphone'],
-                    ['Données de connexion', 'adresse IP, logs, navigateur'],
-                    ['Données de transaction', 'historique des recherches, annonces consultées'],
-                    ['Données de paiement', '(uniquement si nécessaire via des prestataires sécurisés)']
+                    [t('privacy.data_cat1'), ''],
+                    [t('privacy.data_cat2'), ''],
+                    [t('privacy.data_cat3'), ''],
+                    [t('privacy.data_cat4'), '']
                   ].map(([label, desc], idx) => (
                     <li key={idx} className="flex items-start gap-3 text-sm">
                       <CheckIcon className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <span><strong className="text-text-main">{label} :</strong> <span className="text-text-sub">{desc}</span></span>
+                      <span><strong className="text-text-main">{label}</strong> <span className="text-text-sub">{desc}</span></span>
                     </li>
                   ))}
                 </ul>
@@ -151,15 +151,15 @@ const LegalMentions = () => {
                   <ScaleIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  4. Base légale du traitement
+                  {t('privacy.law_title')}
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-16">
                 {[
-                  { title: 'Consentement', desc: 'Pour l\'envoi de newsletters et communications marketing' },
-                  { title: 'Contrat', desc: 'Pour l\'exécution de nos services immobiliers' },
-                  { title: 'Obligation légale', desc: 'Pour répondre aux exigences réglementaires' },
-                  { title: 'Intérêt légitime', desc: 'Pour améliorer nos services et la sécurité' }
+                  { title: t('privacy.law_consent'), desc: t('privacy.law_consent_desc') },
+                  { title: t('privacy.law_contract'), desc: t('privacy.law_contract_desc') },
+                  { title: t('privacy.law_obligation'), desc: t('privacy.law_obligation_desc') },
+                  { title: t('privacy.law_interest'), desc: t('privacy.law_interest_desc') }
                 ].map((item, idx) => (
                   <div key={idx} className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-2">{item.title}</h4>
@@ -176,15 +176,15 @@ const LegalMentions = () => {
                   <CalendarIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  5. Durée de conservation
+                  {t('privacy.duration_title')}
                 </h2>
               </div>
               <div className="pl-16 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Comptes inactifs', time: '3 ans' },
-                  { label: 'Données de navigation', time: '13 mois' },
-                  { label: 'Factures / Documents', time: '10 ans' },
-                  { label: 'Demandes de contact', time: '1 an' }
+                  { label: t('privacy.duration_cat1'), time: t('privacy.duration_time1') },
+                  { label: t('privacy.duration_cat2'), time: t('privacy.duration_time2') },
+                  { label: t('privacy.duration_cat3'), time: t('privacy.duration_time3') },
+                  { label: t('privacy.duration_cat4'), time: t('privacy.duration_time4') }
                 ].map((item, idx) => (
                   <div key={idx} className="text-center p-4 bg-bg-soft rounded-lg border border-border-main">
                     <div className="text-lg font-black text-text-main mb-1">{item.time}</div>
@@ -201,15 +201,15 @@ const LegalMentions = () => {
                   <ShieldCheckIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  6. Sécurité des données
+                  {t('privacy.security_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-4 text-sm text-text-sub">
-                <p>Nous mettons en œuvre les mesures techniques et organisationnelles suivantes :</p>
+                <p>{t('privacy.security_desc')}</p>
                 <ul className="space-y-2">
-                  <li className="flex items-center gap-3"><LockClosedIcon className="w-4 h-4 text-primary" /> Chiffrement SSL/TLS pour toutes les transmissions de données</li>
-                  <li className="flex items-center gap-3"><ServerIcon className="w-4 h-4 text-primary" /> Hébergement sécurisé avec accès restreint</li>
-                  <li className="flex items-center gap-3"><ChartBarIcon className="w-4 h-4 text-primary" /> Sauvegardes quotidiennes et monitoring 24/7</li>
+                  <li className="flex items-center gap-3"><LockClosedIcon className="w-4 h-4 text-primary" /> {t('privacy.security_cat1')}</li>
+                  <li className="flex items-center gap-3"><ServerIcon className="w-4 h-4 text-primary" /> {t('privacy.security_cat2')}</li>
+                  <li className="flex items-center gap-3"><ChartBarIcon className="w-4 h-4 text-primary" /> {t('privacy.security_cat3')}</li>
                 </ul>
               </div>
             </motion.section>
@@ -221,30 +221,30 @@ const LegalMentions = () => {
                   <FingerPrintIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  7. Cookies
+                  {t('privacy.cookies_title')}
                 </h2>
               </div>
               <div className="pl-16">
-                <p className="text-sm text-text-sub mb-6">Nous utilisons des cookies pour :</p>
+                <p className="text-sm text-text-sub mb-6">{t('privacy.cookies_desc')}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                   <div className="flex flex-col items-center justify-center text-center p-4 bg-bg-soft rounded-lg border border-border-main">
                     <CogIcon className="w-6 h-6 text-text-muted mb-2" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">Fonctionnement du site</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">{t('privacy.cookies_cat1')}</span>
                   </div>
                   <div className="flex flex-col items-center justify-center text-center p-4 bg-bg-soft rounded-lg border border-border-main">
                     <ChartBarIcon className="w-6 h-6 text-text-muted mb-2" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">Analyses statistiques</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">{t('privacy.cookies_cat2')}</span>
                   </div>
                   <div className="flex flex-col items-center justify-center text-center p-4 bg-bg-soft rounded-lg border border-border-main">
                     <SparklesIcon className="w-6 h-6 text-text-muted mb-2" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">Personnalisation des annonces</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">{t('privacy.cookies_cat3')}</span>
                   </div>
                   <div className="flex flex-col items-center justify-center text-center p-4 bg-bg-soft rounded-lg border border-border-main">
                     <LockClosedIcon className="w-6 h-6 text-text-muted mb-2" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">Sécurité et authentification</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-main">{t('privacy.cookies_cat4')}</span>
                   </div>
                 </div>
-                <p className="text-xs text-text-sub italic">Vous pouvez gérer vos préférences de cookies à tout moment via notre gestionnaire de cookies.</p>
+                <p className="text-xs text-text-sub italic">{t('privacy.cookies_footer')}</p>
               </div>
             </motion.section>
 
@@ -255,19 +255,19 @@ const LegalMentions = () => {
                   <UserIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black text-text-main uppercase tracking-tight">
-                  8. Vos droits
+                  {t('privacy.rights_title')}
                 </h2>
               </div>
               <div className="pl-16">
-                <p className="text-sm text-text-sub mb-6">Conformément à la Loi n° 09-08 et au RGPD, vous disposez des droits suivants :</p>
+                <p className="text-sm text-text-sub mb-6">{t('privacy.rights_desc')}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                   {[
-                    { icon: MagnifyingGlassIcon, title: 'Droit d\'accès', desc: 'Obtenir la confirmation que vos données sont traitées et y accéder.' },
-                    { icon: PencilSquareIcon, title: 'Droit de rectification', desc: 'Faire rectifier vos données si elles sont inexactes.' },
-                    { icon: TrashIcon, title: 'Droit à l\'effacement', desc: 'Demander la suppression de vos données.' },
-                    { icon: HandRaisedIcon, title: 'Droit d\'opposition', desc: 'S\'opposer au traitement pour des motifs légitimes.' },
-                    { icon: ArchiveBoxIcon, title: 'Droit à la portabilité', desc: 'Recevoir vos données dans un format structuré.' },
-                    { icon: PauseCircleIcon, title: 'Droit à la limitation', desc: 'Suspendre le traitement de vos données.' }
+                    { icon: MagnifyingGlassIcon, title: t('privacy.rights_cat1'), desc: t('privacy.rights_desc1') },
+                    { icon: PencilSquareIcon, title: t('privacy.rights_cat2'), desc: t('privacy.rights_desc2') },
+                    { icon: TrashIcon, title: t('privacy.rights_cat3'), desc: t('privacy.rights_desc3') },
+                    { icon: HandRaisedIcon, title: t('privacy.rights_cat4'), desc: t('privacy.rights_desc4') },
+                    { icon: ArchiveBoxIcon, title: t('privacy.rights_cat5'), desc: t('privacy.rights_desc5') },
+                    { icon: PauseCircleIcon, title: t('privacy.rights_cat6'), desc: t('privacy.rights_desc6') }
                   ].map((right, idx) => (
                     <div key={idx} className="flex items-start gap-4 p-4 rounded-lg bg-bg-soft border border-border-main">
                       <right.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
@@ -280,7 +280,7 @@ const LegalMentions = () => {
                 </div>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-center gap-4 text-sm text-text-sub">
                   <EnvelopeIcon className="w-6 h-6 text-primary flex-shrink-0" />
-                  <p><strong>Pour exercer vos droits :</strong> Contactez notre DPO à <a href="mailto:dpo@immorent.ma" className="text-primary hover:underline font-bold">dpo@immorent.ma</a> ou par courrier à l'adresse du siège social.</p>
+                  <p><strong>{t('privacy.rights_footer_title', 'Pour exercer vos droits :')}</strong> Contactez notre DPO à <a href="mailto:dpo@immorent.ma" className="text-primary hover:underline font-bold">dpo@immorent.ma</a> ou par courrier à l'adresse du siège social.</p>
                 </div>
               </div>
             </motion.section>
@@ -290,17 +290,17 @@ const LegalMentions = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-4">
                   <DocumentTextIcon className="w-5 h-5 text-primary" />
-                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">9. Modifications de la politique</h2>
+                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">{t('privacy.mod_title')}</h2>
                 </div>
-                <p className="text-xs text-text-sub leading-relaxed pl-8">Nous nous réservons le droit de modifier la présente politique de confidentialité à tout moment. La version la plus récente est toujours disponible sur cette page. En cas de modification substantielle, nous vous en informerons par email ou via une notification sur notre plateforme.</p>
+                <p className="text-xs text-text-sub leading-relaxed pl-8">{t('privacy.mod_desc')}</p>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-4">
                   <PhoneIcon className="w-5 h-5 text-primary" />
-                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">10. Nous contacter</h2>
+                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">{t('privacy.contact_title')}</h2>
                 </div>
                 <div className="pl-8 space-y-2 text-xs text-text-sub">
-                  <p>Pour toute question relative à cette politique :</p>
+                  <p>{t('privacy.contact_desc')}</p>
                   <p className="flex items-center gap-2"><EnvelopeIcon className="w-4 h-4 text-primary" /> confidentialite@immorent.ma</p>
                   <p className="flex items-center gap-2"><PhoneIcon className="w-4 h-4 text-primary" /> +212 5 24 12 34 56</p>
                   <p className="flex items-center gap-2"><BuildingOfficeIcon className="w-4 h-4 text-primary" /> Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000</p>
@@ -312,10 +312,10 @@ const LegalMentions = () => {
             <motion.div variants={sectionVariants} className="pt-16 border-t border-border-main flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                 <CalendarIcon className="w-4 h-4" />
-                Mis à jour le : {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {t('legal.updated_at')} {new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'ar-SA')}
               </div>
               <div className="text-[10px] font-black uppercase tracking-widest">
-                Version 3.0 — © IMMORent Maroc
+                {t('legal.version')}
               </div>
             </motion.div>
           </div>
@@ -329,7 +329,7 @@ const LegalMentions = () => {
           className="mt-12 text-center"
         >
           <Link to="/" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
-            ← Retour à l'accueil
+            ← {t('legal.back_home')}
           </Link>
         </motion.div>
       </div>

@@ -32,6 +32,44 @@ const itemVariants = {
   }
 };
 
+const cityTranslations = {
+  ar: {
+    'Marrakech': 'مراكش',
+    'Casablanca': 'الدار البيضاء',
+    'Rabat': 'الرباط',
+    'Tangier': 'طنجة',
+    'Fes': 'فاس',
+    'Agadir': 'أكادير',
+    'Tetouan': 'تطوان',
+    'Oujda': 'وجدة',
+    'Kenitra': 'القنيطرة',
+    'Nador': 'الناظور',
+    'El Jadida': 'الجديدة',
+    'Safi': 'آسفي',
+    'Meknes': 'مكناس',
+  },
+  en: {
+    'Marrakech': 'Marrakesh',
+    'Tangier': 'Tangier',
+  }
+};
+
+const translateTitle = (title, lang) => {
+  if (lang !== 'ar' || !title) return title;
+  let translated = title;
+  translated = translated.replace(/Appartement/gi, 'شقة');
+  translated = translated.replace(/Villa/gi, 'فيلا');
+  translated = translated.replace(/Maison/gi, 'منزل');
+  translated = translated.replace(/Studio/gi, 'ستوديو');
+  translated = translated.replace(/à louer/gi, 'للكراء');
+  translated = translated.replace(/à vendre/gi, 'للبيع');
+  translated = translated.replace(/avec/gi, 'مع');
+  translated = translated.replace(/piscine/gi, 'مسبح');
+  translated = translated.replace(/meublé/gi, 'مفروش');
+  translated = translated.replace(/neuf/gi, 'جديد');
+  return translated;
+};
+
 const Favorites = () => {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
@@ -117,11 +155,11 @@ const Favorites = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                       
                       <div className="absolute top-4 left-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 text-white backdrop-blur-md border border-white/10 shadow-lg select-none">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] bg-slate-950/75 !text-white backdrop-blur-md border border-white/10 shadow-lg select-none">
                           <span className={`w-2 h-2 rounded-full ${
                             property.transaction_type === 'sale' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
                           }`} />
-                          {property.transaction_type === 'sale' ? t('prop.card.sale') : t('prop.card.rent')}
+                          {property.transaction_type === 'sale' ? t('prop.transaction.sale') : t('prop.transaction.rent')}
                         </span>
                       </div>
 
@@ -133,12 +171,12 @@ const Favorites = () => {
                       </button>
 
                       <div className="absolute inset-x-6 bottom-6 space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest !text-white">
                           <MapPinIcon className="w-3.5 h-3.5" />
-                          {property.city}
+                          {cityTranslations[language]?.[property.city] || property.city}
                         </div>
-                        <h3 className="text-xl font-black text-white tracking-tight line-clamp-1 leading-snug group-hover:text-primary transition-colors">
-                          {property.title}
+                        <h3 className="text-xl font-black !text-white tracking-tight line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+                          {translateTitle(property.title, language)}
                         </h3>
                       </div>
                     </div>
@@ -158,7 +196,7 @@ const Favorites = () => {
 
                       <div className="pt-8 border-t border-border-main/50 flex items-center justify-between mt-auto">
                         <div className="text-2xl font-black text-text-main tracking-tighter">
-                          {property.price?.toLocaleString()} <span className="text-[10px] font-black text-text-muted uppercase ml-1 opacity-40">DH</span>
+                          {property.price?.toLocaleString()} <span className="text-[10px] font-black text-text-muted uppercase ml-1 opacity-40">{t('prop.card.price_unit')}</span>
                         </div>
                         <Link to={`/properties/${property.id}`} className="w-12 h-12 rounded-xl bg-bg-soft border border-border-main flex items-center justify-center text-text-muted group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                           <ChevronRightIcon className="w-6 h-6" />
