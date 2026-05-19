@@ -73,12 +73,19 @@ const Header = () => {
         
         // Normalize data from both custom events and standard Laravel notifications
         const data = notification.notification || notification;
+        const type = data.type || (notification.data?.type) || 'info';
+
+        // If user is admin, ignore non-agent_request notifications
+        if (user?.role?.slug === 'admin' && type !== 'agent_request') {
+          return;
+        }
+
         const normalized = {
           id: data.id || Math.random().toString(36).substr(2, 9),
           data: {
             title: data.title || (notification.data?.title),
             message: data.message || (notification.data?.message),
-            type: data.type || (notification.data?.type) || 'info',
+            type: type,
             link: data.link || (notification.data?.link),
             icon: data.icon || (notification.data?.icon)
           },
@@ -131,19 +138,24 @@ const Header = () => {
 
   const loadNotifications = async () => {
     try {
-      const [countRes, listRes] = await Promise.all([
-        notificationService.getUnreadCount(),
-        notificationService.getAll({ per_page: 10 })
-      ]);
-      
-      if (countRes.data?.success) {
-        setUnreadCount(countRes.data.count);
-      }
+      const listRes = await notificationService.getAll({ per_page: 50 });
       
       if (listRes.data?.success) {
-        // Laravel pagination returns the items in the 'data' property of the response 'data'
         const rawNotifications = listRes.data.data.data || [];
-        setNotifications(rawNotifications);
+        
+        let filteredNotifs = rawNotifications;
+        if (user?.role?.slug === 'admin') {
+          filteredNotifs = rawNotifications.filter(notif => {
+            const type = notif.type_notif || notif.type || notif.data?.type_notif || notif.data?.type;
+            return type === 'agent_request';
+          });
+        }
+        
+        setNotifications(filteredNotifs.slice(0, 10));
+        
+        // Count unread in the filtered list
+        const unread = filteredNotifs.filter(notif => !notif.read_at).length;
+        setUnreadCount(unread);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);

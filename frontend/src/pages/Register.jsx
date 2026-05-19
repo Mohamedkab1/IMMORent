@@ -34,7 +34,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, logout } = useAuth();
   const { t } = useLanguage();
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -59,8 +59,14 @@ const Register = () => {
     setIsLoading(true);
     try {
       await register(formData);
-      toast.success(t('auth.register_success'));
-      navigate(selectedRole === 'agent' ? '/dashboard/agent' : '/dashboard/client');
+      if (selectedRole === 'agent') {
+        await logout();
+        toast.info(t('auth.register_agent_pending', "Votre inscription en tant qu'agent a été enregistrée. Votre compte est en attente d'approbation par un administrateur."));
+        navigate('/login');
+      } else {
+        toast.success(t('auth.register_success'));
+        navigate('/dashboard/client');
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || t('auth.register_error'));
     } finally {
