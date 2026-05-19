@@ -24,6 +24,7 @@ import {
   MapPinIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,6 +44,8 @@ const sectionVariants = {
 };
 
 const Privacy = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-bg-soft pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-outfit">
       <div className="max-w-4xl mx-auto">
@@ -57,10 +60,10 @@ const Privacy = () => {
             className="inline-flex items-center gap-2 text-text-sub hover:text-primary transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-4"
           >
             <ArrowLeftIcon className="w-3 h-3" />
-            Retour
+            {t('common.prev', 'Retour')}
           </Link>
           <h1 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
-            Politique de <span className="text-primary">Confidentialité</span>
+            {t('privacy.title')}
           </h1>
         </motion.div>
 
@@ -80,12 +83,12 @@ const Privacy = () => {
                   <InformationCircleIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  1. Introduction
+                  {t('privacy.intro_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
-                <p>IMMORent Maroc SARL (ci-après "IMMORent", "nous", "notre") accorde une importance primordiale à la protection de vos données personnelles. La présente politique de confidentialité a pour objectif de vous informer sur la manière dont nous collectons, utilisons, stockons et protégeons vos informations lorsque vous utilisez notre plateforme immobilière IMMORent.ma.</p>
-                <p>Nous nous engageons à respecter la Loi n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel et à garantir la confidentialité de vos informations.</p>
+                <p>{t('privacy.intro_p1')}</p>
+                <p>{t('privacy.intro_p2')}</p>
               </div>
             </motion.section>
 
@@ -96,7 +99,7 @@ const Privacy = () => {
                   <UserIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  2. Responsable du traitement
+                  {t('privacy.resp_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-2 text-sm text-text-sub">
@@ -114,16 +117,16 @@ const Privacy = () => {
                   <DocumentDuplicateIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  3. Données collectées
+                  {t('privacy.data_title')}
                 </h2>
               </div>
               <div className="pl-16">
-                <p className="text-sm text-text-sub mb-4">Nous collectons les catégories de données suivantes :</p>
+                <p className="text-sm text-text-sub mb-4">{t('privacy.data_desc')}</p>
                 <ul className="list-disc pl-5 space-y-2 text-sm text-text-sub">
-                  <li><strong>Données d'identification :</strong> nom, prénom, email, téléphone</li>
-                  <li><strong>Données de connexion :</strong> adresse IP, logs, navigateur</li>
-                  <li><strong>Données de transaction :</strong> historique des recherches, annonces consultées</li>
-                  <li><strong>Données de paiement :</strong> (uniquement si nécessaire via des prestataires sécurisés)</li>
+                  <li>{t('privacy.data_cat1')}</li>
+                  <li>{t('privacy.data_cat2')}</li>
+                  <li>{t('privacy.data_cat3')}</li>
+                  <li>{t('privacy.data_cat4')}</li>
                 </ul>
               </div>
             </motion.section>
@@ -135,25 +138,25 @@ const Privacy = () => {
                   <ScaleIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  4. Base légale du traitement
+                  {t('privacy.law_title')}
                 </h2>
               </div>
               <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Consentement</h4>
-                  <p className="text-xs text-text-muted">Pour l'envoi de newsletters et communications marketing</p>
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">{t('privacy.law_consent')}</h4>
+                  <p className="text-xs text-text-muted">{t('privacy.law_consent_desc')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Contrat</h4>
-                  <p className="text-xs text-text-muted">Pour l'exécution de nos services immobiliers</p>
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">{t('privacy.law_contract')}</h4>
+                  <p className="text-xs text-text-muted">{t('privacy.law_contract_desc')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Obligation légale</h4>
-                  <p className="text-xs text-text-muted">Pour répondre aux exigences réglementaires</p>
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">{t('privacy.law_obligation')}</h4>
+                  <p className="text-xs text-text-muted">{t('privacy.law_obligation_desc')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">Intérêt légitime</h4>
-                  <p className="text-xs text-text-muted">Pour améliorer nos services et la sécurité</p>
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-text-main mb-2">{t('privacy.law_interest')}</h4>
+                  <p className="text-xs text-text-muted">{t('privacy.law_interest_desc')}</p>
                 </div>
               </div>
             </motion.section>
@@ -165,25 +168,25 @@ const Privacy = () => {
                   <ClockIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  5. Durée de conservation
+                  {t('privacy.duration_title')}
                 </h2>
               </div>
               <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
-                  <span className="text-sm font-medium text-text-sub">Comptes inactifs</span>
-                  <span className="text-xs font-black uppercase tracking-widest text-primary">3 ans</span>
+                  <span className="text-sm font-medium text-text-sub">{t('privacy.duration_cat1')}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">{t('privacy.duration_time1')}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
-                  <span className="text-sm font-medium text-text-sub">Données de navigation</span>
-                  <span className="text-xs font-black uppercase tracking-widest text-primary">13 mois</span>
+                  <span className="text-sm font-medium text-text-sub">{t('privacy.duration_cat2')}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">{t('privacy.duration_time2')}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
-                  <span className="text-sm font-medium text-text-sub">Factures et documents légaux</span>
-                  <span className="text-xs font-black uppercase tracking-widest text-primary">10 ans</span>
+                  <span className="text-sm font-medium text-text-sub">{t('privacy.duration_cat3')}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">{t('privacy.duration_time3')}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 border border-border-main rounded-lg bg-bg-soft">
-                  <span className="text-sm font-medium text-text-sub">Demandes de contact</span>
-                  <span className="text-xs font-black uppercase tracking-widest text-primary">1 an</span>
+                  <span className="text-sm font-medium text-text-sub">{t('privacy.duration_cat4')}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">{t('privacy.duration_time4')}</span>
                 </div>
               </div>
             </motion.section>
@@ -195,15 +198,15 @@ const Privacy = () => {
                   <ShieldCheckIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  6. Sécurité des données
+                  {t('privacy.security_title')}
                 </h2>
               </div>
               <div className="pl-16">
-                <p className="text-sm text-text-sub mb-4">Nous mettons en œuvre les mesures techniques et organisationnelles suivantes :</p>
+                <p className="text-sm text-text-sub mb-4">{t('privacy.security_desc')}</p>
                 <ul className="list-disc pl-5 space-y-2 text-sm text-text-sub">
-                  <li>Chiffrement SSL/TLS pour toutes les transmissions de données</li>
-                  <li>Hébergement sécurisé avec accès restreint</li>
-                  <li>Sauvegardes quotidiennes et monitoring 24/7</li>
+                  <li>{t('privacy.security_cat1')}</li>
+                  <li>{t('privacy.security_cat2')}</li>
+                  <li>{t('privacy.security_cat3')}</li>
                 </ul>
               </div>
             </motion.section>
@@ -215,30 +218,30 @@ const Privacy = () => {
                   <CogIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  7. Cookies
+                  {t('privacy.cookies_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-4">
-                <p className="text-sm text-text-sub">Nous utilisons des cookies pour :</p>
+                <p className="text-sm text-text-sub">{t('privacy.cookies_desc')}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
                     <CogIcon className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-text-sub">Fonctionnement du site</span>
+                    <span className="text-sm text-text-sub">{t('privacy.cookies_cat1')}</span>
                   </div>
                   <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
                     <ChartBarIcon className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-text-sub">Analyses statistiques</span>
+                    <span className="text-sm text-text-sub">{t('privacy.cookies_cat2')}</span>
                   </div>
                   <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
                     <SparklesIcon className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-text-sub">Personnalisation des annonces</span>
+                    <span className="text-sm text-text-sub">{t('privacy.cookies_cat3')}</span>
                   </div>
                   <div className="flex items-center gap-3 p-3 border border-border-main rounded-lg bg-bg-soft">
                     <LockClosedIcon className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-text-sub">Sécurité et authentification</span>
+                    <span className="text-sm text-text-sub">{t('privacy.cookies_cat4')}</span>
                   </div>
                 </div>
-                <p className="text-sm text-text-sub mt-4">Vous pouvez gérer vos préférences de cookies à tout moment via notre gestionnaire de cookies. Médias.</p>
+                <p className="text-sm text-text-sub mt-4">{t('privacy.cookies_footer')}</p>
               </div>
             </motion.section>
 
@@ -249,66 +252,66 @@ const Privacy = () => {
                   <ScaleIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  8. Vos droits
+                  {t('privacy.rights_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-6">
-                <p className="text-sm text-text-sub">Conformément à la Loi n° 09-08 et au RGPD, vous disposez des droits suivants :</p>
+                <p className="text-sm text-text-sub">{t('privacy.rights_desc')}</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <MagnifyingGlassIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit d'accès</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat1')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">Obtenir la confirmation que vos données sont traitées et y accéder.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc1')}</p>
                   </div>
                   
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <PencilIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit de rectification</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat2')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">Faire rectifier vos données si elles sont inexactes.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc2')}</p>
                   </div>
 
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <TrashIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit à l'effacement</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat3')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">Demander la suppression de vos données.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc3')}</p>
                   </div>
 
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <NoSymbolIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit d'opposition</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat4')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">S'opposer au traitement pour des motifs légitimes.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc4')}</p>
                   </div>
 
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <ArchiveBoxIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit à la portabilité</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat5')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">Recevoir vos données dans un format structuré.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc5')}</p>
                   </div>
 
                   <div className="p-4 rounded-lg bg-bg-soft border border-border-main">
                     <div className="flex items-center gap-2 mb-2">
                       <PauseIcon className="w-5 h-5 text-primary" />
-                      <h4 className="font-bold text-text-main">Droit à la limitation</h4>
+                      <h4 className="font-bold text-text-main">{t('privacy.rights_cat6')}</h4>
                     </div>
-                    <p className="text-xs text-text-muted">Suspendre le traitement de vos données.</p>
+                    <p className="text-xs text-text-muted">{t('privacy.rights_desc6')}</p>
                   </div>
                 </div>
 
                 <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-3">
                   <EnvelopeIcon className="w-6 h-6 text-primary flex-shrink-0" />
                   <div>
-                    <h4 className="font-bold text-text-main mb-1">Pour exercer vos droits :</h4>
+                    <h4 className="font-bold text-text-main mb-1">{t('privacy.rights_footer_title', 'Pour exercer vos droits :')}</h4>
                     <p className="text-sm text-text-sub">Contactez notre DPO à <a href="mailto:dpo@immorent.ma" className="text-primary hover:underline">dpo@immorent.ma</a> ou par courrier à l'adresse du siège social.</p>
                   </div>
                 </div>
@@ -322,12 +325,12 @@ const Privacy = () => {
                   <DocumentTextIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  9. Modifications de la politique
+                  {t('privacy.mod_title')}
                 </h2>
               </div>
               <div className="pl-16">
                 <p className="text-sm text-text-sub leading-relaxed">
-                  Nous nous réservons le droit de modifier la présente politique de confidentialité à tout moment. La version la plus récente est toujours disponible sur cette page. En cas de modification substantielle, nous vous en informerons par email ou via une notification sur notre plateforme.
+                  {t('privacy.mod_desc')}
                 </p>
               </div>
             </motion.section>
@@ -339,30 +342,30 @@ const Privacy = () => {
                   <PhoneIcon className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  10. Nous contacter
+                  {t('privacy.contact_title')}
                 </h2>
               </div>
               <div className="pl-16 space-y-4">
-                <p className="text-sm text-text-sub">Pour toute question relative à cette politique :</p>
+                <p className="text-sm text-text-sub">{t('privacy.contact_desc')}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
                     <EnvelopeIcon className="w-5 h-5 text-primary" />
                     <div className="text-sm">
-                      <p className="text-text-muted text-xs mb-1">Email</p>
+                      <p className="text-text-muted text-xs mb-1">{t('privacy.contact_email')}</p>
                       <a href="mailto:confidentialite@immorent.ma" className="text-text-main font-medium hover:text-primary">confidentialite@immorent.ma</a>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
                     <PhoneIcon className="w-5 h-5 text-primary" />
                     <div className="text-sm">
-                      <p className="text-text-muted text-xs mb-1">Téléphone</p>
+                      <p className="text-text-muted text-xs mb-1">{t('privacy.contact_phone')}</p>
                       <span className="text-text-main font-medium">+212 5 24 12 34 56</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
                     <MapPinIcon className="w-8 h-8 text-primary flex-shrink-0" />
                     <div className="text-sm">
-                      <p className="text-text-muted text-xs mb-1">Adresse</p>
+                      <p className="text-text-muted text-xs mb-1">{t('privacy.contact_addr')}</p>
                       <span className="text-text-main font-medium">Avenue Mohammed VI, Immobilier Guéliz, Marrakech 40000</span>
                     </div>
                   </div>
@@ -380,11 +383,11 @@ const Privacy = () => {
           transition={{ delay: 0.5 }}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-8"
         >
-          <Link to="/legal-mentions" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
-            Mentions Légales
+          <Link to="/mentions-legales" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
+            {t('legal.title_short')}
           </Link>
           <Link to="/cgv" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
-            Conditions de Vente
+            {t('cgv.title_short')}
           </Link>
         </motion.div>
       </div>

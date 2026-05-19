@@ -2,23 +2,24 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { 
-  DocumentTextIcon, 
-  CreditCardIcon, 
-  ScaleIcon, 
-  CalendarIcon, 
-  CheckCircleIcon, 
-  UserGroupIcon, 
-  InformationCircleIcon,
-  HomeIcon,
+  ClipboardDocumentCheckIcon,
   ShieldCheckIcon,
-  HandRaisedIcon,
-  LockClosedIcon,
-  ArrowLeftIcon,
-  XMarkIcon,
+  CreditCardIcon,
+  ArrowPathIcon,
+  NoSymbolIcon,
   ExclamationTriangleIcon,
-  UserIcon,
-  PencilSquareIcon,
-  PhoneIcon
+  ScaleIcon,
+  HandThumbUpIcon,
+  LifebuoyIcon,
+  ChatBubbleLeftRightIcon,
+  ArrowLeftIcon,
+  CheckIcon,
+  StarIcon,
+  SparklesIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
@@ -26,21 +27,21 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: { staggerChildren: 0.08 }
   }
 };
 
 const sectionVariants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0, x: -10 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { duration: 0.4, ease: "easeOut" }
+    x: 0,
+    transition: { duration: 0.5, ease: "easeOut" }
   }
 };
 
 const CGV = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-bg-soft pt-40 pb-20 px-4 sm:px-6 lg:px-8 font-outfit">
@@ -59,265 +60,314 @@ const CGV = () => {
             {t('common.prev', 'Retour')}
           </Link>
           <h1 className="text-4xl md:text-5xl font-black text-text-main tracking-tight">
-            Conditions <span className="text-primary">Générales de Vente</span>
+            {t('cgv.title')}
           </h1>
           <p className="text-xs text-text-sub font-bold uppercase tracking-[0.3em] opacity-60">
-            Règles d'utilisation et conditions de vente de la plateforme
+            {t('cgv.subtitle')}
           </p>
         </motion.div>
 
-        {/* Content Container */}
+        {/* Content Area */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="bg-bg-card border border-border-main rounded-xl shadow-2xl overflow-hidden backdrop-blur-sm"
+          className="bg-bg-card border border-border-main rounded-xl shadow-xl overflow-hidden backdrop-blur-sm text-text-main"
         >
           <div className="p-8 md:p-12 space-y-16">
-            
-            {/* Article 1 & 2 */}
-            <motion.section variants={sectionVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <DocumentTextIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 1 : Objet</h2>
-                </div>
-                <div className="text-sm text-text-sub leading-relaxed pl-14 space-y-4">
-                  <p>Les présentes Conditions Générales de Vente (CGV) régissent l'utilisation de la plateforme IMMORent.ma et définissent les droits et obligations des utilisateurs (particuliers, agents immobiliers, promoteurs).</p>
-                  <p>Elles s'appliquent sans restriction ni réserve à l'ensemble des services proposés par IMMORent Maroc SARL à ses clients.</p>
-                  <p>L'utilisation de la plateforme implique l'acceptation pleine et entière des présentes CGV par l'utilisateur.</p>
-                </div>
-              </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <HomeIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 2 : Services proposés</h2>
+            {/* Article 1 : Objet */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ClipboardDocumentCheckIcon className="w-6 h-6" />
                 </div>
-                <div className="grid grid-cols-2 gap-3 pl-14">
-                  {['Publication d\'annonces immobilières', 'Recherche de biens immobiliers', 'Mise en relation acheteurs/vendeurs', 'Outils de gestion immobilière'].map((s, idx) => (
-                    <div key={idx} className="p-3 rounded-lg bg-bg-soft border border-border-main text-[9px] font-black uppercase tracking-widest text-text-main flex flex-col gap-2 justify-center text-center hover:border-primary/30 transition-colors">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mx-auto" />
-                      {s}
-                    </div>
-                  ))}
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art1_title')}
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
+                <p>{t('cgv.art1_p1')}</p>
+                <p>{t('cgv.art1_p2')}</p>
+                <p>{t('cgv.art1_p3')}</p>
+              </div>
+            </motion.section>
+
+            {/* Article 2 : Services */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ShieldCheckIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art2_title')}
+                </h2>
+              </div>
+              <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-4 border border-border-main rounded-lg bg-bg-soft">
+                  <CheckIcon className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm font-medium">{t('cgv.art2_s1')}</span>
+                </div>
+                <div className="flex items-center gap-3 p-4 border border-border-main rounded-lg bg-bg-soft">
+                  <CheckIcon className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm font-medium">{t('cgv.art2_s2')}</span>
+                </div>
+                <div className="flex items-center gap-3 p-4 border border-border-main rounded-lg bg-bg-soft">
+                  <CheckIcon className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm font-medium">{t('cgv.art2_s3')}</span>
+                </div>
+                <div className="flex items-center gap-3 p-4 border border-border-main rounded-lg bg-bg-soft">
+                  <CheckIcon className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm font-medium">{t('cgv.art2_s4')}</span>
                 </div>
               </div>
             </motion.section>
 
             {/* Article 3 : Tarification */}
-            <motion.section variants={sectionVariants} className="space-y-10 border-t border-border-main pt-16">
-              <div className="flex items-center gap-4 mb-8">
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                   <CreditCardIcon className="w-6 h-6" />
                 </div>
-                <h2 className="text-2xl font-black text-text-main uppercase tracking-tight">Article 3 : Tarification</h2>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art3_title')}
+                </h2>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Agent Card */}
-                <div className="p-8 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 relative group hover:scale-[1.02] transition-transform">
-                  <div className="absolute -top-3 left-8 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-md shadow-lg">PRO</div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-4">Agent Immobilier</h4>
-                  <div className="text-3xl font-black text-text-main mb-6">149 DH <span className="text-xs font-normal opacity-40">HT / MOIS</span></div>
-                  <ul className="space-y-3">
-                    {['Annonces illimitées', 'Gestion complète', 'Support 7j/7', 'Statistiques avancées'].map(f => (
-                      <li key={f} className="flex items-center gap-3 text-[10px] font-bold text-text-sub">
-                        <CheckCircleIcon className="w-4 h-4 text-primary" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <div className="pl-16 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Pack Agent */}
+                  <div className="border border-border-main rounded-xl p-6 bg-bg-soft relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 bg-primary !text-white text-[10px] font-black uppercase px-3 py-1 rounded-bl-lg">{t('cgv.badge_pro')}</div>
+                    <h3 className="font-bold text-text-main mb-1">{t('cgv.art3_pro')}</h3>
+                    <div className="text-2xl font-black text-primary mb-4">{t('cgv.art3_pro_price')}</div>
+                    <ul className="text-xs space-y-2 text-text-sub">
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_pro_f1')}</li>
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_pro_f2')}</li>
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_pro_f3')}</li>
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_pro_f4')}</li>
+                    </ul>
+                  </div>
 
-                {/* Particulier Card */}
-                <div className="p-8 rounded-xl bg-bg-soft border border-border-main hover:scale-[1.02] transition-transform">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-text-muted mb-4">Particulier</h4>
-                  <div className="text-3xl font-black text-text-main mb-6">99 DH <span className="text-xs font-normal opacity-40">HT / MOIS</span></div>
-                  <ul className="space-y-3">
-                    {['Jusqu\'à 5 annonces', 'Gestion directe', 'Support email'].map(f => (
-                      <li key={f} className="flex items-center gap-3 text-[10px] font-bold text-text-sub">
-                        <CheckCircleIcon className="w-4 h-4 text-text-muted opacity-40" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  {/* Pack Particulier */}
+                  <div className="border border-border-main rounded-xl p-6 bg-bg-soft">
+                    <h3 className="font-bold text-text-main mb-1">{t('cgv.art3_part')}</h3>
+                    <div className="text-2xl font-black text-text-main mb-4">{t('cgv.art3_part_price')}</div>
+                    <ul className="text-xs space-y-2 text-text-sub">
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_part_f1')}</li>
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_part_f2')}</li>
+                      <li className="flex items-center gap-2"><CheckIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_part_f3')}</li>
+                    </ul>
+                  </div>
 
-                {/* Promoteur Card */}
-                <div className="p-8 rounded-xl bg-bg-main border border-border-main flex flex-col justify-center text-center hover:scale-[1.02] transition-transform">
-                  <UserGroupIcon className="w-8 h-8 mx-auto text-primary opacity-20 mb-4" />
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main mb-2">Promoteur Immobilier</h4>
-                  <div className="text-lg font-black text-primary mb-6">SUR DEVIS</div>
-                  <ul className="space-y-2 text-left w-full pl-4">
-                    {['Programmes neufs et VEFA', 'Solution sur mesure', 'Visibility premium', 'Pages dédiées', 'Gestion de projet', 'API personnalisée'].map(f => (
-                      <li key={f} className="flex items-center gap-3 text-[10px] font-bold text-text-sub">
-                        <div className="w-1 h-1 rounded-full bg-primary/50" /> {f}
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Pack Promoteur */}
+                  <div className="border border-primary/30 rounded-xl p-6 bg-primary/5 relative">
+                    <div className="absolute -top-3 left-6 bg-primary !text-white text-[10px] font-black uppercase px-3 py-1 rounded-full flex items-center gap-1">
+                      <SparklesIcon className="w-3 h-3" /> {t('cgv.badge_recommended')}
+                    </div>
+                    <h3 className="font-bold text-text-main mb-1">{t('cgv.art3_promoter')}</h3>
+                    <div className="text-xl font-black text-primary mb-4">{t('cgv.art3_promoter_price')}</div>
+                    <ul className="text-xs space-y-2 text-text-sub">
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f1')}</li>
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f2')}</li>
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f3')}</li>
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f4')}</li>
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f5')}</li>
+                      <li className="flex items-center gap-2"><StarIcon className="w-3 h-3 text-primary" /> {t('cgv.art3_promoter_f6')}</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-5 bg-bg-soft rounded-lg border-l-4 border-yellow-400/50 text-[11px] text-text-sub font-medium leading-relaxed">
-                <InformationCircleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                <p>Tous les prix sont exprimés en Dirhams Marocains (DH) hors taxes. La TVA de 20% est applicable sur chaque transaction sécurisée via notre partenaire HPS. Les abonnements sont reconduits tacitement sauf dénonciation 15 jours avant la fin du mois en cours.</p>
+                <p className="text-xs text-text-muted italic mt-4">
+                  {t('cgv.art3_footer')}
+                </p>
               </div>
             </motion.section>
 
-            {/* Article 4 & 5 */}
-            <motion.section variants={sectionVariants} className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-border-main pt-16">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <LockClosedIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 4 : Modalités de paiement</h2>
+            {/* Article 4 : Paiement */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <CreditCardIcon className="w-6 h-6" />
                 </div>
-                <div className="pl-14 space-y-4 text-sm text-text-sub leading-relaxed">
-                  <p>Le paiement des services s'effectue en ligne par :</p>
-                  <ul className="space-y-2 pl-4 border-l-2 border-border-main">
-                    <li className="pl-4">Carte bancaire (CIB, Visa, Mastercard)</li>
-                    <li className="pl-4">Virement bancaire</li>
-                    <li className="pl-4">Mobile Money (Orange Money, MTN Mobile Money)</li>
-                  </ul>
-                  <p className="pt-2 text-xs opacity-80">Les transactions sont sécurisées par notre partenaire HPS (Center of Payment), certifié PCI DSS. IMMORent n'a pas accès aux données bancaires complètes des utilisateurs.</p>
-                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art4_title')}
+                </h2>
               </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <HandRaisedIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 5 : Droit de rétractation</h2>
+              <div className="pl-16 space-y-4">
+                <p className="text-sm text-text-sub">{t('cgv.art4_desc')}</p>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-bg-soft border border-border-main rounded-lg text-xs font-bold">{t('cgv.art4_m1')}</span>
+                  <span className="px-4 py-2 bg-bg-soft border border-border-main rounded-lg text-xs font-bold">{t('cgv.art4_m2')}</span>
+                  <span className="px-4 py-2 bg-bg-soft border border-border-main rounded-lg text-xs font-bold">{t('cgv.art4_m3')}</span>
                 </div>
-                <div className="pl-14">
-                  <div className="space-y-4 text-sm text-text-sub leading-relaxed">
-                    <p>Conformément à la loi marocaine, le client dispose d'un délai de 14 jours à compter de la souscription pour exercer son droit de rétractation, sauf si le service a déjà été entièrement exécuté.</p>
-                    <p>Pour exercer ce droit, contactez-nous à <span className="text-primary font-bold">retractation@immorent.ma</span> en précisant vos coordonnées et la référence de votre commande.</p>
-                  </div>
-                </div>
+                <p className="text-xs text-text-muted">{t('cgv.art4_footer')}</p>
               </div>
             </motion.section>
 
-            {/* Article 6, 7 & 8 */}
-            <motion.section variants={sectionVariants} className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-border-main pt-16">
-              <div className="space-y-6 p-6 rounded-xl bg-bg-soft border border-border-main">
-                <div className="flex items-center gap-3">
-                  <XMarkIcon className="w-5 h-5 text-rose-500" />
-                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">Article 6 : Résiliation</h2>
+            {/* Article 5 : Rétractation */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ArrowPathIcon className="w-6 h-6" />
                 </div>
-                <div className="text-xs text-text-sub leading-relaxed space-y-3">
-                  <p>L'utilisateur peut résilier son abonnement à tout moment :</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Depuis son espace personnel</li>
-                    <li>Par email à resiliation@immorent.ma</li>
-                  </ul>
-                  <p className="opacity-80 italic">La résiliation prend effet à la fin du mois en cours. Aucun remboursement n'est dû pour la période en cours.</p>
-                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art5_title')}
+                </h2>
               </div>
-
-              <div className="space-y-6 p-6 rounded-xl bg-bg-soft border border-border-main">
-                <div className="flex items-center gap-3">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />
-                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">Article 7 : Responsabilité</h2>
-                </div>
-                <div className="text-xs text-text-sub leading-relaxed space-y-3">
-                  <p>IMMORent Maroc SARL s'efforce d'assurer l'exactitude des informations, mais ne peut garantir l'exhaustivité. La responsabilité ne saurait être engagée pour :</p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Les contenus publiés par les utilisateurs</li>
-                    <li>Les transactions réalisées directement entre utilisateurs</li>
-                    <li>Les interruptions techniques indépendantes de sa volonté</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="space-y-6 p-6 rounded-xl bg-bg-soft border border-border-main">
-                <div className="flex items-center gap-3">
-                  <UserIcon className="w-5 h-5 text-emerald-500" />
-                  <h2 className="text-sm font-black text-text-main uppercase tracking-widest">Article 8 : Obligations</h2>
-                </div>
-                <div className="text-xs text-text-sub leading-relaxed space-y-3">
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2"><CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Fournir des informations exactes</li>
-                    <li className="flex items-center gap-2"><CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Respecter la législation en vigueur</li>
-                    <li className="flex items-center gap-2"><CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Ne pas publier de contenus illicites</li>
-                    <li className="flex items-center gap-2"><CheckCircleIcon className="w-4 h-4 text-emerald-500" /> Protéger ses identifiants de connexion</li>
-                  </ul>
-                </div>
+              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
+                <p>{t('cgv.art5_p1')}</p>
+                <p>{t('cgv.art5_p2')}</p>
               </div>
             </motion.section>
 
-            {/* Article 9 & 10 */}
-            <motion.section variants={sectionVariants} className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-border-main pt-16">
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <PencilSquareIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 9 : Modification des CGV</h2>
+            {/* Article 6 : Résiliation */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <NoSymbolIcon className="w-6 h-6" />
                 </div>
-                <div className="pl-14 text-sm text-text-sub leading-relaxed">
-                  <p>IMMORent se réserve le droit de modifier les présentes CGV à tout moment. Les modifications entrent en vigueur dès leur publication en ligne. Les utilisateurs seront informés par email en cas de modification substantielle.</p>
-                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art6_title')}
+                </h2>
               </div>
+              <div className="pl-16 space-y-4">
+                <p className="text-sm text-text-sub">{t('cgv.art6_desc')}</p>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-text-sub">
+                  <li>{t('cgv.art6_m1')}</li>
+                  <li>{t('cgv.art6_m2')}</li>
+                </ul>
+                <p className="text-xs text-text-muted mt-2">{t('cgv.art6_footer')}</p>
+              </div>
+            </motion.section>
 
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <PhoneIcon className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-xl font-black text-text-main uppercase tracking-tight">Article 10 : Support et réclamations</h2>
+            {/* Article 7 : Responsabilité */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ExclamationTriangleIcon className="w-6 h-6" />
                 </div>
-                <div className="pl-14 space-y-4">
-                  <div className="text-sm text-text-sub leading-relaxed">
-                    Pour toute question ou réclamation :
-                  </div>
-                  <div className="bg-bg-soft p-4 rounded-lg border border-border-main space-y-2">
-                    <p className="text-xs font-bold text-text-main uppercase tracking-widest flex items-center justify-between">Email <span className="text-primary font-normal normal-case tracking-normal">support@immorent.ma</span></p>
-                    <div className="h-px w-full bg-border-main" />
-                    <p className="text-xs font-bold text-text-main uppercase tracking-widest flex items-center justify-between">Téléphone <span className="text-primary font-normal normal-case tracking-normal">+212 5 24 12 34 56</span></p>
-                    <p className="text-[10px] text-text-muted text-right">Du lundi au vendredi, 9h-18h</p>
-                    <div className="h-px w-full bg-border-main" />
-                    <p className="text-xs font-bold text-text-main uppercase tracking-widest flex items-center justify-between">Délai de réponse <span className="text-primary font-normal normal-case tracking-normal">Max 48h ouvrées</span></p>
-                  </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art7_title')}
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
+                <p>{t('cgv.art7_desc')}</p>
+              </div>
+            </motion.section>
+
+            {/* Article 8 : Obligations */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <HandThumbUpIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art8_title')}
+                </h2>
+              </div>
+              <div className="pl-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 border border-border-main rounded-lg bg-bg-soft text-sm">
+                  {t('cgv.art8_m1')}
+                </div>
+                <div className="p-4 border border-border-main rounded-lg bg-bg-soft text-sm">
+                  {t('cgv.art8_m2')}
+                </div>
+                <div className="p-4 border border-border-main rounded-lg bg-bg-soft text-sm">
+                  {t('cgv.art8_m3')}
+                </div>
+                <div className="p-4 border border-border-main rounded-lg bg-bg-soft text-sm">
+                  {t('cgv.art8_m4')}
                 </div>
               </div>
             </motion.section>
 
-            {/* Article 11 : Litiges & Droit */}
-            <motion.section variants={sectionVariants} className="pt-16 border-t border-border-main text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center text-primary mx-auto">
-                <ScaleIcon className="w-8 h-8" />
+            {/* Article 9 : Modification */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ScaleIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art9_title')}
+                </h2>
               </div>
-              <h2 className="text-2xl font-black text-text-main uppercase tracking-tight">Article 11 : Droit applicable et litiges</h2>
-              <div className="text-sm text-text-sub max-w-2xl mx-auto leading-relaxed space-y-4">
-                <p>Les présentes CGV sont régies par le droit marocain. En cas de litige, et après tentative de recherche d'une solution amiable, les tribunaux de Marrakech seront seuls compétents.</p>
-                <div className="inline-block px-4 py-2 bg-primary/10 rounded-lg text-primary text-xs font-bold border border-primary/20">
-                  Avant toute action judiciaire, un médiateur peut être saisi à l'adresse mediation@immorent.ma
+              <div className="pl-16 text-sm text-text-sub leading-relaxed">
+                <p>{t('cgv.art9_desc')}</p>
+              </div>
+            </motion.section>
+
+            {/* Article 10 : Support */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <LifebuoyIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art10_title')}
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4">
+                <p className="text-sm text-text-sub">{t('cgv.art10_desc')}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <EnvelopeIcon className="w-5 h-5 text-primary" />
+                    <div className="text-sm">
+                      <a href="mailto:support@immorent.ma" className="text-text-main font-medium hover:text-primary">support@immorent.ma</a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <PhoneIcon className="w-5 h-5 text-primary" />
+                    <div className="text-sm">
+                      <span className="text-text-main font-medium">+212 5 24 12 34 56</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <ClockIcon className="w-5 h-5 text-primary" />
+                    <div className="text-sm">
+                      <span className="text-text-main font-medium">{t('cgv.art10_hours')}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-bg-soft border border-border-main">
+                    <StarIcon className="w-5 h-5 text-emerald-500" />
+                    <div className="text-sm">
+                      <span className="text-text-main font-medium">{t('cgv.art10_delay')}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="pt-8 flex flex-col md:flex-row items-center justify-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-60">
-                <span className="flex items-center gap-2"><CalendarIcon className="w-4 h-4" /> Mis à jour : {new Date().toLocaleDateString('fr-FR')}</span>
-                <span>IMMORent SARL</span>
+            </motion.section>
+
+            {/* Article 11 : Droit applicable */}
+            <motion.section variants={sectionVariants}>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <ChatBubbleLeftRightIcon className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  {t('cgv.art11_title')}
+                </h2>
+              </div>
+              <div className="pl-16 space-y-4 text-sm text-text-sub leading-relaxed">
+                <p>{t('cgv.art11_desc')}</p>
+                <p className="text-xs text-text-muted italic">{t('cgv.art11_footer')}</p>
               </div>
             </motion.section>
 
           </div>
         </motion.div>
 
-        {/* Bottom Nav */}
+        {/* Footer links */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-16 flex items-center justify-center gap-12"
+          transition={{ delay: 0.5 }}
+          className="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-8"
         >
-          <Link to="/legal-mentions" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">Mentions Légales</Link>
-          <Link to="/privacy" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">Confidentialité</Link>
+          <Link to="/confidentialite" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
+            {t('privacy.title')}
+          </Link>
+          <Link to="/mentions-legales" className="text-xs font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary transition-all">
+            {t('legal.title_short')}
+          </Link>
         </motion.div>
       </div>
     </div>

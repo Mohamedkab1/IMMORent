@@ -344,7 +344,7 @@ const PropertyDetail = () => {
                     <h3 className="pd-subheading">{t('prop.detail.features', 'Caractéristiques')} :</h3>
                     <ul>
                       {parseFeatures(property.features).map((feature, idx) => (
-                        <li key={idx}>• {feature}</li>
+                        <li key={idx}>• {t(feature, feature)}</li>
                       ))}
                     </ul>
                   </div>
@@ -481,7 +481,7 @@ const PropertyDetail = () => {
                       <CheckCircleIcon className="w-6 h-6 text-amber-600" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-800 dark:text-slate-100">
+                      <h3 className="font-bold" style={{ color: theme === 'dark' ? '#f1f5f9' : 'black' }}>
                         {userReview.status === 'pending' ? t('prop.detail.review.pending_notice', 'Votre avis est en attente de modération.') : t('prop.detail.review.already_submitted', 'Vous avez déjà laissé un avis pour ce bien.')}
                       </h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">

@@ -269,13 +269,13 @@ const Notifications = () => {
           <div className="p-4 sm:p-6 border-b border-border-main flex gap-2 overflow-x-auto no-scrollbar">
             <button 
               onClick={() => setFilter('all')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'all' ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
             >
               {t('notif.all', 'Toutes')}
             </button>
             <button 
               onClick={() => setFilter('unread')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'unread' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-bold text-xs uppercase tracking-widest shrink-0 ${filter === 'unread' ? 'bg-primary !text-white shadow-lg shadow-primary/20' : 'text-text-sub hover:bg-bg-soft hover:text-text-main'}`}
             >
               {t('notif.unread', 'Non lues')}
               {notifications.filter(n => !n.read_at).length > 0 && (
