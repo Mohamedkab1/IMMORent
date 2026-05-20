@@ -31,9 +31,13 @@ class PaymentController extends Controller
         if ($user->isAdmin()) {
             // All payments
         } elseif ($user->isAgent()) {
-            // Payments for contracts managed by this agent
-            $query->whereHas('contract', function($q) use ($user) {
-                $q->where('agent_id', $user->id);
+            // Payments for contracts managed by this agent OR properties managed by this agent
+            $query->where(function($q) use ($user) {
+                $q->whereHas('contract', function($sub) use ($user) {
+                    $sub->where('agent_id', $user->id);
+                })->orWhereHas('property', function($sub) use ($user) {
+                    $sub->where('user_id', $user->id);
+                });
             });
         } else {
             // Own payments
@@ -62,9 +66,9 @@ class PaymentController extends Controller
             'transferCode' => 'nullable|string|max:100'
         ]);
 
-        $currency = $request->currency ?? 'MAD';
+        $currency = $request->input('currency', 'MAD');
         
-        if ($request->method === 'card') {
+        if ($request->input('method') === 'card') {
             $stripe = new StripeClient(config('services.stripe.secret'));
             
             $paymentIntent = $stripe->paymentIntents->create([
@@ -80,7 +84,6 @@ class PaymentController extends Controller
             ]);
 
             $payment = Payment::create([
-                'payment_number' => 'PAY-' . strtoupper(uniqid()),
                 'tenant_id' => auth()->id(),
                 'property_id' => $request->propertyId,
                 'contract_id' => $request->contractId,
@@ -101,16 +104,15 @@ class PaymentController extends Controller
         }
 
         $payment = Payment::create([
-            'payment_number' => 'PAY-' . strtoupper(uniqid()),
             'tenant_id' => auth()->id(),
-            'property_id' => $request->propertyId,
-            'contract_id' => $request->contractId,
-            'amount' => $request->amount,
+            'property_id' => $request->input('propertyId'),
+            'contract_id' => $request->input('contractId'),
+            'amount' => $request->input('amount'),
             'currency' => $currency,
             'payment_date' => now(),
             'status' => 'pending',
-            'payment_method' => $request->method,
-            'transaction_id' => $request->transferCode,
+            'payment_method' => $request->input('method'),
+            'transaction_id' => $request->input('transferCode'),
             'due_date' => now(),
         ]);
 
@@ -131,16 +133,17 @@ class PaymentController extends Controller
         ]);
 
         $payment = Payment::with(['contract', 'property'])
-                          ->where('id', $request->paymentId)
+                          ->where('id', $request->input('paymentId'))
                           ->where('tenant_id', auth()->id())
                           ->firstOrFail();
-
+        
+        $newStatus = $request->input('status');
         $payment->update([
-            'status' => $request->status,
+            'status' => $newStatus,
             'payment_date' => now()
         ]);
 
-        if ($request->status === 'paid') {
+        if ($newStatus === 'paid') {
             // Pas de facture générée automatiquement pour les paiements en agence
             if ($payment->payment_method === 'agency') {
                 // On met quand même à jour les statuts
@@ -246,6 +249,7 @@ class PaymentController extends Controller
             'transaction_id' => 'nullable|string|max:255',
             'status' => 'required|in:pending,paid,late,cancelled',
             'notes' => 'nullable|string',
+            'due_date' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -270,6 +274,10 @@ class PaymentController extends Controller
             'notes' => $request->notes,
             'due_date' => $request->due_date ?? now(),
         ]);
+
+        if ($request->status === 'paid') {
+            $this->updateRelatedStatuses($payment);
+        }
         
         // Notify the tenant/buyer about the payment record
         $targetUser = $payment->tenant;
@@ -335,6 +343,10 @@ class PaymentController extends Controller
         }
 
         $payment->update(['status' => $request->status]);
+
+        if ($request->status === 'paid') {
+            $this->updateRelatedStatuses($payment);
+        }
 
         // Notify the tenant about status update
         if ($payment->tenant) {

@@ -40,6 +40,7 @@ import { paymentService } from '../services/payments';
 import { settingService } from '../services/settings';
 import StatsCard from '../components/Common/StatsCard';
 import RevenueChart from '../components/Dashboard/RevenueChart';
+import AddUserModal from '../components/Dashboard/AddUserModal';
 
 const RevealOnScroll = ({ children, delay = 0, className = "" }) => {
   return (
@@ -80,6 +81,7 @@ const AdminDashboard = () => {
   // --- Users State ---
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('');
@@ -728,7 +730,10 @@ const AdminDashboard = () => {
                      <option value="agent">{t('auth.role.agent')}</option>
                      <option value="client">{t('auth.role.client')}</option>
                    </select>
-                   <button className="flex items-center gap-2 px-6 py-3 bg-primary !text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                   <button 
+                     onClick={() => setIsAddUserModalOpen(true)}
+                     className="flex items-center gap-2 px-6 py-3 bg-primary !text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                   >
                      <PlusIcon className="w-4 h-4" /> {t('admin.actions.new')}
                    </button>
                  </div>
@@ -1259,6 +1264,13 @@ const AdminDashboard = () => {
           </RevealOnScroll>
         )}
         </div>
+        <AnimatePresence>
+          <AddUserModal 
+             isOpen={isAddUserModalOpen} 
+             onClose={() => setIsAddUserModalOpen(false)} 
+             onSuccess={() => loadUsers()} 
+          />
+        </AnimatePresence>
       </main>
     </div>
   );
