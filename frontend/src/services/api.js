@@ -29,6 +29,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
+      console.error('API Error Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+
       // Erreur 401 - Non authentifié
       if (error.response.status === 401) {
         localStorage.removeItem('token');
@@ -54,6 +60,8 @@ api.interceptors.response.use(
       if (error.response.status >= 500) {
         console.error('Erreur serveur', error.response.data);
       }
+    } else {
+      console.error('API Error No Response:', error.message);
     }
     
     return Promise.reject(error);

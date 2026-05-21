@@ -573,7 +573,7 @@ const Header = () => {
                     <div className="w-9 h-9 rounded-md overflow-hidden bg-gradient-to-tr from-primary to-blue-400 dark:from-secondary dark:to-yellow-200 flex items-center justify-center text-white dark:text-primary font-black text-sm shadow-sm border border-white/10">
                       {user?.profile_photo ? (
                         <img 
-                          src={`http://localhost:8000/storage/${user.profile_photo}`} 
+                          src={`http://127.0.0.1:8000/storage/${user.profile_photo}`} 
                           alt={user.name} 
                           className="w-full h-full object-cover"
                         />
@@ -688,7 +688,7 @@ const Header = () => {
                 <div className="w-14 h-14 rounded-2xl overflow-hidden bg-primary dark:bg-secondary flex items-center justify-center text-white dark:text-primary font-black text-xl shadow-lg border-2 border-white/10">
                   {user?.profile_photo ? (
                     <img 
-                      src={`http://localhost:8000/storage/${user.profile_photo}`} 
+                      src={`http://127.0.0.1:8000/storage/${user.profile_photo}`} 
                       alt={user.name} 
                       className="w-full h-full object-cover"
                     />
