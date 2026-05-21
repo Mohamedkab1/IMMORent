@@ -332,8 +332,8 @@ class UserController extends Controller
             $agentRole = Role::where('slug', 'agent')->first();
             if ($agentRole) {
                 $user->role_id = $agentRole->id;
-                $user->is_active = true;
             }
+            $user->is_active = true;
         }
 
         $user->save();

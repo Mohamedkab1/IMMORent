@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Notifications\GeneralNotification;
+use Illuminate\Support\Facades\Notification;
 
 class AuthController extends Controller
 {
@@ -65,6 +67,17 @@ class AuthController extends Controller
                 'address' => $request->address,
                 'is_active' => $isActive,
             ]);
+
+            // Si c'est un agent, notifier les administrateurs
+            if ($request->role === 'agent') {
+                $admins = User::whereHas('role', function($q) { $q->where('slug', 'admin'); })->get();
+                Notification::send($admins, new GeneralNotification([
+                    'title' => 'Nouveau compte agent à approuver',
+                    'message' => "L'utilisateur {$user->name} s'est inscrit en tant qu'agent et attend votre approbation.",
+                    'type' => 'agent_request',
+                    'link' => '/admin/agent-requests',
+                ]));
+            }
 
             // Créer le token Sanctum
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -132,6 +145,20 @@ class AuthController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Votre compte a été désactivé. Contactez l\'administrateur.'
+                ], 403);
+            }
+
+            // Check agent status
+            if ($user->role->slug === 'agent' && $user->agent_status !== 'approved') {
+                $statusMessage = 'Votre demande d\'adhésion en tant qu\'agent est en cours de traitement par l\'administrateur.';
+                if ($user->agent_status === 'rejected') {
+                    $statusMessage = 'Votre demande d\'adhésion en tant qu\'agent a été refusée.';
+                }
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => $statusMessage,
+                    'agent_status' => $user->agent_status
                 ], 403);
             }
 
